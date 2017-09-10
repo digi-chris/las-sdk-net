@@ -1,0 +1,6 @@
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/bin/Debug/Lucidtech.dll.mdb
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/bin/Debug/Lucidtech.dll
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/obj/Debug/Lucidtech.dll
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/obj/Debug/Lucidtech.dll.mdb
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/bin/Debug/RestSharp.dll
