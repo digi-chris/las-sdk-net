@@ -2,7 +2,7 @@
 <package>
     <metadata>
         <id>Lucidtech.LAS.Receipt</id>
-        <version>0.1</version>
+        <version>0.1.1</version>
         <title>Lucidtech Receipt API</title>
         <authors>Lucidtech</authors>
         <owners>Lucidtech</owners>
@@ -17,6 +17,6 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="LAS/*.cs" target="Lucidtech/LAS" />
+        <file src="bin/Release/Lucidtech.dll" target="lib/net45/Lucidtech.dll" />
     </files>
 </package>
