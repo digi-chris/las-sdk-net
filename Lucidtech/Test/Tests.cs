@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
-using System.Reflection;
-using Lucidtech;
+using Lucidtech.LAS;
 using NUnit.Framework;
 
 namespace Test
@@ -13,11 +13,12 @@ namespace Test
         [Test]
         public void TestScanReceiptWithUrl()
         {
-            const string apiKey = "";
+            string apiKey = ConfigurationManager.AppSettings["apiKey"];
+            string receiptUrl = ConfigurationManager.AppSettings["receiptUrl"];
+            
             var client = new Client(apiKey);
-
-            const string receiptUrl = "http://www.salesreceiptstore.com/gasoline-receipts/narrow-gasoline-receipt.JPG";
-            List<Detection> detections = client.ScanReceiptWithUrl(receiptUrl);
+            List<Detection> detections = client.ScanReceipt(receiptUrl);
+            
             foreach (var detection in detections)
             {
                 Console.WriteLine(detection.Label);
@@ -32,12 +33,13 @@ namespace Test
         [Test]
         public void TestScanReceiptWithFile()
         {
-            const string apiKey = "";
+            string apiKey = ConfigurationManager.AppSettings["apiKey"];
             var client = new Client(apiKey);
 
             var bin = AppDomain.CurrentDomain.BaseDirectory;
             var receiptFile = string.Concat(bin, "/../../Files/img.jpeg");
-            List<Detection> detections = client.ScanReceiptWithFile(receiptFile);
+            FileStream stream = new FileStream(receiptFile, FileMode.Open); 
+            List<Detection> detections = client.ScanReceipt(stream);
             foreach (var detection in detections)
             {
                 Console.WriteLine(detection.Label);

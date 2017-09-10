@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using RestSharp;
 
-namespace Lucidtech
+namespace Lucidtech.LAS
 {
     public class Detection
     {
@@ -27,25 +27,33 @@ namespace Lucidtech
             ApiClient = new RestClient(Endpoint);
         }
 
-        public List<Detection> ScanReceiptWithUrl(string receiptUrl)
+        public List<Detection> ScanReceipt(string receiptUrl)
         {
             var endpoint = new Uri(string.Concat(Endpoint, "/", Stage, "/receipts"));
+            
             var request = new RestRequest(endpoint, Method.POST);
             request.AddHeader("X-Api-Key", ApiKey);
             request.AddHeader("Content-Type", "image/jpeg");
             request.AddQueryParameter("url", receiptUrl);
+            
             IRestResponse<List<Detection>> response = ApiClient.Execute<List<Detection>>(request);
             return response.Data;
         }
         
-        public List<Detection> ScanReceiptWithFile(string receiptFile)
+        public List<Detection> ScanReceipt(Stream receiptStream)
         {
             var endpoint = new Uri(string.Concat(Endpoint, "/", Stage, "/receipts"));
+            
             var request = new RestRequest(endpoint, Method.POST);
-            byte[] data = File.ReadAllBytes(receiptFile);
             request.AddHeader("X-Api-Key", ApiKey);
             request.AddHeader("Content-Type", "image/jpeg");
+            
+            MemoryStream ms = new MemoryStream();
+            receiptStream.CopyTo(ms);
+            byte[] data = ms.ToArray();
+            ms.Dispose();
             request.AddParameter("image/jpeg", data, ParameterType.RequestBody);
+            
             IRestResponse<List<Detection>> response = ApiClient.Execute<List<Detection>>(request);
             return response.Data;
         }

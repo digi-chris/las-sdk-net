@@ -7,3 +7,5 @@
 /home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/Test/bin/Debug/Lucidtech.dll
 /home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/Test/bin/Debug/Lucidtech.dll.mdb
 /home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/Test/bin/Debug/RestSharp.dll
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/Test/bin/Debug/Files/App.config
+/home/augustak/dev/LucidtechAI/las-sdk-net/Lucidtech/Test/bin/Debug/Test.dll.config
