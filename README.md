@@ -1,4 +1,4 @@
-# .NET SDK for Lucidtech AI Services API
+# .NET SDK for Lucidtech AI Services
 
 ## Usage
 Instantiate the Lucidtech.LAS.Client with your API key:
