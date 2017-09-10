@@ -1,5 +1,13 @@
 # .NET SDK for Lucidtech AI Services
 
+## Installation
+
+### NuGet
+
+```
+$ nuget install Lucidtech.LAS.Receipt
+```
+
 ## Usage
 Instantiate the Lucidtech.LAS.Client with your API key:
 
