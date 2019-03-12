@@ -18,7 +18,6 @@ namespace Lucidtech.Las.AWSSignatureV4
 		private string AwsApiKey { get; }
 		private string AwsAccessKey { get; }
 		private string AwsSecretKey { get; }
-		private string AwsSessionToken { get; }
 		private const string ALGORITHM = "AWS4-HMAC-SHA256";
 
 		public Auth(Credentials credentials)
@@ -26,7 +25,6 @@ namespace Lucidtech.Las.AWSSignatureV4
 			AwsApiKey = credentials.ApiKey ;
 			AwsSecretKey = credentials.SecretAccessKey;
 			AwsAccessKey = credentials.AccessKeyId;
-			AwsSessionToken = "";
 			Region = "eu-west-1";
 			Service = "execute-api";
 		}
@@ -108,13 +106,12 @@ namespace Lucidtech.Las.AWSSignatureV4
 	
 		private Dictionary<string, string> Headers(Uri uri, string amzDate)
 		{
-			var headers = new Dictionary<string, string>();
-
-			headers.Add("host", uri.Authority);
-			headers.Add("x-amz-date", amzDate);
-			if (!string.IsNullOrEmpty(AwsSessionToken)) { headers.Add("x-amz-security-token", AwsSessionToken); }
-			headers.Add("x-api-key", AwsApiKey);
-
+			var headers = new Dictionary<string, string>()
+			{
+				{"host", uri.Authority},
+				{"x-amz-date", amzDate},
+				{"x-api-key", AwsApiKey}
+			};
 			return headers;
 		}
 
@@ -147,19 +144,19 @@ namespace Lucidtech.Las.AWSSignatureV4
 			};
 			
 			var authParts = new List<string>();
-	        foreach (KeyValuePair<string, string> entry in auth)
+	        foreach (var entry in auth)
             {
 				authParts.Add($"{entry.Key}={entry.Value}");
             }
 
 	        var authString = string.Join(", ", authParts);
 
-	        var headers = new Dictionary<string, string>() { };
-			headers.Add("x-amz-date", amzDate);
-			if (!string.IsNullOrEmpty(AwsSessionToken)) { headers.Add("x-amz-security-token", AwsSessionToken); }
-            headers.Add("x-api-key", AwsApiKey);
-            headers.Add("Authorization", string.Concat(ALGORITHM," ", authString));
-            
+	        var headers = new Dictionary<string, string>() 
+	        {
+                {"x-amz-date", amzDate},
+                {"x-api-key", AwsApiKey},
+                {"Authorization", string.Concat(ALGORITHM," ", authString)}
+            };
             return headers;
 		}
 		
