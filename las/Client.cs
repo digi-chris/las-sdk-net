@@ -5,6 +5,7 @@ using System.Text;
 using RestSharp;
 using Newtonsoft.Json;
 
+using Lucidtech.Las.Cred;
 using Lucidtech.Las.AWSSignatureV4;
 
 namespace Lucidtech.Las
@@ -22,7 +23,8 @@ namespace Lucidtech.Las
 
         public Client()
         {
-	        Access = new Auth();
+	        var cred = new Credentials();
+	        Access = new Auth(cred);
 	        Endpoint = "https://demo.api.lucidtech.ai";
 	        Stage = "v1";
 	        ApiClient = new RestClient(Endpoint);
