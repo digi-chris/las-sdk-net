@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>Lucidtech.LAS.Receipt</id>
+        <id>Lucidtech.las.Receipt</id>
         <version>0.1.1</version>
         <title>Lucidtech Receipt API</title>
         <authors>Lucidtech</authors>
