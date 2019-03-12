@@ -17,10 +17,51 @@ namespace Test
     public class Tests
     {
         [Test]
-        public void TestPost()
+        public void TestPutDocument()
+        {
+            Client client = new Client();
+            string presignedUrl = "FILLMEIN";
+			IRestResponse response = client.PutDocument("image/jpeg", "application/json", presignedUrl);
+            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
+            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
+            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+        }
+        [Test]
+        public void TestPostDocuments()
         {
             Client client = new Client();
 			IRestResponse response = client.PostDocuments("image/jpeg","bar");
+            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
+            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
+            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+        }
+
+        [Test]
+        public void TestPostPredictions()
+        {
+            Client client = new Client();
+			IRestResponse response = client.PostPredictions("foo","bar");
+            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
+            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
+            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+        }
+
+        [Test]
+        public void TestPostDocumentId()
+        {
+            Client client = new Client();
+            var feedback = new List<Dictionary<string, string>>();
+            IRestResponse response = client.PostDocumentId("foo", feedback);
+            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
+            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
+            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+        }
+        
+        [Test]
+        public void TestDeleteConsentId()
+        {
+            Client client = new Client();
+            IRestResponse response = client.DeleteConsentId("Delete me");
             Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
             Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
             Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
