@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 
 using NUnit.Framework;
 using RestSharp;
+using Newtonsoft.Json;
 
 using Lucidtech.Las;
 using Lucidtech.Las.AWSSignatureV4;
 using Lucidtech.Las.Cred;
+using Newtonsoft.Json.Linq;
 
 namespace Test
 {
@@ -19,52 +22,99 @@ namespace Test
         [Test]
         public void TestPutDocument()
         {
+            
             Client client = new Client();
-            string presignedUrl = "FILLMEIN";
-			IRestResponse response = client.PutDocument("image/jpeg", "application/json", presignedUrl);
-            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
-            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
-            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+			var response = client.PutDocument(dir,"image/jpeg",(string)postDocResponse["uploadUrl"]);
+			
+			Assert.IsNull(response);
         }
+
         [Test]
         public void TestPostDocuments()
         {
             Client client = new Client();
-			IRestResponse response = client.PostDocuments("image/jpeg","bar");
-            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
-            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
-            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+            var response = client.PostDocuments("image/jpeg", "bar");
+            var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"} ;
+            var dictResponse = Client.ObjectToDict<Dictionary<string, string>>(response);
+            foreach (var key in expected)
+            {
+                Assert.IsTrue(dictResponse.ContainsKey(key));
+                Console.WriteLine($"{key}: {dictResponse[key]}");
+            }
         }
 
         [Test]
         public void TestPostPredictions()
         {
             Client client = new Client();
-			IRestResponse response = client.PostPredictions("foo","bar");
-            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
-            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
-            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+			client.PutDocument(dir,"image/jpeg",(string)postDocResponse["uploadUrl"]);
+            
+            string documentId = (string)postDocResponse["documentId"];
+			var response = client.PostPredictions(documentId,"invoice");
+			
+            var expected = new List<string>(){"documentId", "predictions"} ;
+			JObject jsonResponse = JObject.Parse(response.ToString());
+            foreach (var field in jsonResponse)
+            {
+                Assert.IsTrue(expected.Contains(field.Key));
+			    Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+            }
         }
 
         [Test]
         public void TestPostDocumentId()
         {
             Client client = new Client();
-            var feedback = new List<Dictionary<string, string>>();
-            IRestResponse response = client.PostDocumentId("foo", feedback);
-            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
-            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
-            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+            
+			var putDocResponse = client.PutDocument(dir,"image/jpeg",postDocResponse["uploadUrl"]);
+            
+            var feedback = new List<Dictionary<string, string>>()
+                {
+                new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
+                new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+                };
+            
+            var response = client.PostDocumentId(postDocResponse["documentId"], feedback);
+            var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType", "feedback"} ;
+			JObject jsonResponse = JObject.Parse(response.ToString());
+            foreach (var field in jsonResponse)
+            {
+                Assert.IsTrue(expected.Contains(field.Key));
+			    Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+            }
         }
         
         [Test]
         public void TestDeleteConsentId()
         {
             Client client = new Client();
-            IRestResponse response = client.DeleteConsentId("Delete me");
-            Console.WriteLine($"response status: {response.ResponseStatus}, and status code {response.StatusCode}");
-            Assert.IsTrue(response.ResponseStatus==ResponseStatus.Completed);
-            Assert.IsTrue(response.StatusCode==HttpStatusCode.OK);
+            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+			client.PutDocument(dir,"image/jpeg",(string)postDocResponse["uploadUrl"]);
+			
+            var expected = new List<string>(){ "consentId", "documentIds"} ;
+            var response = client.DeleteConsentId(postDocResponse["consentId"]);
+			JObject jsonResponse = JObject.Parse(response.ToString());
+			
+            foreach (var field in jsonResponse)
+            {
+                Assert.IsTrue(expected.Contains(field.Key));
+			    Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+            }
         }
 
         [Test]

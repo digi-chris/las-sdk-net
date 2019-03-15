@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 
 using Lucidtech.Las.Cred;
 using Lucidtech.Las.AWSSignatureV4;
+using Lucidtech.Las.Serializer;
 
 namespace Lucidtech.Las
 {
@@ -20,6 +21,7 @@ namespace Lucidtech.Las
 
 		private RestClient ApiClient { get; }
 
+		private LasSerializer Serializer { get; }
 		private Auth Access { get; }
 
 		public Client()
@@ -29,25 +31,28 @@ namespace Lucidtech.Las
 			Endpoint = "https://demo.api.lucidtech.ai";
 			Stage = "v1";
 			ApiClient = new RestClient(Endpoint);
+			Serializer = new LasSerializer(new Newtonsoft.Json.JsonSerializer());
 		}
 
-		public RestRequest ClientRestRequest(Method method, string path, object dictBody)
+		private object JsonDecode(IRestResponse response)
 		{
-			Uri endpoint = new Uri(string.Concat(Endpoint, "/", Stage, path));
-
-			/* Create a request */
-			var request = new RestRequest(endpoint, method);
-
-			request.AddJsonBody(dictBody);
-
-			/* Add the signing headers to the request */
-			byte[] body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dictBody));
-			var headers = CreateSigningHeaders(method.ToString(), path, body);
-			foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
-
-			return request;
+			if (response.StatusCode != System.Net.HttpStatusCode.OK)
+			{
+				throw new ApplicationException(response.ErrorMessage);
+			}
+			try
+			{
+				var jsonResponse = Serializer.DeserializeObject(response.Content);
+				return jsonResponse;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error in response. Returned {e}");
+				throw;	
+			}	
 		}
-		public IRestResponse PostDocuments(string contentType, string consentId)
+
+		public object PostDocuments(string contentType, string consentId)
 		{
 			var dictBody = new Dictionary<string, string>() { {"contentType", contentType}, {"consentId", consentId} };
 			
@@ -55,41 +60,50 @@ namespace Lucidtech.Las
 
 			IRestResponse response = ApiClient.Execute(request);
 
-			return response;
+			return JsonDecode(response);
 		}
 
-		public IRestResponse PutDocument(string documentPath, string contentType, string presignedUrl)
+		public object PutDocument(string documentPath, string contentType, string presignedUrl)
 		{
-			var body = File.ReadAllBytes(documentPath);
-			var request = new RestRequest(presignedUrl);
-			request.AddBody(body);
+			byte[] body = File.ReadAllBytes(documentPath);
+			
+			var request = new RestRequest(Method.PUT);
 			request.AddHeader("Content-Type", contentType);
-			IRestResponse response = ApiClient.Put(request);
-			return response;
+			request.AddParameter(contentType, body, ParameterType.RequestBody);
+			
+			RestClient client = new RestClient(presignedUrl);
+			
+			IRestResponse response = client.Execute(request);
+			
+			return JsonDecode(response);
 
 		}
-		public IRestResponse PostPredictions(string documentId, string modelName)
+		public object PostPredictions(string documentId, string modelName)
 		{
 			var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
 			
-			RestRequest request = ClientRestRequest(Method.POST, "/documents", dictBody);
+			RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
 
 			IRestResponse response = ApiClient.Execute(request);
 
-			return response;
+			return JsonDecode(response);
 		}
-		public IRestResponse PostDocumentId(string documentId, List<Dictionary<string, string>> feedback)
+		public object PostDocumentId(string documentId, List<Dictionary<string, string>> feedback)
 		{
-			var dictBody = new Dictionary<string, List<Dictionary<string,string>>>() { {"feedback", feedback}};
+			var dictBody = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
 			
-			RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", dictBody);
+			// Doing a manual cast from Dictionary to object to help out the serialization process
+			string bodyString = JsonConvert.SerializeObject(dictBody);
+			object body = JsonConvert.DeserializeObject(bodyString);
+			
+			RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
 
 			IRestResponse response = ApiClient.Execute(request);
 
-			return response;
+			return JsonDecode(response);
 		}
 		
-		public IRestResponse DeleteConsentId(string consentId)
+		public object DeleteConsentId(string consentId)
 		{
 			var dictBody = new Dictionary<string, string>() {} ;
 			
@@ -97,7 +111,25 @@ namespace Lucidtech.Las
 
 			IRestResponse response = ApiClient.Execute(request);
 
-			return response;
+			return JsonDecode(response);
+		}
+		
+		public RestRequest ClientRestRequest(Method method, string path, object dictBody)
+		{
+			Uri endpoint = new Uri(string.Concat(Endpoint, "/", Stage, path));
+
+			/* Create a request */
+			var request = new RestRequest(endpoint, method);
+			request.JsonSerializer = LasSerializer.Default;
+			request.RequestFormat = DataFormat.Json;
+			request.AddJsonBody(dictBody);
+
+			/* Add the signing headers to the request */
+			byte[] body = Encoding.UTF8.GetBytes(request.JsonSerializer.Serialize(dictBody));
+			var headers = CreateSigningHeaders(method.ToString(), path, body);
+			foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
+
+			return request;
 		}
 		
         private Dictionary<string, string> CreateSigningHeaders(string method, string path, byte[] body)
@@ -110,6 +142,11 @@ namespace Lucidtech.Las
             headers.Add("Content-Type", "application/json");
             
             return headers;
+        }
+        public static T ObjectToDict<T>(object obj)
+        {
+            var serial = JsonConvert.SerializeObject(obj); 
+			return JsonConvert.DeserializeObject<T>(serial);
         }
     } // Class Client
 } // Namespace Lucidtech.Las
