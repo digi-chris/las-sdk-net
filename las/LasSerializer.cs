@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using RestSharp;
 using Newtonsoft.Json;
 using RestSharp.Deserializers;
@@ -28,26 +24,11 @@ namespace Lucidtech.Las.Serializer
         }
 
         public static LasSerializer Default => new LasSerializer(new Newtonsoft.Json.JsonSerializer(){ NullValueHandling = NullValueHandling.Ignore,});  
-        //public static LasSerializer Default => new LasSerializer(new Newtonsoft.Json.JsonSerializer());  
         public LasSerializer(Newtonsoft.Json.JsonSerializer serializer)
         {
             Serializer = serializer;
         }
 
-        /*
-        public string Serialize(object obj)
-        {
-            StringBuilder sb = new StringBuilder();
-            using (var sw = new StringWriter(sb))
-            {
-                using (var jtw = new JsonTextWriter(sw))
-                {
-                    Serializer.Serialize(jtw, obj);
-                    return sw.ToString();
-                }
-            }
-        }
-        */
         public string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj);
