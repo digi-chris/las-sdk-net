@@ -27,6 +27,7 @@ namespace Test
             string consentId = "bar";
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+            
             Prediction response = api.Predict(dir, modelName, consentId);
 
             Assert.IsTrue(response["consentId"].Equals(consentId));
@@ -34,7 +35,6 @@ namespace Test
             
             foreach (var field in response.Fields)
             {
-                
                 Assert.IsTrue(field.ContainsKey("label"));
                 Assert.IsTrue(field.ContainsKey("value"));
                 Assert.IsTrue(field.ContainsKey("confidence"));
