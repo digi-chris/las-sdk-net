@@ -43,5 +43,10 @@ namespace Lucidtech.Las.Serializer
         {
 			return JsonConvert.DeserializeObject(response);
         }
+        
+        public T DeserializeObject<T>(string response)
+        {
+			return JsonConvert.DeserializeObject<T>(response);
+        }
     }
 }

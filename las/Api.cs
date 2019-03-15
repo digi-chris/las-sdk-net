@@ -17,9 +17,9 @@ namespace Lucidtech.Las
 	{
 		
         private Dictionary<string, string> Essentials { get; }
-        public JArray Fields { get; }
+        public List<Dictionary<string, object>> Fields{ get; }
         public Prediction(string documentId, string consentId, string modelName,
-            JArray predictionResponse)
+            List<Dictionary<string, object>> predictionResponse)
         {
 	        Essentials = new Dictionary<string, string>()
 	        {
@@ -83,7 +83,8 @@ namespace Lucidtech.Las
 			var predictionResponse = PostPredictions(documentId, modelName);
 			
 			JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
-			JArray predictions = JArray.Parse(jsonResponse["predictions"].ToString());
+			var predictionString = jsonResponse["predictions"].ToString();
+			var predictions = Serializer.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
 			Prediction prediction = new Prediction(documentId, consentId, modelName, predictions); 
 			return prediction;
 		}

@@ -23,21 +23,25 @@ namespace Test
         public void TestPrediction()
         {
             Api api = new Api();
+            string modelName = "invoice";
+            string consentId = "bar";
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
-            Prediction response = api.Predict(dir, "invoice", "bar");
+            Prediction response = api.Predict(dir, modelName, consentId);
 
-            Console.WriteLine(response["documentId"].ToString());
-            Console.WriteLine(response["consentId"].ToString());
-            Console.WriteLine(response["modelName"].ToString());
-            Console.WriteLine(response["fields"].ToString());
+            Assert.IsTrue(response["consentId"].Equals(consentId));
+            Assert.IsTrue(response["modelName"].Equals(modelName));
             
             foreach (var field in response.Fields)
             {
-                foreach (JProperty entry in field)
-                {
-                    Console.WriteLine($"Name: {entry.Name}, Value: {entry.Value}, Type: {entry.Value.Type}");
-                }               
+                
+                Assert.IsTrue(field.ContainsKey("label"));
+                Assert.IsTrue(field.ContainsKey("value"));
+                Assert.IsTrue(field.ContainsKey("confidence"));
+                
+                Assert.IsTrue(field["label"] is string);
+                Assert.IsTrue(field["value"] is string);
+                Assert.IsTrue(field["confidence"] is double);
             }
         }
     }

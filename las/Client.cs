@@ -21,7 +21,7 @@ namespace Lucidtech.Las
 
 		private RestClient ApiClient { get; }
 
-		private LasSerializer Serializer { get; }
+		public LasSerializer Serializer { get; }
 		private Auth Access { get; }
 
 		public Client()
