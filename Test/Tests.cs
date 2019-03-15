@@ -17,7 +17,31 @@ using Newtonsoft.Json.Linq;
 namespace Test
 {
     [TestFixture]
-    public class Tests
+    public class TestApi
+    {
+        [Test]
+        public void TestPrediction()
+        {
+            Api api = new Api();
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+            Prediction response = api.Predict(dir, "invoice", "bar");
+
+            Console.WriteLine(response["documentId"].ToString());
+            Console.WriteLine(response["consentId"].ToString());
+            Console.WriteLine(response["modelName"].ToString());
+            Console.WriteLine(response["fields"].ToString());
+            
+            foreach (var field in response.Fields)
+            {
+                foreach (JProperty entry in field)
+                {
+                    Console.WriteLine($"Name: {entry.Name}, Value: {entry.Value}, Type: {entry.Value.Type}");
+                }               
+            }
+        }
+    }
+    public class TestsClient
     {
         [Test]
         public void TestPutDocument()

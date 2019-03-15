@@ -5,6 +5,7 @@ using System.Text;
 
 using RestSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using Lucidtech.Las.Cred;
 using Lucidtech.Las.Filetype;
@@ -16,9 +17,9 @@ namespace Lucidtech.Las
 	{
 		
         private Dictionary<string, string> Essentials { get; }
-        private Dictionary<string, string> Fields { get; }
+        public JArray Fields { get; }
         public Prediction(string documentId, string consentId, string modelName,
-            Dictionary<string, string> predictionResponse)
+            JArray predictionResponse)
         {
 	        Essentials = new Dictionary<string, string>()
 	        {
@@ -50,15 +51,41 @@ namespace Lucidtech.Las
         }
 	}
 
+    /// <summary>
+    /// A high level client to invoke api methods from Lucidtech AI Services.
+    /// </summary
+    /// <param name="endpoint">Domain endpoint of the api, e.g. https://&lt;prefix&gt;.api.lucidtech.ai/&lt;version&gt;.</param>
+    /// <param name="credentials"> Credentials to use, instance of Class `~Las.Credentials`</param>
+    ///            
+    /// <returns>
+    /// Prediction on document
+    /// </returns>
+    ///         
 	public class Api : Client
 	{
-		public object Predict(string documentPath, string modelName, string consentId)
+		/// <summary>
+        ///	Run inference and create prediction on document, this method takes care of creating and uploaded document
+        /// as well as running inference to create prediction on document.
+        /// </summary>
+        /// <param name="documentPath">Path to document to run inference on.</param>
+        /// <param name="modelName"> The name of the model to use for inference </param>
+        /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
+        ///            
+        /// <returns>
+        /// Prediction on document
+        /// </returns>
+        ///         
+		public Prediction Predict(string documentPath, string modelName, string consentId)
 		{
 			string contentType = GetContentType(documentPath);
 			consentId = string.IsNullOrEmpty(consentId) ? Guid.NewGuid().ToString() : consentId;
 			string documentId = UploadDocument(documentPath, contentType, consentId);
 			var predictionResponse = PostPredictions(documentId, modelName);
-			return predictionResponse;
+			
+			JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
+			JArray predictions = JArray.Parse(jsonResponse["predictions"].ToString());
+			Prediction prediction = new Prediction(documentId, consentId, modelName, predictions); 
+			return prediction;
 		}
 
 		private string UploadDocument(string documentPath, string contentType, string consentId)
