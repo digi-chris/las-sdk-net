@@ -9,7 +9,7 @@ namespace Lucidtech.Las.Utils
     /// <summary>
     /// Help determine the type of a file, inspired by pythons <c>imghdr.what()</c>.
     /// </summary>
-    public class FileType
+    public static class FileType
     {
         /// <summary>
         /// Tests the type of file.

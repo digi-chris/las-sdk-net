@@ -7,13 +7,33 @@ using IniParser.Model;
 
 namespace Lucidtech.Las.Core
 {
+    /// <summary>
+    /// Used to fetch and store credentials. One of 3 conditions must be met to successfully create credentials.
+    /// 
+    /// 1. credentials_path is provided
+    /// 2. access_key_id, secret_access_key and api_key is provided
+    /// 3. credentials is located in default path ~/.lucidtech/credentials.cfg
+    /// 
+    /// </summary>
     public class Credentials
     {
         public string AccessKeyId {get;}
         public string SecretAccessKey {get;}
         public string ApiKey{get;}
         
-
+        /// <summary>
+        /// The Credentials constructor, will create all the necessary credentials.
+        /// 
+        /// 1. credentials_path is provided
+        /// 2. access_key_id, secret_access_key and api_key is provided
+        /// 3. credentials is located in default path ~/.lucidtech/credentials.cfg
+        /// 
+        /// </summary>
+        /// <param name="credentialsPath"> Path to credentials file</param>
+        /// <param name="accessKeyId">Access key Id</param>
+        /// <param name="secretAccessKey">Secret Access Key</param>
+        /// <param name="apiKey">API key</param>
+        /// <exception cref="ArgumentException"></exception>
         public Credentials(string credentialsPath = "", string accessKeyId = "", string secretAccessKey = "",
             string apiKey = "")
         {
@@ -47,7 +67,7 @@ namespace Lucidtech.Las.Core
                 throw new ArgumentException("one or more of the credentials are empty");
             }
         }
-        private string[] ReadCredentials(string credentialPath)
+        private static string[] ReadCredentials(string credentialPath)
         {
             var parser = new FileIniDataParser();
             const string section = "default";
