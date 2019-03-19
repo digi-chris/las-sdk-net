@@ -39,7 +39,7 @@ namespace Lucidtech.Las
 			Endpoint = "https://demo.api.lucidtech.ai";
 			Stage = "v1";
 			RestSharpClient = new RestClient(Endpoint);
-			Serializer = new JsonSerialPublisher(new Newtonsoft.Json.JsonSerializer());
+			Serializer = new JsonSerialPublisher(new JsonSerializer());
 		}
 		
 		public Client(string endpoint, string stage)
@@ -49,7 +49,7 @@ namespace Lucidtech.Las
 			Endpoint = endpoint;
 			Stage = stage;
 			RestSharpClient = new RestClient(Endpoint);
-			Serializer = new JsonSerialPublisher(new Newtonsoft.Json.JsonSerializer());
+			Serializer = new JsonSerialPublisher(new JsonSerializer());
 		}
 
 		private object JsonDecode(IRestResponse response)
@@ -225,7 +225,7 @@ namespace Lucidtech.Las
 		}
 		
 		/// <summary>
-        /// Create a HTTP web request for the REST API 
+        /// Create a HTTP web request for the REST API. 
         /// </summary>
         /// <param name="method"> The request method, e.g. POST, PUT, GET, DELETE </param>
         /// <param name="path"> The path to the domain upon which to apply the request,
