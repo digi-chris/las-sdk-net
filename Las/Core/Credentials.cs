@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using IniParser;
 using IniParser.Model;
 
-namespace Lucidtech.Las.Cred
+namespace Lucidtech.Las.Core
 {
     public class Credentials
     {
@@ -25,7 +25,7 @@ namespace Lucidtech.Las.Cred
                 credentialsPath
             };
             
-            string[] credentials = input.Take(3).ToArray(); // Store the keys in a separate array
+            string[] credentials = input.Take(3).ToArray(); 
             
             if (input.Any(s => string.IsNullOrEmpty(s)))
             {

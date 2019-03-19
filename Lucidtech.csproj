@@ -56,7 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="las\*" />
+    <Compile Include="Las\*" />
+    <Compile Include="Las\Core\*" />
+    <Compile Include="Las\Utils\*" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

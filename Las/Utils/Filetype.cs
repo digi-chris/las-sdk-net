@@ -1,16 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Lucidtech.Las.Filetype
+namespace Lucidtech.Las.Utils
 {
-    public class FileTests
+    /// <summary>
+    /// Help determine the type of a file, inspired by pythons <c>imghdr.what()</c>.
+    /// </summary>
+    public class FileType
     {
-        //private List<Func<byte[],string>> FileTestList { get; }
-        
+        /// <summary>
+        /// Tests the type of file.
+        /// </summary>
+        /// <param name="fileName"> the name of the file that is to be classified </param>
+        /// <returns> the name of the file type that matches, or an empty string if the file does not match</returns>
         public static string WhatFile(string fileName)
         {
             var fileTestList = new List<Func<byte[],string>>()
@@ -59,7 +64,8 @@ namespace Lucidtech.Las.Filetype
                 throw;
             }
         }
-        public static bool Exists(byte[] source, byte[] pattern)
+
+        private static bool Exists(byte[] source, byte[] pattern)
         {
             for (int i = 0; i < source.Length; i++)
             {
@@ -71,31 +77,23 @@ namespace Lucidtech.Las.Filetype
 
             return false;
         }
-        public static byte[] HexStringToByteArray(string hex) 
+
+        private static byte[] HexStringToByteArray(string hex) 
         {
             return Enumerable.Range(0, hex.Length)
                      .Where(x => x % 2 == 0)
                      .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                      .ToArray();
         }
-        
-        public static string TestPdf(byte[] fileHeader)
+
+        private static string TestPdf(byte[] fileHeader)
         {
-            if(Exists(fileHeader,Encoding.UTF8.GetBytes("PDF")))
-            {
-                return "pdf";
-            }
-            return "";
+            return (Exists(fileHeader,Encoding.UTF8.GetBytes("PDF")))? "pdf" : "";
         }
 
-        public static string TestJpeg(byte[] fileHeader)
+        private static string TestJpeg(byte[] fileHeader)
         {
-            if (fileHeader.Take(2).SequenceEqual(HexStringToByteArray("FFD8")))
-            {
-                return "jpeg";
-            }
-
-            return "";
+            return (fileHeader.Take(2).SequenceEqual(HexStringToByteArray("FFD8"))) ? "jpeg" : "";
         }
     }
 }

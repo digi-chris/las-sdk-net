@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 
 using NUnit.Framework;
-using RestSharp;
-using Newtonsoft.Json;
 
 using Lucidtech.Las;
-using Lucidtech.Las.AWSSignatureV4;
-using Lucidtech.Las.Cred;
+using Lucidtech.Las.Core;
+using Lucidtech.Las.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Test
@@ -22,7 +19,7 @@ namespace Test
         [Test]
         public void TestPrediction()
         {
-            Api api = new Api();
+            ApiClient api = new ApiClient();
             string modelName = "invoice";
             string consentId = "bar";
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
@@ -45,14 +42,14 @@ namespace Test
             }
         }
     }
-    public class TestsClient
+    public class TestClient
     {
         [Test]
         public void TestPutDocument()
         {
             
             Client client = new Client();
-            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
@@ -67,7 +64,7 @@ namespace Test
             Client client = new Client();
             var response = client.PostDocuments("image/jpeg", "bar");
             var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"} ;
-            var dictResponse = Client.ObjectToDict<Dictionary<string, string>>(response);
+            var dictResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(response);
             foreach (var key in expected)
             {
                 Assert.IsTrue(dictResponse.ContainsKey(key));
@@ -79,7 +76,7 @@ namespace Test
         public void TestPostPredictions()
         {
             Client client = new Client();
-            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
@@ -101,12 +98,12 @@ namespace Test
         public void TestPostDocumentId()
         {
             Client client = new Client();
-            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
             
-			var putDocResponse = client.PutDocument(dir,"image/jpeg",postDocResponse["uploadUrl"]);
+			client.PutDocument(dir,"image/jpeg",postDocResponse["uploadUrl"]);
             
             var feedback = new List<Dictionary<string, string>>()
                 {
@@ -128,7 +125,7 @@ namespace Test
         public void TestDeleteConsentId()
         {
             Client client = new Client();
-            var postDocResponse = Client.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
@@ -164,8 +161,6 @@ namespace Test
                 "3d3bb37211f46ba09ff61a923b7dc21db17c6f4b2f03324c32d70fd6900243f3"
             };
 
-            var cred = new Credentials("just", "some", "random", "stuff");
-            var auth = new Auth(cred);
             for (int i = 0; i < answers.Count; i++)
             {
                 /* Test input */
@@ -173,53 +168,11 @@ namespace Test
 		        byte[] bytes = Encoding.UTF8.GetBytes(key);
 		        
 		        /* Result */
-                byte[] res = Auth.SignHash(bytes, Encoding.UTF8.GetBytes(testDict[key]));
+                byte[] res = AmazonAuthorization.SignHash(bytes, Encoding.UTF8.GetBytes(testDict[key]));
                 
-                Assert.Zero(String.CompareOrdinal(Auth.StringFromByteArray(res), answers[i]));
+                Assert.Zero(string.CompareOrdinal(AmazonAuthorization.StringFromByteArray(res), answers[i]));
             }
             
         }
-        /*
-        [Test]
-        public void TestScanReceiptWithUrl()
-        {
-            string apiKey = ConfigurationManager.AppSettings["apiKey"];
-            string receiptUrl = ConfigurationManager.AppSettings["receiptUrl"];
-            
-            var client = new Client(apiKey);
-            List<Detection> detections = client.ScanReceipt(receiptUrl);
-            
-            foreach (var detection in detections)
-            {
-                Console.WriteLine(detection.Label);
-                Assert.IsNotNull(detection.Label);
-                Console.WriteLine(detection.Confidence);
-                Assert.IsNotNull(detection.Confidence);
-                Console.WriteLine(detection.Value);
-                Assert.IsNotNull(detection.Value);
-            }
-        }
-
-        [Test]
-        public void TestScanReceiptWithFile()
-        {
-            string apiKey = ConfigurationManager.AppSettings["apiKey"];
-            var client = new Client(apiKey);
-
-            var bin = AppDomain.CurrentDomain.BaseDirectory;
-            var receiptFile = string.Concat(bin, "/../../Files/img.jpeg");
-            FileStream stream = new FileStream(receiptFile, FileMode.Open); 
-            List<Detection> detections = client.ScanReceipt(stream);
-            foreach (var detection in detections)
-            {
-                Console.WriteLine(detection.Label);
-                Assert.IsNotNull(detection.Label);
-                Console.WriteLine(detection.Confidence);
-                Assert.IsNotNull(detection.Confidence);
-                Console.WriteLine(detection.Value);
-                Assert.IsNotNull(detection.Value);
-            }
-        }
-        */
     }
 }

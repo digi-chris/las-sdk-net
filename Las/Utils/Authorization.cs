@@ -4,11 +4,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-using Lucidtech.Las.Cred;
+using Lucidtech.Las.Core;
 
-namespace Lucidtech.Las.AWSSignatureV4
+namespace Lucidtech.Las.Utils
 {
-	public class Auth
+	public class AmazonAuthorization
 	{
 		/* General information */
 		private string Region { get; }
@@ -18,9 +18,10 @@ namespace Lucidtech.Las.AWSSignatureV4
 		private string AwsApiKey { get; }
 		private string AwsAccessKey { get; }
 		private string AwsSecretKey { get; }
-		private const string ALGORITHM = "AWS4-HMAC-SHA256";
+		
+		private const string Algorithm = "AWS4-HMAC-SHA256";
 
-		public Auth(Credentials credentials)
+		public AmazonAuthorization(Credentials credentials)
 		{
 			AwsApiKey = credentials.ApiKey ;
 			AwsSecretKey = credentials.SecretAccessKey;
@@ -155,7 +156,7 @@ namespace Lucidtech.Las.AWSSignatureV4
 	        {
                 {"x-amz-date", amzDate},
                 {"x-api-key", AwsApiKey},
-                {"Authorization", string.Concat(ALGORITHM," ", authString)}
+                {"Authorization", string.Concat(Algorithm," ", authString)}
             };
             return headers;
 		}
@@ -163,7 +164,7 @@ namespace Lucidtech.Las.AWSSignatureV4
 		/* Private Static Methods */
         private static byte[] GetSignString(string amzDate, string credScope, string reqDigest)
         {
-	        var parts = new List<string>(){ALGORITHM, amzDate, credScope, reqDigest};
+	        var parts = new List<string>(){Algorithm, amzDate, credScope, reqDigest};
 	        return Encoding.UTF8.GetBytes(string.Join("\n", parts));
         }
 
@@ -189,5 +190,5 @@ namespace Lucidtech.Las.AWSSignatureV4
 		}
 
 		
-    } // Class Auth
-} // Namespace Lucidtech.Las.AWSSignatureV4
+    } 
+} 
