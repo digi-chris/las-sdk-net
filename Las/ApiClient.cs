@@ -14,6 +14,18 @@ namespace Lucidtech.Las
 	public class ApiClient : Client 
 	{
 		/// <summary>
+		/// ApiClient constructor with credentials read from local file.
+		/// </summary>
+		/// <param name="endpoint"> url to the host</param>
+		public ApiClient(string endpoint) : base(endpoint) { }
+		/// <summary>
+		/// ApiClient constructor with credentials read from local file.
+		/// </summary>
+		/// <param name="endpoint"> url to the host</param>
+		/// <param name="credentials"> Keys and credentials needed for authorization, <see cref="Credentials"/></param>
+		public ApiClient(string endpoint, Credentials credentials) : base(endpoint, credentials) { }
+
+		/// <summary>
         ///	Run inference and create prediction on document, this method takes care of creating and uploaded document
         /// as well as running inference to create prediction on document.
         /// </summary>

@@ -17,11 +17,9 @@ namespace Lucidtech.Las
     ///            
 	public class Client 
 	{
-
 		/// Domain endpoint of the api, e.g. https://&lt;prefix&gt;.api.lucidtech.ai/&lt;version&gt;
 		private string Endpoint { get; }
 		///The version of the service, e.q. "v1"
-		private string Stage { get; }
 
 		/// The base client that is used to access the REST API
 		private RestClient RestSharpClient { get; }
@@ -31,44 +29,16 @@ namespace Lucidtech.Las
 		/// The component that deals with the authorization against AWS 
 		private AmazonAuthorization Authorization { get; }
 
-		///	Default constructor for Client
-		public Client()
+		public Client(string endpoint, Credentials credentials)
 		{
-			var cred = new Credentials();
-			Authorization = new AmazonAuthorization(cred);
-			Endpoint = "https://demo.api.lucidtech.ai";
-			Stage = "v1";
-			RestSharpClient = new RestClient(Endpoint);
+			Authorization = new AmazonAuthorization(credentials);
+			Endpoint = endpoint;
+			var uri = new Uri(endpoint);	
+			RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
 			Serializer = new JsonSerialPublisher(new JsonSerializer());
 		}
 		
-		public Client(string endpoint, string stage)
-		{
-			var cred = new Credentials();
-			Authorization = new AmazonAuthorization(cred);
-			Endpoint = endpoint;
-			Stage = stage;
-			RestSharpClient = new RestClient(Endpoint);
-			Serializer = new JsonSerialPublisher(new JsonSerializer());
-		}
-
-		private object JsonDecode(IRestResponse response)
-		{
-			if (response.StatusCode != System.Net.HttpStatusCode.OK)
-			{
-				throw new ApplicationException(response.ErrorMessage);
-			}
-			try
-			{
-				var jsonResponse = Serializer.DeserializeObject(response.Content);
-				return jsonResponse;
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine($"Error in response. Returned {e}");
-				throw;	
-			}	
-		}
+		public Client(string endpoint) : this(endpoint, new Credentials()) { }
 
 		/// <summary>
         ///	Creates a document handle, calls the POST /documents endpoint
@@ -236,7 +206,7 @@ namespace Lucidtech.Las
         /// </returns>
 		private RestRequest ClientRestRequest(Method method, string path, object dictBody)
 		{
-			Uri endpoint = new Uri(string.Concat(Endpoint, "/", Stage, path));
+			Uri endpoint = new Uri(string.Concat(Endpoint, path));
 
 			var request = new RestRequest(endpoint, method);
 			request.JsonSerializer = JsonSerialPublisher.Default;
@@ -252,7 +222,7 @@ namespace Lucidtech.Las
 		
         private Dictionary<string, string> CreateSigningHeaders(string method, string path, byte[] body)
         {
-	        var uri = new Uri(string.Concat(Endpoint,"/",Stage, path));
+			var uri = new Uri(string.Concat(Endpoint, path));
             Dictionary<string, string> headers = Authorization.SignHeaders(
             uri: uri,
             method: method,
@@ -261,5 +231,24 @@ namespace Lucidtech.Las
             
             return headers;
         }
+        
+		private object JsonDecode(IRestResponse response)
+		{
+			if (response.StatusCode != System.Net.HttpStatusCode.OK)
+			{
+				throw new ApplicationException(response.ErrorMessage);
+			}
+			try
+			{
+				var jsonResponse = Serializer.DeserializeObject(response.Content);
+				return jsonResponse;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error in response. Returned {e}");
+				throw;	
+			}	
+		}
+
     } 
 } 

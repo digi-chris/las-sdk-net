@@ -19,13 +19,13 @@ namespace Test
         [Test]
         public void TestPrediction()
         {
-            ApiClient api = new ApiClient();
+            ApiClient apiClient = new ApiClient("https://demo.api.lucidtech.ai/v1");
             string modelName = "invoice";
             string consentId = "bar";
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
             
-            Prediction response = api.Predict(dir, modelName, consentId);
+            Prediction response = apiClient.Predict(dir, modelName, consentId);
 
             Assert.IsTrue(response["consentId"].Equals(consentId));
             Assert.IsTrue(response["modelName"].Equals(modelName));
@@ -47,8 +47,7 @@ namespace Test
         [Test]
         public void TestPutDocument()
         {
-            
-            Client client = new Client();
+            Client client = new Client("https://demo.api.lucidtech.ai/v1");
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
@@ -61,7 +60,7 @@ namespace Test
         [Test]
         public void TestPostDocuments()
         {
-            Client client = new Client();
+            Client client = new Client("https://demo.api.lucidtech.ai/v1");
             var response = client.PostDocuments("image/jpeg", "bar");
             var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"} ;
             var dictResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(response);
@@ -75,7 +74,7 @@ namespace Test
         [Test]
         public void TestPostPredictions()
         {
-            Client client = new Client();
+            Client client = new Client("https://demo.api.lucidtech.ai/v1");
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
@@ -97,7 +96,7 @@ namespace Test
         [Test]
         public void TestPostDocumentId()
         {
-            Client client = new Client();
+            Client client = new Client("https://demo.api.lucidtech.ai/v1");
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
@@ -124,7 +123,7 @@ namespace Test
         [Test]
         public void TestDeleteConsentId()
         {
-            Client client = new Client();
+            Client client = new Client("https://demo.api.lucidtech.ai/v1");
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
             
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
