@@ -17,16 +17,12 @@ namespace Lucidtech.Las
     ///            
     public class Client 
     {
-        /// Domain endpoint of the api, e.g. https://&lt;prefix&gt;.api.lucidtech.ai/&lt;version&gt;
         private string Endpoint { get; }
-        ///The version of the service, e.q. "v1"
-
-        /// The base client that is used to access the REST API
+        
         private RestClient RestSharpClient { get; }
 
         /// The serializer that is used to convert between json format and standard C# types like object and Dictionary
         public JsonSerialPublisher Serializer{ get; }
-        /// The component that deals with the authorization against AWS 
         private AmazonAuthorization Authorization { get; }
 
         public Client(string endpoint, Credentials credentials)
