@@ -22,33 +22,33 @@ namespace Test
             ApiClient apiClient = new ApiClient(Example.Endpoint());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-			apiClient.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
+            apiClient.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             
             var feedback = new List<Dictionary<string, string>>()
-                {
+            {
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
                 new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
-                };
+            };
             
             var response = apiClient.SendFeedback(postDocResponse["documentId"], feedback);
             
             var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType"} ;
             Console.WriteLine($"\n$ FeedbackResponse response = apiClient.SendFeedback(...);");
-			Console.WriteLine($"\nresponse.Essentials =" );
+            Console.WriteLine($"\nresponse.Essentials =" );
             foreach (var field in response.Essentials)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    Console.WriteLine($"{field.Key}: {field.Value}" );
+                Console.WriteLine($"{field.Key}: {field.Value}" );
             }
             
-			Console.WriteLine($"\nresponse.Feedback = ");
+            Console.WriteLine($"\nresponse.Feedback = ");
             foreach (var field in response.Feedback)
             {
                 Assert.IsTrue(field.ContainsKey("label"));
                 Assert.IsTrue(field.ContainsKey("value"));
                 Assert.IsTrue(field["label"] is string);
                 Assert.IsTrue(field["value"] is string);
-			    Console.WriteLine($"label: {field["label"]}, Val: {field["value"]}" );
+                Console.WriteLine($"label: {field["label"]}, Val: {field["value"]}" );
             }
         }
         [Test]
@@ -57,19 +57,19 @@ namespace Test
             ApiClient apiClient = new ApiClient("https://demo.api.lucidtech.ai/v1");
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-			apiClient.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
-			
+            apiClient.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
+            
             RevokeResponse response = apiClient.RevokeConsent(postDocResponse["consentId"]);
             
             Assert.IsTrue(response.ConsentId.Equals(Example.ConsentId()));
             
             Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
-			Console.WriteLine($"\nresponse.ConsentId: {response.ConsentId}" );
-			Console.WriteLine($"\nresponse.DocumentIds: " );
+            Console.WriteLine($"\nresponse.ConsentId: {response.ConsentId}" );
+            Console.WriteLine($"\nresponse.DocumentIds: " );
             foreach (var documentId in response.DocumentIds)
             {
                 Assert.IsNotEmpty(documentId);
-			    Console.WriteLine($"{documentId}" );
+                Console.WriteLine($"{documentId}" );
             }
             
         }
@@ -84,12 +84,12 @@ namespace Test
             Assert.IsTrue(response["modelName"].Equals(Example.ModelType()));
 
             Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
-			Console.WriteLine($"\nresponse.Essentials = " );
+            Console.WriteLine($"\nresponse.Essentials = " );
             foreach (var pair in response.Essentials)
             {
-			    Console.WriteLine($"{pair.Key}: {pair.Value}");
+                Console.WriteLine($"{pair.Key}: {pair.Value}");
             }
-			Console.WriteLine($"\nresponse.Fields =" );
+            Console.WriteLine($"\nresponse.Fields =" );
             foreach (var field in response.Fields)
             {
                 Assert.IsTrue(field.ContainsKey("label"));
@@ -101,9 +101,9 @@ namespace Test
                 Assert.IsTrue(field["confidence"] is double);
                 foreach (var pair in field)
                 {
-			        Console.Write($"{pair.Key}: {pair.Value,-14} \t ");
+                    Console.Write($"{pair.Key}: {pair.Value,-14} \t ");
                 }
-			    Console.WriteLine("");
+                Console.WriteLine("");
             }
         }
     }
@@ -112,19 +112,19 @@ namespace Test
         [Test]
         public void TestPutDocument()
         {
-			Console.WriteLine("TestPutDocument");
+            Console.WriteLine("TestPutDocument");
             Client client = new Client(Example.Endpoint());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-			var response = client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
-			
-			Assert.IsNull(response);
+            var response = client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
+            
+            Assert.IsNull(response);
         }
 
         [Test]
         public void TestPostDocuments()
         {
-			Console.WriteLine("TestPostDocuments");
+            Console.WriteLine("TestPostDocuments");
             Client client = new Client(Example.Endpoint());
             var response = client.PostDocuments(Example.ContentType(), Example.ConsentId());
             var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"} ;
@@ -139,73 +139,73 @@ namespace Test
         [Test]
         public void TestPostPredictions()
         {
-			Console.WriteLine("TestPostPredictions");
+            Console.WriteLine("TestPostPredictions");
             Client client = new Client(Example.Endpoint());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-			client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
+            client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
             
             string documentId = (string)postDocResponse["documentId"];
-			var response = client.PostPredictions(documentId,Example.ModelType());
-			
+            var response = client.PostPredictions(documentId,Example.ModelType());
+            
             var expected = new List<string>(){"documentId", "predictions"} ;
-			JObject jsonResponse = JObject.Parse(response.ToString());
+            JObject jsonResponse = JObject.Parse(response.ToString());
             foreach (var field in jsonResponse)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+                //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
             }
         }
 
         [Test]
         public void TestPostDocumentId()
         {
-			Console.WriteLine("TestPostDocumentId");
+            Console.WriteLine("TestPostDocumentId");
             Client client = new Client(Example.Endpoint());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-			client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
+            client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             
             var feedback = new List<Dictionary<string, string>>()
-                {
+            {
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
                 new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
-                };
+            };
             
             var response = client.PostDocumentId(postDocResponse["documentId"], feedback);
             var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType", "feedback"} ;
-			JObject jsonResponse = JObject.Parse(response.ToString());
+            JObject jsonResponse = JObject.Parse(response.ToString());
             foreach (var field in jsonResponse)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+                //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
             }
         }
         
         [Test]
         public void TestDeleteConsentId()
         {
-			Console.WriteLine("TestDeleteConsentId");
+            Console.WriteLine("TestDeleteConsentId");
             Client client = new Client(Example.Endpoint());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-			client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
-			
+            client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
+            
             var expected = new List<string>(){ "consentId", "documentIds"} ;
             var response = client.DeleteConsentId(postDocResponse["consentId"]);
-			JObject jsonResponse = JObject.Parse(response.ToString());
-			
+            JObject jsonResponse = JObject.Parse(response.ToString());
+            
             foreach (var field in jsonResponse)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+                //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
             }
         }
 
         [Test]
         public void TestHashSigning()
         {
-			Console.WriteLine("TestHashSigning");
+            Console.WriteLine("TestHashSigning");
             var testDict = new Dictionary<string, string>()
             {
                 {"hello", "goodbye"},
@@ -226,9 +226,9 @@ namespace Test
             {
                 /* Test input */
                 string key = testDict.Keys.ElementAt(i);
-		        byte[] bytes = Encoding.UTF8.GetBytes(key);
-		        
-		        /* Result */
+                byte[] bytes = Encoding.UTF8.GetBytes(key);
+                
+                /* Result */
                 byte[] res = AmazonAuthorization.SignHash(bytes, Encoding.UTF8.GetBytes(testDict[key]));
                 
                 Assert.Zero(string.CompareOrdinal(AmazonAuthorization.StringFromByteArray(res), answers[i]));

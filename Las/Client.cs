@@ -15,32 +15,32 @@ namespace Lucidtech.Las
     /// A low level client to invoke api methods from Lucidtech AI Services.
     /// </summary>
     ///            
-	public class Client 
-	{
-		/// Domain endpoint of the api, e.g. https://&lt;prefix&gt;.api.lucidtech.ai/&lt;version&gt;
-		private string Endpoint { get; }
-		///The version of the service, e.q. "v1"
+    public class Client 
+    {
+        /// Domain endpoint of the api, e.g. https://&lt;prefix&gt;.api.lucidtech.ai/&lt;version&gt;
+        private string Endpoint { get; }
+        ///The version of the service, e.q. "v1"
 
-		/// The base client that is used to access the REST API
-		private RestClient RestSharpClient { get; }
+        /// The base client that is used to access the REST API
+        private RestClient RestSharpClient { get; }
 
-		/// The serializer that is used to convert between json format and standard C# types like object and Dictionary
-		public JsonSerialPublisher Serializer{ get; }
-		/// The component that deals with the authorization against AWS 
-		private AmazonAuthorization Authorization { get; }
+        /// The serializer that is used to convert between json format and standard C# types like object and Dictionary
+        public JsonSerialPublisher Serializer{ get; }
+        /// The component that deals with the authorization against AWS 
+        private AmazonAuthorization Authorization { get; }
 
-		public Client(string endpoint, Credentials credentials)
-		{
-			Authorization = new AmazonAuthorization(credentials);
-			Endpoint = endpoint;
-			var uri = new Uri(endpoint);	
-			RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
-			Serializer = new JsonSerialPublisher(new JsonSerializer());
-		}
-		
-		public Client(string endpoint) : this(endpoint, new Credentials()) { }
+        public Client(string endpoint, Credentials credentials)
+        {
+            Authorization = new AmazonAuthorization(credentials);
+            Endpoint = endpoint;
+            var uri = new Uri(endpoint);	
+            RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
+            Serializer = new JsonSerialPublisher(new JsonSerializer());
+        }
+        
+        public Client(string endpoint) : this(endpoint, new Credentials()) { }
 
-		/// <summary>
+        /// <summary>
         ///	Creates a document handle, calls the POST /documents endpoint
         /// </summary>
         /// <example>
@@ -59,18 +59,18 @@ namespace Lucidtech.Las
         /// with documentId, uploadUrl, contentType and consentId
         /// </returns>
         ///         
-		public object PostDocuments(string contentType, string consentId)
-		{
-			var dictBody = new Dictionary<string, string>() { {"contentType", contentType}, {"consentId", consentId} };
-			
-			RestRequest request = ClientRestRequest(Method.POST, "/documents", dictBody);
+        public object PostDocuments(string contentType, string consentId)
+        {
+            var dictBody = new Dictionary<string, string>() { {"contentType", contentType}, {"consentId", consentId} };
+            
+            RestRequest request = ClientRestRequest(Method.POST, "/documents", dictBody);
 
-			IRestResponse response = RestSharpClient.Execute(request);
+            IRestResponse response = RestSharpClient.Execute(request);
 
-			return JsonDecode(response);
-		}
+            return JsonDecode(response);
+        }
 
-		/// <summary>
+        /// <summary>
         ///	Convenience method for putting a document to presigned url.
         /// </summary>
         /// <example>
@@ -87,29 +87,29 @@ namespace Lucidtech.Las
         /// An empty object 
         /// </returns>
         ///         
-		public object PutDocument(string documentPath, string contentType, string presignedUrl)
-		{
-			byte[] body = File.ReadAllBytes(documentPath);
-			
-			var request = new RestRequest(Method.PUT);
-			request.AddHeader("Content-Type", contentType);
-			request.AddParameter(contentType, body, ParameterType.RequestBody);
-			
-			RestClient client = new RestClient(presignedUrl);
-			
-			IRestResponse response = client.Execute(request);
-			
-			return JsonDecode(response);
+        public object PutDocument(string documentPath, string contentType, string presignedUrl)
+        {
+            byte[] body = File.ReadAllBytes(documentPath);
+            
+            var request = new RestRequest(Method.PUT);
+            request.AddHeader("Content-Type", contentType);
+            request.AddParameter(contentType, body, ParameterType.RequestBody);
+            
+            RestClient client = new RestClient(presignedUrl);
+            
+            IRestResponse response = client.Execute(request);
+            
+            return JsonDecode(response);
 
-		}
-		/// <summary>
+        }
+        /// <summary>
         /// Run inference and create a prediction, calls the POST /predictions endpoint.
         /// </summary>
         /// <example>
         /// Run inference and create a prediction using the invoice model on the document specified by &lt;documentId&gt;
         /// <code>
         /// Client client = new Client();
-		///	var response = client.PostPredictions(&lt;documentId&gt;,"invoice");
+        ///	var response = client.PostPredictions(&lt;documentId&gt;,"invoice");
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to upload Same as provided to <see cref="PostDocuments"/></param>
@@ -119,17 +119,17 @@ namespace Lucidtech.Las
         /// the value of predictions is the output from the model
         /// </returns>
         ///         
-		public object PostPredictions(string documentId, string modelName)
-		{
-			var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
-			
-			RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
+        public object PostPredictions(string documentId, string modelName)
+        {
+            var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
+            
+            RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
 
-			IRestResponse response = RestSharpClient.Execute(request);
+            IRestResponse response = RestSharpClient.Execute(request);
 
-			return JsonDecode(response);
-		}
-		/// <summary>
+            return JsonDecode(response);
+        }
+        /// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
         /// Posting feedback means posting the ground truth data for the particular document.
         /// This enables the API to learn from past mistakes.
@@ -153,22 +153,22 @@ namespace Lucidtech.Las
         /// documentId, consentId, uploadUrl, contentType and feedback.
         /// </returns>
         ///         
-		public object PostDocumentId(string documentId, List<Dictionary<string, string>> feedback)
-		{
-			var dictBody = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
-			
-			// Doing a manual cast from Dictionary to object to help out the serialization process
-			string bodyString = JsonConvert.SerializeObject(dictBody);
-			object body = JsonConvert.DeserializeObject(bodyString);
-			
-			RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
+        public object PostDocumentId(string documentId, List<Dictionary<string, string>> feedback)
+        {
+            var dictBody = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
+            
+            // Doing a manual cast from Dictionary to object to help out the serialization process
+            string bodyString = JsonConvert.SerializeObject(dictBody);
+            object body = JsonConvert.DeserializeObject(bodyString);
+            
+            RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
 
-			IRestResponse response = RestSharpClient.Execute(request);
+            IRestResponse response = RestSharpClient.Execute(request);
 
-			return JsonDecode(response);
-		}
-		
-		/// <summary>
+            return JsonDecode(response);
+        }
+        
+        /// <summary>
         /// Delete documents with this consentId, calls the DELETE /consent/{consentId} endpoint.
         /// </summary>
         /// <example>
@@ -183,18 +183,18 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// consentId and documentIds 
         /// </returns>
-		public object DeleteConsentId(string consentId)
-		{
-			var dictBody = new Dictionary<string, string>() {} ;
-			
-			RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
+        public object DeleteConsentId(string consentId)
+        {
+            var dictBody = new Dictionary<string, string>() {} ;
+            
+            RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
 
-			IRestResponse response = RestSharpClient.Execute(request);
+            IRestResponse response = RestSharpClient.Execute(request);
 
-			return JsonDecode(response);
-		}
-		
-		/// <summary>
+            return JsonDecode(response);
+        }
+        
+        /// <summary>
         /// Create a HTTP web request for the REST API. 
         /// </summary>
         /// <param name="method"> The request method, e.g. POST, PUT, GET, DELETE </param>
@@ -204,25 +204,25 @@ namespace Lucidtech.Las
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input
         /// </returns>
-		private RestRequest ClientRestRequest(Method method, string path, object dictBody)
-		{
-			Uri endpoint = new Uri(string.Concat(Endpoint, path));
+        private RestRequest ClientRestRequest(Method method, string path, object dictBody)
+        {
+            Uri endpoint = new Uri(string.Concat(Endpoint, path));
 
-			var request = new RestRequest(endpoint, method);
-			request.JsonSerializer = JsonSerialPublisher.Default;
-			request.RequestFormat = DataFormat.Json;
-			request.AddJsonBody(dictBody);
+            var request = new RestRequest(endpoint, method);
+            request.JsonSerializer = JsonSerialPublisher.Default;
+            request.RequestFormat = DataFormat.Json;
+            request.AddJsonBody(dictBody);
 
-			byte[] body = Encoding.UTF8.GetBytes(request.JsonSerializer.Serialize(dictBody));
-			var headers = CreateSigningHeaders(method.ToString(), path, body);
-			foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
+            byte[] body = Encoding.UTF8.GetBytes(request.JsonSerializer.Serialize(dictBody));
+            var headers = CreateSigningHeaders(method.ToString(), path, body);
+            foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
 
-			return request;
-		}
-		
+            return request;
+        }
+        
         private Dictionary<string, string> CreateSigningHeaders(string method, string path, byte[] body)
         {
-			var uri = new Uri(string.Concat(Endpoint, path));
+            var uri = new Uri(string.Concat(Endpoint, path));
             Dictionary<string, string> headers = Authorization.SignHeaders(
             uri: uri,
             method: method,
@@ -232,23 +232,23 @@ namespace Lucidtech.Las
             return headers;
         }
         
-		private object JsonDecode(IRestResponse response)
-		{
-			if (response.StatusCode != System.Net.HttpStatusCode.OK)
-			{
-				throw new ApplicationException(response.ErrorMessage);
-			}
-			try
-			{
-				var jsonResponse = Serializer.DeserializeObject(response.Content);
-				return jsonResponse;
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine($"Error in response. Returned {e}");
-				throw;	
-			}	
-		}
+        private object JsonDecode(IRestResponse response)
+        {
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new ApplicationException(response.ErrorMessage);
+            }
+            try
+            {
+                var jsonResponse = Serializer.DeserializeObject(response.Content);
+                return jsonResponse;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error in response. Returned {e}");
+                throw;	
+            }	
+        }
 
     } 
 } 

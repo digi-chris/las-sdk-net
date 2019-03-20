@@ -52,7 +52,7 @@ namespace Lucidtech.Las.Utils
         /// <returns> A deserialized object of type <typeparamref name="T"/></returns>
         public T Deserialize<T>(IRestResponse response)
         {
-			return JsonConvert.DeserializeObject<T>(response.Content);
+            return JsonConvert.DeserializeObject<T>(response.Content);
         }
         
         /// <summary>
@@ -62,7 +62,7 @@ namespace Lucidtech.Las.Utils
         /// <returns> A general deserialized object </returns>
         public object DeserializeObject(string response)
         {
-			return JsonConvert.DeserializeObject(response);
+            return JsonConvert.DeserializeObject(response);
         }
         
         /// <summary>
@@ -73,7 +73,7 @@ namespace Lucidtech.Las.Utils
         /// <returns> A deserialized object of type <typeparamref name="T"/> </returns>
         public T DeserializeObject<T>(string response)
         {
-			return JsonConvert.DeserializeObject<T>(response);
+            return JsonConvert.DeserializeObject<T>(response);
         }
         
         /// <summary>
@@ -85,7 +85,7 @@ namespace Lucidtech.Las.Utils
         public static T ObjectToDict<T>(object obj)
         {
             var serial = JsonConvert.SerializeObject(obj); 
-			return JsonConvert.DeserializeObject<T>(serial);
+            return JsonConvert.DeserializeObject<T>(serial);
         }
     }
 }
