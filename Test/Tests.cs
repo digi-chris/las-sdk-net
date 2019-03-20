@@ -17,19 +17,79 @@ namespace Test
     public class TestApi
     {
         [Test]
+        public void TestSendFeedback()
+        {
+            ApiClient apiClient = new ApiClient(Example.Endpoint());
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            
+			apiClient.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
+            
+            var feedback = new List<Dictionary<string, string>>()
+                {
+                new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
+                new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+                };
+            
+            var response = apiClient.SendFeedback(postDocResponse["documentId"], feedback);
+            
+            var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType"} ;
+            Console.WriteLine($"\n$ FeedbackResponse response = apiClient.SendFeedback(...);");
+			Console.WriteLine($"\nresponse.Essentials =" );
+            foreach (var field in response.Essentials)
+            {
+                Assert.IsTrue(expected.Contains(field.Key));
+			    Console.WriteLine($"{field.Key}: {field.Value}" );
+            }
+            
+			Console.WriteLine($"\nresponse.Feedback = ");
+            foreach (var field in response.Feedback)
+            {
+                Assert.IsTrue(field.ContainsKey("label"));
+                Assert.IsTrue(field.ContainsKey("value"));
+                Assert.IsTrue(field["label"] is string);
+                Assert.IsTrue(field["value"] is string);
+			    Console.WriteLine($"label: {field["label"]}, Val: {field["value"]}" );
+            }
+        }
+        [Test]
+        public void TestRevokeConsent()
+        {
+            ApiClient apiClient = new ApiClient("https://demo.api.lucidtech.ai/v1");
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            
+			apiClient.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
+			
+            RevokeResponse response = apiClient.RevokeConsent(postDocResponse["consentId"]);
+            
+            Assert.IsTrue(response.ConsentId.Equals(Example.ConsentId()));
+            
+            Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
+			Console.WriteLine($"\nresponse.ConsentId: {response.ConsentId}" );
+			Console.WriteLine($"\nresponse.DocumentIds: " );
+            foreach (var documentId in response.DocumentIds)
+            {
+                Assert.IsNotEmpty(documentId);
+			    Console.WriteLine($"{documentId}" );
+            }
+            
+        }
+        [Test]
         public void TestPrediction()
         {
             ApiClient apiClient = new ApiClient("https://demo.api.lucidtech.ai/v1");
-            string modelName = "invoice";
-            string consentId = "bar";
-            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
             
-            Prediction response = apiClient.Predict(dir, modelName, consentId);
+            Prediction response = apiClient.Predict(documentPath: Example.DocPath(),modelName: Example.ModelType(),consentId: Example.ConsentId());
 
-            Assert.IsTrue(response["consentId"].Equals(consentId));
-            Assert.IsTrue(response["modelName"].Equals(modelName));
-            
+            Assert.IsTrue(response["consentId"].Equals(Example.ConsentId()));
+            Assert.IsTrue(response["modelName"].Equals(Example.ModelType()));
+
+            Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
+			Console.WriteLine($"\nresponse.Essentials = " );
+            foreach (var pair in response.Essentials)
+            {
+			    Console.WriteLine($"{pair.Key}: {pair.Value}");
+            }
+			Console.WriteLine($"\nresponse.Fields =" );
             foreach (var field in response.Fields)
             {
                 Assert.IsTrue(field.ContainsKey("label"));
@@ -39,6 +99,11 @@ namespace Test
                 Assert.IsTrue(field["label"] is string);
                 Assert.IsTrue(field["value"] is string);
                 Assert.IsTrue(field["confidence"] is double);
+                foreach (var pair in field)
+                {
+			        Console.Write($"{pair.Key}: {pair.Value,-14} \t ");
+                }
+			    Console.WriteLine("");
             }
         }
     }
@@ -47,12 +112,11 @@ namespace Test
         [Test]
         public void TestPutDocument()
         {
-            Client client = new Client("https://demo.api.lucidtech.ai/v1");
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+			Console.WriteLine("TestPutDocument");
+            Client client = new Client(Example.Endpoint());
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
-			var response = client.PutDocument(dir,"image/jpeg",(string)postDocResponse["uploadUrl"]);
+			var response = client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
 			
 			Assert.IsNull(response);
         }
@@ -60,49 +124,47 @@ namespace Test
         [Test]
         public void TestPostDocuments()
         {
-            Client client = new Client("https://demo.api.lucidtech.ai/v1");
-            var response = client.PostDocuments("image/jpeg", "bar");
+			Console.WriteLine("TestPostDocuments");
+            Client client = new Client(Example.Endpoint());
+            var response = client.PostDocuments(Example.ContentType(), Example.ConsentId());
             var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"} ;
             var dictResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(response);
             foreach (var key in expected)
             {
                 Assert.IsTrue(dictResponse.ContainsKey(key));
-                Console.WriteLine($"{key}: {dictResponse[key]}");
+                //Console.WriteLine($"{key}: {dictResponse[key]}");
             }
         }
 
         [Test]
         public void TestPostPredictions()
         {
-            Client client = new Client("https://demo.api.lucidtech.ai/v1");
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+			Console.WriteLine("TestPostPredictions");
+            Client client = new Client(Example.Endpoint());
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
-			client.PutDocument(dir,"image/jpeg",(string)postDocResponse["uploadUrl"]);
+			client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
             
             string documentId = (string)postDocResponse["documentId"];
-			var response = client.PostPredictions(documentId,"invoice");
+			var response = client.PostPredictions(documentId,Example.ModelType());
 			
             var expected = new List<string>(){"documentId", "predictions"} ;
 			JObject jsonResponse = JObject.Parse(response.ToString());
             foreach (var field in jsonResponse)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+			    //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
             }
         }
 
         [Test]
         public void TestPostDocumentId()
         {
-            Client client = new Client("https://demo.api.lucidtech.ai/v1");
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+			Console.WriteLine("TestPostDocumentId");
+            Client client = new Client(Example.Endpoint());
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
-            
-			client.PutDocument(dir,"image/jpeg",postDocResponse["uploadUrl"]);
+			client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             
             var feedback = new List<Dictionary<string, string>>()
                 {
@@ -116,19 +178,18 @@ namespace Test
             foreach (var field in jsonResponse)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+			    //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
             }
         }
         
         [Test]
         public void TestDeleteConsentId()
         {
-            Client client = new Client("https://demo.api.lucidtech.ai/v1");
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments("image/jpeg", "bar"));
+			Console.WriteLine("TestDeleteConsentId");
+            Client client = new Client(Example.Endpoint());
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
-            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string dir = dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
-			client.PutDocument(dir,"image/jpeg",(string)postDocResponse["uploadUrl"]);
+			client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
 			
             var expected = new List<string>(){ "consentId", "documentIds"} ;
             var response = client.DeleteConsentId(postDocResponse["consentId"]);
@@ -137,13 +198,14 @@ namespace Test
             foreach (var field in jsonResponse)
             {
                 Assert.IsTrue(expected.Contains(field.Key));
-			    Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
+			    //Console.WriteLine($"Key: {field.Key}, Val: {field.Value.ToString()}" );
             }
         }
 
         [Test]
         public void TestHashSigning()
         {
+			Console.WriteLine("TestHashSigning");
             var testDict = new Dictionary<string, string>()
             {
                 {"hello", "goodbye"},
@@ -174,4 +236,25 @@ namespace Test
             
         }
     }
+    
+    public static class Example
+    {
+        public static string ConsentId() { return "bar";}
+        public static string ContentType() { return "image/jpeg";}
+        public static string ModelType() { return "invoice";}
+        public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
+        public static string DocPath(){
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            try
+            {
+                return dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+    
 }

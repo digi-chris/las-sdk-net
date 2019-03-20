@@ -13,7 +13,7 @@ namespace Lucidtech.Las
 {
     /// <summary>
     /// A low level client to invoke api methods from Lucidtech AI Services.
-    /// </summary
+    /// </summary>
     ///            
 	public class Client 
 	{
@@ -71,7 +71,7 @@ namespace Lucidtech.Las
 		}
 
 		/// <summary>
-        ///	Convenience method for putting a document to presigned url
+        ///	Convenience method for putting a document to presigned url.
         /// </summary>
         /// <example>
         /// put an example file to the location specified by a presigned url
@@ -103,7 +103,7 @@ namespace Lucidtech.Las
 
 		}
 		/// <summary>
-        /// Run inference and create a prediction, calls the POST /predictions endpoint
+        /// Run inference and create a prediction, calls the POST /predictions endpoint.
         /// </summary>
         /// <example>
         /// Run inference and create a prediction using the invoice model on the document specified by &lt;documentId&gt;
@@ -132,7 +132,7 @@ namespace Lucidtech.Las
 		/// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
         /// Posting feedback means posting the ground truth data for the particular document.
-        /// This enables the API to learn from past mistakes
+        /// This enables the API to learn from past mistakes.
         /// </summary>
         /// <example>
         /// 
@@ -199,7 +199,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <param name="method"> The request method, e.g. POST, PUT, GET, DELETE </param>
         /// <param name="path"> The path to the domain upon which to apply the request,
-        /// the total path will be <see cref="Endpoint"/>/<see cref="Stage"/>/path </param>
+        /// the total path will be <see cref="Endpoint"/>path</param>
         /// <param name="dictBody"> The content of the request </param>
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input

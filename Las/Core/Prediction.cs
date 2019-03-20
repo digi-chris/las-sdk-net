@@ -1,15 +1,17 @@
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las.Core
 {
 	/// <summary>
 	/// A class that contains all the necessary information regarding a prediction performed by <see cref="ApiClient"/>.
-	/// </summary
+	/// </summary>
 	public class Prediction
 	{
 
 		/// Dictionary containing document id, consent id and model name
-		private Dictionary<string, string> Essentials { get; }
+		public Dictionary<string, string> Essentials { get; }
 		/// A list of the responses from a prediction
 		public List<Dictionary<string, object>> Fields { get; }
 
@@ -51,5 +53,60 @@ namespace Lucidtech.Las.Core
 				throw new KeyNotFoundException($"{s} is not present in the Prediction class");
 			}
 		}
+
 	}
+
+	/// <summary>
+	/// The structured format of the response from a revoke consent request.
+	/// </summary>
+    public class RevokeResponse
+    {
+	    /// <summary>
+	    /// The consent Id where documents where deleted. 
+	    /// </summary>
+        public string ConsentId { get; }
+	    /// <summary>
+	    /// The document Ids of the deleted documents.
+	    /// </summary>
+        public List<string> DocumentIds { get; }
+        
+        public RevokeResponse(object deleteConsentResponse)
+        {
+            JObject jsonResponse = JObject.Parse(deleteConsentResponse.ToString());
+            ConsentId = jsonResponse["consentId"].ToString();
+            DocumentIds = JsonSerialPublisher.ObjectToDict<List<string>>(jsonResponse["documentIds"]);
+        }
+    }
+
+	/// <summary>
+	/// The structured format of the response from a send feedback request.
+	/// </summary>
+    public class FeedbackResponse
+    {
+	    /// <summary>
+	    /// Dictionary that contains document Id, consent Id, upload url and content type.
+	    /// </summary>
+	    public Dictionary<string, string> Essentials { get; }
+	    /// <summary>
+	    /// The same information as was uploaded as feedback.
+	    /// </summary>
+	    public List<Dictionary<string, string>> Feedback { get; }
+
+	    public FeedbackResponse(object response)
+	    {
+			JObject jsonResponse = JObject.Parse(response.ToString());
+			
+			Essentials = new Dictionary<string, string>( )
+			{
+				{"documentId", jsonResponse["documentId"].ToString()},
+					
+				{"consentId", jsonResponse["consentId"].ToString()},
+				{"uploadUrl", jsonResponse["uploadUrl"].ToString()},
+				{"contentType", jsonResponse["contentType"].ToString()}
+			};
+			
+		    Feedback = JsonSerialPublisher.ObjectToDict<List<Dictionary<string,string>>>(jsonResponse["feedback"]);
+	    }
+    }
+    
 }

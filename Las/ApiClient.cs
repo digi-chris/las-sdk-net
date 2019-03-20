@@ -9,8 +9,8 @@ using Lucidtech.Las.Core;
 namespace Lucidtech.Las
 {
     /// <summary>
-    /// A high level client to invoke api methods from Lucidtech AI Services.
-    /// </summary
+    /// A high level client to invoke API methods from Lucidtech AI Services.
+    /// </summary>
 	public class ApiClient : Client 
 	{
 		/// <summary>
@@ -18,6 +18,7 @@ namespace Lucidtech.Las
 		/// </summary>
 		/// <param name="endpoint"> url to the host</param>
 		public ApiClient(string endpoint) : base(endpoint) { }
+		
 		/// <summary>
 		/// ApiClient constructor with credentials read from local file.
 		/// </summary>
@@ -28,6 +29,11 @@ namespace Lucidtech.Las
 		/// <summary>
         ///	Run inference and create prediction on document, this method takes care of creating and uploaded document
         /// as well as running inference to create prediction on document.
+        /// <example> <code>
+        /// using namespace Lucidtech.Las;
+        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;');
+        /// Prediction response = apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice", consentId: "bar");
+        /// </code></example>
         /// </summary>
         /// <param name="documentPath">Path to document to run inference on </param>
         /// <param name="modelName"> The name of the model to use for inference </param>
@@ -36,8 +42,7 @@ namespace Lucidtech.Las
         /// <returns>
         /// Prediction on document
         /// </returns>
-        ///         
-		public Prediction Predict(string documentPath, string modelName, string consentId)
+		public Prediction Predict(string documentPath, string modelName, string consentId = "")
 		{
 			string contentType = GetContentType(documentPath);
 			consentId = string.IsNullOrEmpty(consentId) ? Guid.NewGuid().ToString() : consentId;
@@ -50,7 +55,55 @@ namespace Lucidtech.Las
 			Prediction prediction = new Prediction(documentId, consentId, modelName, predictions); 
 			return prediction;
 		}
+		
+		///<summary>
+        ///	Send feedback to the model.
+        /// This method takes care of sending feedback related to document specified by documentId.
+        /// Feedback consists of ground truth values for the document specified as a List of Dictionaries.
+        /// <example> <code>
+        /// using namespace Lucidtech.Las;
+        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;');
+        /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;()
+        ///     {
+        ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}},
+        ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+        ///     };
+        /// var response = apiClient.SendFeedback(documentId: "&lt;documentId&gt;", feedback: feedback);
+        ///</code></example>
+		///</summary>
+		///<param name="documentId"> Document Id</param>
+		///<param name="feedback"> Ground truth values</param>
+		///<returns> Data that can be used to confirm that the feedback uploaded was successful. </returns>
+		public FeedbackResponse SendFeedback(string documentId, List<Dictionary<string, string>> feedback)
+		{
+			return new FeedbackResponse(PostDocumentId(documentId, feedback));
+		}
 
+		/// <summary>
+        /// Revoke consent and deleting all documents associated with consentId.
+        /// Consent id is a parameter that is provided by the user upon making a prediction on a document.
+        /// <seealso cref="Predict"/>.
+        /// <example> <code>
+        /// using namespace Lucidtech.Las;
+        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;');
+        /// var response = apiClient.RevokeConsent(consentId: "&lt;consentId&gt;");
+        ///</code></example>
+		/// </summary>
+		/// <param name="consentId"> Delete documents associated with this consentId </param>
+		/// <returns> The document Ids of the deleted documents, and their consent Id </returns>
+		public RevokeResponse RevokeConsent(string consentId)
+		{
+			return new RevokeResponse(DeleteConsentId(consentId));
+		}
+
+		/// <summary>
+		/// Upload a document of type <c>contentType</c> currently located at <c>documentPath</c> to the cloud location
+		/// that corresponds to <c>consentId</c>.
+		/// </summary>
+		/// <param name="documentPath"> The local path to the document that is going to be uploaded</param>
+		/// <param name="contentType"> The type of the file located at documentPath</param>
+		/// <param name="consentId"> The consent Id</param>
+		/// <returns></returns>
 		private string UploadDocument(string documentPath, string contentType, string consentId)
 		{
 			var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(PostDocuments(contentType, consentId));
