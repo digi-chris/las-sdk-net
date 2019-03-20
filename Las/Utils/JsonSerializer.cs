@@ -37,8 +37,8 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// Serialize a general object.
         /// </summary>
-        /// <param name="obj"> a general object to be serialized</param>
-        /// <returns> a string ready to be interpreted as a json file</returns>
+        /// <param name="obj"> A general object to be serialized</param>
+        /// <returns> A string ready to be interpreted as a json file</returns>
         public string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj);
@@ -47,7 +47,7 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// Deserialize the content of an IRestResponse.
         /// </summary>
-        /// <param name="response"> the response from a request performed by <c> RestSharp.RestClient </c> </param>
+        /// <param name="response"> The response from a request performed by <c> RestSharp.RestClient </c> </param>
         /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort</typeparam>
         /// <returns> A deserialized object of type <typeparamref name="T"/></returns>
         public T Deserialize<T>(IRestResponse response)

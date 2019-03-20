@@ -37,7 +37,7 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Make the members of Prediction accessible as if it was a dictionary
         /// </summary>
-        /// <param name="s"> a string that needs to match either one of the keys in <c> Essentials</c> or "fields" </param>
+        /// <param name="s"> A string that needs to match either one of the keys in <c> Essentials</c> or "fields" </param>
         /// <exception cref="KeyNotFoundException"> Will throw an exception if <paramref name="s"/> is invalid</exception>
         public object this[string s]
         {

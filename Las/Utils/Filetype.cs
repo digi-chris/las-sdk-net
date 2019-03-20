@@ -14,8 +14,8 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// Tests the type of file.
         /// </summary>
-        /// <param name="fileName"> the name of the file that is to be classified </param>
-        /// <returns> the name of the file type that matches, or an empty string if the file does not match</returns>
+        /// <param name="fileName"> The name of the file that is to be classified </param>
+        /// <returns> The name of the file type that matches, or an empty string if the file does not match</returns>
         public static string WhatFile(string fileName)
         {
             var fileTestList = new List<Func<byte[],string>>()

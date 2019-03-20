@@ -30,9 +30,9 @@ namespace Lucidtech.Las.Core
         /// 
         /// </summary>
         /// <param name="credentialsPath"> Path to credentials file</param>
-        /// <param name="accessKeyId">Access key Id</param>
-        /// <param name="secretAccessKey">Secret Access Key</param>
-        /// <param name="apiKey">API key</param>
+        /// <param name="accessKeyId"> Access key Id</param>
+        /// <param name="secretAccessKey"> Secret Access Key</param>
+        /// <param name="apiKey"> API key</param>
         /// <exception cref="ArgumentException"></exception>
         public Credentials(string credentialsPath = "", string accessKeyId = "", string secretAccessKey = "",
             string apiKey = "")
