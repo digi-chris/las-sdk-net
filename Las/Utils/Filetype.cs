@@ -15,14 +15,14 @@ namespace Lucidtech.Las.Utils
         /// Tests the type of file.
         /// </summary>
         /// <param name="fileName"> The name of the file that is to be classified </param>
-        /// <returns> The name of the file type that matches, or an empty string if the file does not match</returns>
+        /// <returns> The name of the file type that matches, or an empty string if the file does not match </returns>
         public static string WhatFile(string fileName)
         {
             var fileTestList = new List<Func<byte[],string>>()
             {
                 TestPdf, 
                 TestJpeg
-            } ; 
+            }; 
             
             string filetype = "";
             
@@ -88,12 +88,12 @@ namespace Lucidtech.Las.Utils
 
         private static string TestPdf(byte[] fileHeader)
         {
-            return (Exists(fileHeader,Encoding.UTF8.GetBytes("PDF")))? "pdf" : "";
+            return Exists(fileHeader,Encoding.UTF8.GetBytes("PDF")) ? "pdf" : "";
         }
 
         private static string TestJpeg(byte[] fileHeader)
         {
-            return (fileHeader.Take(2).SequenceEqual(HexStringToByteArray("FFD8"))) ? "jpeg" : "";
+            return fileHeader.Take(2).SequenceEqual(HexStringToByteArray("FFD8")) ? "jpeg" : "";
         }
     }
 }

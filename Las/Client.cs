@@ -14,15 +14,12 @@ namespace Lucidtech.Las
     /// <summary>
     /// A low level client to invoke api methods from Lucidtech AI Services.
     /// </summary>
-    ///            
     public class Client 
     {
-        private string Endpoint { get; }
-        
-        private RestClient RestSharpClient { get; }
-
         /// The serializer that is used to convert between json format and standard C# types like object and Dictionary
         public JsonSerialPublisher Serializer{ get; }
+        private string Endpoint { get; }
+        private RestClient RestSharpClient { get; }
         private AmazonAuthorization Authorization { get; }
 
         public Client(string endpoint, Credentials credentials)
@@ -48,7 +45,7 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// <param name="contentType"> A mime type for the document handle </param>
-        /// <param name="consentId"> An identifier to mark the owner of the document handle</param>
+        /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         ///            
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
@@ -58,11 +55,8 @@ namespace Lucidtech.Las
         public object PostDocuments(string contentType, string consentId)
         {
             var dictBody = new Dictionary<string, string>() { {"contentType", contentType}, {"consentId", consentId} };
-            
             RestRequest request = ClientRestRequest(Method.POST, "/documents", dictBody);
-
             IRestResponse response = RestSharpClient.Execute(request);
-
             return JsonDecode(response);
         }
 
@@ -70,10 +64,10 @@ namespace Lucidtech.Las
         ///	Convenience method for putting a document to presigned url.
         /// </summary>
         /// <example>
-        /// put an example file to the location specified by a presigned url
+        /// Put an example file to the location specified by a presigned url
         /// <code>
-        /// Client client = new Client();
-        /// client.PutDocument(&lt;/full/path/to/example.jpeg&gt;,"image/jpeg",&lt;presignedUrl&gt;);
+        /// Client client = new Client(); \n
+        /// client.PutDocument(&lt;/full/path/to/example.jpeg&gt;,"image/jpeg",&lt;presignedUrl&gt;); \n
         /// </code>
         /// </example>
         /// <param name="documentPath"> Path to document to upload </param>
@@ -86,17 +80,12 @@ namespace Lucidtech.Las
         public object PutDocument(string documentPath, string contentType, string presignedUrl)
         {
             byte[] body = File.ReadAllBytes(documentPath);
-            
             var request = new RestRequest(Method.PUT);
             request.AddHeader("Content-Type", contentType);
             request.AddParameter(contentType, body, ParameterType.RequestBody);
-            
             RestClient client = new RestClient(presignedUrl);
-            
             IRestResponse response = client.Execute(request);
-            
             return JsonDecode(response);
-
         }
         /// <summary>
         /// Run inference and create a prediction, calls the POST /predictions endpoint.
@@ -104,8 +93,8 @@ namespace Lucidtech.Las
         /// <example>
         /// Run inference and create a prediction using the invoice model on the document specified by &lt;documentId&gt;
         /// <code>
-        /// Client client = new Client();
-        ///	var response = client.PostPredictions(&lt;documentId&gt;,"invoice");
+        /// Client client = new Client(); \n
+        ///	var response = client.PostPredictions(&lt;documentId&gt;,"invoice"); \n
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to upload Same as provided to <see cref="PostDocuments"/></param>
@@ -118,11 +107,8 @@ namespace Lucidtech.Las
         public object PostPredictions(string documentId, string modelName)
         {
             var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
-            
             RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
-
             IRestResponse response = RestSharpClient.Execute(request);
-
             return JsonDecode(response);
         }
         /// <summary>
@@ -133,13 +119,13 @@ namespace Lucidtech.Las
         /// <example>
         /// 
         /// <code>
-        /// Client client = new Client();
-        /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;()
-        ///     {
-        ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}},
-        ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}}
-        ///     };
-        /// var response = client.PostDocumentId(&lt;documentId&gt;, feedback);
+        /// Client client = new Client(); \n
+        /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;() \n
+        /// { \n
+        ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}}, \n
+        ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}} \n
+        /// }; \n
+        /// var response = client.PostDocumentId(&lt;documentId&gt;, feedback); \n
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to upload, Same as provided to <see cref="PostDocuments"/></param>
@@ -158,9 +144,7 @@ namespace Lucidtech.Las
             object body = JsonConvert.DeserializeObject(bodyString);
             
             RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
-
             IRestResponse response = RestSharpClient.Execute(request);
-
             return JsonDecode(response);
         }
         
@@ -170,8 +154,8 @@ namespace Lucidtech.Las
         /// <example>
         /// 
         /// <code>
-        /// Client client = new Client();
-        /// var response = client.DeleteConsentId(&lt;consentId&gt;);
+        /// Client client = new Client(); \n
+        /// var response = client.DeleteConsentId(&lt;consentId&gt;); \n
         /// </code>
         /// </example>
         /// <param name="consentId"> Delete documents with this consentId<see cref="PostDocuments"/></param>
@@ -182,11 +166,8 @@ namespace Lucidtech.Las
         public object DeleteConsentId(string consentId)
         {
             var dictBody = new Dictionary<string, string>() {} ;
-            
             RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
-
             IRestResponse response = RestSharpClient.Execute(request);
-
             return JsonDecode(response);
         }
         
@@ -220,10 +201,10 @@ namespace Lucidtech.Las
         {
             var uri = new Uri(string.Concat(Endpoint, path));
             Dictionary<string, string> headers = Authorization.SignHeaders(
-            uri: uri,
-            method: method,
-            body: body);
-            headers.Add("Content-Type", "application/json");
+                uri: uri,
+                method: method,
+                body: body);
+                headers.Add("Content-Type", "application/json");
             
             return headers;
         }
@@ -245,6 +226,5 @@ namespace Lucidtech.Las
                 throw;	
             }	
         }
-
     } 
 } 

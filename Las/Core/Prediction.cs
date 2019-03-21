@@ -9,51 +9,36 @@ namespace Lucidtech.Las.Core
     /// </summary>
     public class Prediction
     {
-
-        /// Dictionary containing document id, consent id and model name
-        public Dictionary<string, string> Essentials { get; }
+        /// <summary>
+        /// Document id
+        /// </summary>
+        public string DocumentId { get; }
+        /// <summary>
+        /// Consent id
+        /// </summary>
+        public string ConsentId { get; }
+        /// <summary>
+        /// Upload url
+        /// </summary>
+        public string ModelName { get; }
         /// A list of the responses from a prediction
         public List<Dictionary<string, object>> Fields { get; }
 
         /// <summary>
         /// Constructor of s Prediction object
         /// </summary>
-        /// <param name="documentId"> The id of the document used in the prediction</param>
-        /// <param name="consentId"> The consent id</param>
-        /// <param name="modelName"> The name of the model used</param>
+        /// <param name="documentId"> The id of the document used in the prediction </param>
+        /// <param name="consentId"> The consent id </param>
+        /// <param name="modelName"> The name of the model used </param>
         /// <param name="predictionResponse"> The response from prediction </param>
         public Prediction(string documentId, string consentId, string modelName,
             List<Dictionary<string, object>> predictionResponse)
         {
-            Essentials = new Dictionary<string, string>()
-            {
-                {"documentId", documentId},
-                {"consentId", consentId},
-                {"modelName", modelName}
-            };
+            DocumentId = documentId;
+            ConsentId = consentId;
+            ModelName = modelName;
             Fields = predictionResponse;
         }
-
-        /// <summary>
-        /// Make the members of Prediction accessible as if it was a dictionary
-        /// </summary>
-        /// <param name="s"> A string that needs to match either one of the keys in <c> Essentials</c> or "fields" </param>
-        /// <exception cref="KeyNotFoundException"> Will throw an exception if <paramref name="s"/> is invalid</exception>
-        public object this[string s]
-        {
-            get
-            {
-                if (string.Equals("fields", s)) { return Fields; }
-
-                foreach (var entry in Essentials)
-                {
-                    if (string.Equals(entry.Key, s)) { return entry.Value; }
-                }
-
-                throw new KeyNotFoundException($"{s} is not present in the Prediction class");
-            }
-        }
-
     }
 
     /// <summary>
@@ -84,9 +69,21 @@ namespace Lucidtech.Las.Core
     public class FeedbackResponse
     {
         /// <summary>
-        /// Dictionary that contains document Id, consent Id, upload url and content type.
+        /// Document id
         /// </summary>
-        public Dictionary<string, string> Essentials { get; }
+        public string DocumentId { get; }
+        /// <summary>
+        /// Consent id
+        /// </summary>
+        public string ConsentId { get; }
+        /// <summary>
+        /// Upload url
+        /// </summary>
+        public string UploadUrl { get; }
+        /// <summary>
+        /// Content type
+        /// </summary>
+        public string ContentType { get; }
         /// <summary>
         /// The same information as was uploaded as feedback.
         /// </summary>
@@ -96,15 +93,10 @@ namespace Lucidtech.Las.Core
         {
             JObject jsonResponse = JObject.Parse(response.ToString());
             
-            Essentials = new Dictionary<string, string>( )
-            {
-                {"documentId", jsonResponse["documentId"].ToString()},
-                    
-                {"consentId", jsonResponse["consentId"].ToString()},
-                {"uploadUrl", jsonResponse["uploadUrl"].ToString()},
-                {"contentType", jsonResponse["contentType"].ToString()}
-            };
-            
+            DocumentId = jsonResponse["documentId"].ToString();
+            ConsentId = jsonResponse["consentId"].ToString();
+            UploadUrl = jsonResponse["uploadUrl"].ToString();
+            ContentType = jsonResponse["contentType"].ToString();
             Feedback = JsonSerialPublisher.ObjectToDict<List<Dictionary<string,string>>>(jsonResponse["feedback"]);
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -9,77 +10,75 @@ namespace Lucidtech.Las.Core
 {
     /// <summary>
     /// Used to fetch and store credentials. One of 3 conditions must be met to successfully create credentials.
+    /// 1. The path to the file where the credentials are stored is provided
+    /// 2. AccessKeyId, SecretAccessKey and ApiKey are provided
+    /// 3. Credentials are located in default path ~/.lucidtech/credentials.cfg
     /// 
-    /// 1. credentials_path is provided
-    /// 2. access_key_id, secret_access_key and api_key is provided
-    /// 3. credentials is located in default path ~/.lucidtech/credentials.cfg
+    /// Get credentials by contacting hello@lucidtech.ai
     /// 
     /// </summary>
     public class Credentials
     {
-        public string AccessKeyId {get;}
-        public string SecretAccessKey {get;}
-        public string ApiKey{get;}
+        /// <summary>
+        /// Amazon Access key ID. Provided by Lucidtech.
+        /// </summary>
+        public string AccessKeyId { get; }
+        /// <summary>
+        /// Amazon Secret Access Key. Provided by Lucidtech.
+        /// </summary>
+        public string SecretAccessKey { get; }
+        /// <summary>
+        /// AWS API Gateway API key. Provided by Lucidtech.
+        /// </summary>
+        public string ApiKey{ get; }
         
         /// <summary>
-        /// The Credentials constructor, will create all the necessary credentials.
-        /// 
-        /// 1. credentials_path is provided
-        /// 2. access_key_id, secret_access_key and api_key is provided
-        /// 3. credentials is located in default path ~/.lucidtech/credentials.cfg
-        /// 
+        /// Credentials constructor where AccessKeyId, SecretAccessKey and ApiKey are provided.
         /// </summary>
-        /// <param name="credentialsPath"> Path to credentials file</param>
-        /// <param name="accessKeyId"> Access key Id</param>
-        /// <param name="secretAccessKey"> Secret Access Key</param>
-        /// <param name="apiKey"> API key</param>
+        /// <param name="accessKeyId"> Access key id </param>
+        /// <param name="secretAccessKey"> Secret Access Key </param>
+        /// <param name="apiKey"> API key </param>
         /// <exception cref="ArgumentException"></exception>
-        public Credentials(string credentialsPath = "", string accessKeyId = "", string secretAccessKey = "",
-            string apiKey = "")
+        public Credentials(string accessKeyId, string secretAccessKey,
+            string apiKey)
         {
-            string[] input = 
-            {
-                accessKeyId,
-                secretAccessKey,
-                apiKey,
-                credentialsPath
-            };
-            
-            string[] credentials = input.Take(3).ToArray(); 
-            
-            if (input.Any(s => string.IsNullOrEmpty(s)))
-            {
-                if (string.IsNullOrEmpty(credentialsPath))
-                {
-                    string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)?"%UserProfile%\\.lucidtech\\credentials.cfg":"%HOME%/.lucidtech/credentials.cfg";
-                    credentialsPath = Environment.ExpandEnvironmentVariables(path);
-                }
-
-                credentials = ReadCredentials(credentialsPath);
-
-                AccessKeyId = credentials[0];
-                SecretAccessKey = credentials[1];
-                ApiKey = credentials[2];
-            }
-
-            if (credentials.Any(s => string.IsNullOrEmpty(s)))
-            {
-                throw new ArgumentException("one or more of the credentials are empty");
-            }
+            AccessKeyId = accessKeyId;
+            SecretAccessKey = secretAccessKey;
+            ApiKey = apiKey;
         }
-        private static string[] ReadCredentials(string credentialPath)
+        /// <summary>
+        /// Credentials constructor where the path is provided.
+        /// </summary>
+        /// <param name="credentialsPath"> Path to the file where the credentials are stored </param>
+        public Credentials(string credentialsPath)
+        {
+            var credentials = ReadCredentials(credentialsPath);
+            AccessKeyId = credentials["AccessKeyId"];
+            SecretAccessKey = credentials["SecretAccessKey"];
+            ApiKey = credentials["ApiKey"];
+        }
+        /// <summary>
+        /// Credentials constructor where the credentials are located at the default path ~/.lucidtech/credentials.cfg.
+        /// </summary>
+        public Credentials() : this(GetCredentialsPath()){}
+        
+        private static string GetCredentialsPath()
+        {
+            string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)?"%UserProfile%\\.lucidtech\\credentials.cfg":"%HOME%/.lucidtech/credentials.cfg";
+            return Environment.ExpandEnvironmentVariables(path);
+        }
+        private static Dictionary<string, string> ReadCredentials(string credentialPath)
         {
             var parser = new FileIniDataParser();
             const string section = "default";
             IniData config = parser.ReadFile(credentialPath);
-            
-            var accessKeyId = config[section]["access_key_id"];
-            var secretAccessKey = config[section]["secret_access_key"];
-            var apiKey = config[section]["api_key"];
-            
-            string[] ret = {accessKeyId, secretAccessKey, apiKey};
-            
+            var ret = new Dictionary<string, string>()
+            {
+                {"AccessKeyId", config[section]["access_key_id"]},
+                {"SecretAccessKey", config[section]["secret_access_key"]},
+                {"ApiKey", config[section]["api_key"]}
+            } ;
             return ret;
         }
-    } // Class Credentials
-} // Namespace Lucidtech.Las.Cred
+    }
+}

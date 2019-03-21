@@ -10,27 +10,19 @@ namespace Lucidtech.Las.Utils
 {
     public class AmazonAuthorization
     {
-        /* General information */
         private string Region { get; }
         private string Service { get; }
-
-        /* Keys the customer receives from Lucidtech */
-        private string AwsApiKey { get; }
-        private string AwsAccessKey { get; }
-        private string AwsSecretKey { get; }
-        
+        private Credentials Creds { get; }
         private const string Algorithm = "AWS4-HMAC-SHA256";
 
         public AmazonAuthorization(Credentials credentials)
         {
-            AwsApiKey = credentials.ApiKey ;
-            AwsSecretKey = credentials.SecretAccessKey;
-            AwsAccessKey = credentials.AccessKeyId;
+            Creds = credentials;
             Region = "eu-west-1";
             Service = "execute-api";
         }
 
-        public Dictionary<string, string> SignHeaders(Uri uri, string method, byte [] body)
+        public Dictionary<string, string> SignHeaders(Uri uri, string method, byte[] body)
         {
             if (body == null)
             {
@@ -42,7 +34,7 @@ namespace Lucidtech.Las.Utils
 
             Dictionary<string, string> headers = Headers(uri, amzDate);
             
-            byte [] canonicalRequest = GetCanonicalRequest(uri, method, body, headers);
+            byte[] canonicalRequest = GetCanonicalRequest(uri, method, body, headers);
             
             string reqDigest = ComputeHashSha256(canonicalRequest);
             string credScope = GetCredentialScope(dateStamp);
@@ -53,8 +45,8 @@ namespace Lucidtech.Las.Utils
             var authHeader = BuildAuthHeader(
                 amzDate: amzDate,
                 signature: signature,
-                credScope:credScope,
-                signedHeaders:headers.Keys.ToList()
+                credScope: credScope,
+                signedHeaders: headers.Keys.ToList()
             );
             return authHeader;
         }
@@ -77,8 +69,7 @@ namespace Lucidtech.Las.Utils
         }
         
         /* Private Methods */
-        
-        private byte[] GetCanonicalRequest(Uri uri, string method, byte [] body, Dictionary<string, string> headers)
+        private byte[] GetCanonicalRequest(Uri uri, string method, byte[] body, Dictionary<string, string> headers)
         {
             string headerList = string.Join(";", headers.Keys);
             
@@ -111,27 +102,24 @@ namespace Lucidtech.Las.Utils
             {
                 {"host", uri.Authority},
                 {"x-amz-date", amzDate},
-                {"x-api-key", AwsApiKey}
+                {"x-api-key", Creds.ApiKey}
             };
             return headers;
         }
 
         private byte[] GetSignatureKey(string dateStamp)
         {
-            var signature = Encoding.UTF8.GetBytes("AWS4" + AwsSecretKey);
-            
+            var signature = Encoding.UTF8.GetBytes("AWS4" + Creds.SecretAccessKey);
             var parts = new List<string>() {dateStamp, Region, Service, "aws4_request"};
             foreach (var part in parts)
             {
                 signature = SignHash(signature, Encoding.UTF8.GetBytes(part));
             }
-            
             return signature;
         }
 
         private string GetCredentialScope(string dateStamp)
         {
-            // Comment: suddenly a static string...
             var parts = new List<string>() {dateStamp, Region, Service, "aws4_request"};
             return string.Join("/", parts);
         }
@@ -139,7 +127,7 @@ namespace Lucidtech.Las.Utils
         {
             var auth = new Dictionary<string, string>()
             {
-                {"Credential", $"{AwsAccessKey}/{credScope}"},
+                {"Credential", $"{Creds.AccessKeyId}/{credScope}"},
                 {"SignedHeaders", string.Join(";", signedHeaders)},
                 {"Signature", signature}
             };
@@ -155,7 +143,7 @@ namespace Lucidtech.Las.Utils
             var headers = new Dictionary<string, string>() 
             {
                 {"x-amz-date", amzDate},
-                {"x-api-key", AwsApiKey},
+                {"x-api-key", Creds.ApiKey},
                 {"Authorization", string.Concat(Algorithm," ", authString)}
             };
             return headers;
@@ -188,7 +176,5 @@ namespace Lucidtech.Las.Utils
             string dateStamp = now.ToString("yyyyMMdd");
             return dateStamp;
         }
-
-        
     } 
 } 

@@ -11,24 +11,20 @@ namespace Lucidtech.Las.Utils
     /// </summary>
     public class JsonSerialPublisher: ISerializer, IDeserializer
     {
-        private Newtonsoft.Json.JsonSerializer _serializer;
-        
         public string RootElement { get; set; }
-
         public string Namespace { get; set; }
-
         public string DateFormat { get; set; }
-
         public string ContentType
         {
-            get { return "application/json";}
+            get { return "application/json"; }
             set { }
         }
+        private Newtonsoft.Json.JsonSerializer _serializer;
 
         /// <summary>
         /// A default Serializer that can be used by <see cref="RestSharp"/>.
         /// </summary>
-        public static JsonSerialPublisher Default => new JsonSerialPublisher(new Newtonsoft.Json.JsonSerializer(){ NullValueHandling = NullValueHandling.Ignore,});  
+        public static JsonSerialPublisher Default => new JsonSerialPublisher(new Newtonsoft.Json.JsonSerializer(){ NullValueHandling = NullValueHandling.Ignore});  
         public JsonSerialPublisher(Newtonsoft.Json.JsonSerializer serializer)
         {
             _serializer = serializer;
@@ -37,8 +33,8 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// Serialize a general object.
         /// </summary>
-        /// <param name="obj"> A general object to be serialized</param>
-        /// <returns> A string ready to be interpreted as a json file</returns>
+        /// <param name="obj"> A general object to be serialized </param>
+        /// <returns> A string ready to be interpreted as a json file </returns>
         public string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj);
@@ -48,8 +44,8 @@ namespace Lucidtech.Las.Utils
         /// Deserialize the content of an IRestResponse.
         /// </summary>
         /// <param name="response"> The response from a request performed by <c> RestSharp.RestClient </c> </param>
-        /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort</typeparam>
-        /// <returns> A deserialized object of type <typeparamref name="T"/></returns>
+        /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort </typeparam>
+        /// <returns> A deserialized object of type <typeparamref name="T"/> </returns>
         public T Deserialize<T>(IRestResponse response)
         {
             return JsonConvert.DeserializeObject<T>(response.Content);
@@ -69,7 +65,7 @@ namespace Lucidtech.Las.Utils
         /// Deserialize a string that is on a json format.
         /// </summary>
         /// <param name="response"> A json formatted string</param>
-        /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort</typeparam>
+        /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort </typeparam>
         /// <returns> A deserialized object of type <typeparamref name="T"/> </returns>
         public T DeserializeObject<T>(string response)
         {
@@ -79,8 +75,8 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// Convert a general object to a Dictionary of a specific type.
         /// </summary>
-        /// <param name="obj"> A general object with a structure that can be described by <typeparamref name="T"/></param>
-        /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort</typeparam>
+        /// <param name="obj"> A general object with a structure that can be described by <typeparamref name="T"/> </param>
+        /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort </typeparam>
         /// <returns> An object of type <typeparamref name="T"/> </returns>
         public static T ObjectToDict<T>(object obj)
         {

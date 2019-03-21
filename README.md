@@ -9,7 +9,7 @@
 ### NuGet
 
 ```bash
-$ nuget install Lucidtech.LAS
+$ nuget install Lucidtech.Las
 ```
 
 ## Usage
@@ -19,6 +19,7 @@ $ nuget install Lucidtech.LAS
 - Documents must be in upright position
 - Only one receipt or invoice per document is supported
 - Supported file formats are: jpeg, pdf
+- Lucidtech.Las requires compatibility with .NET standard 4.7
 
 ### Quick start
 
@@ -32,9 +33,9 @@ Prediction response = apiClient.Predict(documentPath: "document.pdf",modelName: 
 ## Contributing
 
 ### Prerequisites
-Download [MSBuild](https://github.com/Microsoft/msbuild).
+Download the latest and greatest version of [MSBuild](https://github.com/Microsoft/msbuild).
 
-Download NUnit.Console to run tests from command line 
+Download NUnit.Console version 3.9.0 or higher to run tests from command line
 ```bash
 $ nuget install NUnit.Console --version 3.9.0
 ```

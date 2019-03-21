@@ -54,7 +54,7 @@ namespace Test
         [Test]
         public void TestRevokeConsent()
         {
-            ApiClient apiClient = new ApiClient("https://demo.api.lucidtech.ai/v1");
+            ApiClient apiClient = new ApiClient(Example.Endpoint());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
             apiClient.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
@@ -76,7 +76,7 @@ namespace Test
         [Test]
         public void TestPrediction()
         {
-            ApiClient apiClient = new ApiClient("https://demo.api.lucidtech.ai/v1");
+            ApiClient apiClient = new ApiClient(Example.Endpoint());
             
             Prediction response = apiClient.Predict(documentPath: Example.DocPath(),modelName: Example.ModelType(),consentId: Example.ConsentId());
 
@@ -224,13 +224,9 @@ namespace Test
 
             for (int i = 0; i < answers.Count; i++)
             {
-                /* Test input */
                 string key = testDict.Keys.ElementAt(i);
                 byte[] bytes = Encoding.UTF8.GetBytes(key);
-                
-                /* Result */
                 byte[] res = AmazonAuthorization.SignHash(bytes, Encoding.UTF8.GetBytes(testDict[key]));
-                
                 Assert.Zero(string.CompareOrdinal(AmazonAuthorization.StringFromByteArray(res), answers[i]));
             }
             
@@ -239,11 +235,11 @@ namespace Test
     
     public static class Example
     {
-        public static string ConsentId() { return "bar";}
-        public static string ContentType() { return "image/jpeg";}
-        public static string ModelType() { return "invoice";}
+        public static string ConsentId() { return "bar"; }
+        public static string ContentType() { return "image/jpeg"; }
+        public static string ModelType() { return "invoice"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
-        public static string DocPath(){
+        public static string DocPath() {
             var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             try
             {
@@ -256,5 +252,4 @@ namespace Test
             }
         }
     }
-    
 }

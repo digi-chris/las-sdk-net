@@ -16,14 +16,14 @@ namespace Lucidtech.Las
         /// <summary>
         /// ApiClient constructor with credentials read from local file.
         /// </summary>
-        /// <param name="endpoint"> Url to the host</param>
+        /// <param name="endpoint"> Url to the host </param>
         public ApiClient(string endpoint) : base(endpoint) { }
         
         /// <summary>
         /// ApiClient constructor with credentials read from local file.
         /// </summary>
-        /// <param name="endpoint"> Url to the host</param>
-        /// <param name="credentials"> Keys and credentials needed for authorization, <see cref="Credentials"/></param>
+        /// <param name="endpoint"> Url to the host </param>
+        /// <param name="credentials"> Keys and credentials needed for authorization, see <see cref="Credentials"/> </param>
         public ApiClient(string endpoint, Credentials credentials) : base(endpoint, credentials) { }
 
         /// <summary>
@@ -91,9 +91,9 @@ namespace Lucidtech.Las
         /// FeedbackResponse response = apiClient.SendFeedback(documentId: "&lt;documentId&gt;", feedback: feedback); \n
         /// </code></example>
         /// </summary>
-        /// <param name="documentId"> Document Id</param>
-        /// <param name="feedback"> Ground truth values</param>
-        /// <returns> Data that can be used to confirm that the feedback uploaded was successful. </returns>
+        /// <param name="documentId"> Document id </param>
+        /// <param name="feedback"> Ground truth values </param>
+        /// <returns> Data that can be used to confirm that the feedback uploaded was successful </returns>
         public FeedbackResponse SendFeedback(string documentId, List<Dictionary<string, string>> feedback)
         {
             return new FeedbackResponse(PostDocumentId(documentId, feedback));
@@ -110,8 +110,8 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// </summary>
-        /// <param name="consentId"> Delete documents associated with this consentId </param>
-        /// <returns> The document Ids of the deleted documents, and their consent Id </returns>
+        /// <param name="consentId"> Delete documents associated with this consent id </param>
+        /// <returns> The document ids of the deleted documents, and their consent id </returns>
         public RevokeResponse RevokeConsent(string consentId)
         {
             return new RevokeResponse(DeleteConsentId(consentId));
@@ -121,9 +121,9 @@ namespace Lucidtech.Las
         /// Upload a document of type contentType currently located at documentPath to the cloud location
         /// that corresponds to consentId.
         /// </summary>
-        /// <param name="documentPath"> The local path to the document that is going to be uploaded</param>
-        /// <param name="contentType"> The type of the file located at documentPath</param>
-        /// <param name="consentId"> The consent Id</param>
+        /// <param name="documentPath"> The local path to the document that is going to be uploaded </param>
+        /// <param name="contentType"> The type of the file located at documentPath </param>
+        /// <param name="consentId"> The consent id </param>
         /// <returns></returns>
         private string UploadDocument(string documentPath, string contentType, string consentId)
         {
