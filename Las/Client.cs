@@ -46,7 +46,6 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="contentType"> A mime type for the document handle </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
-        ///            
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// with documentId, uploadUrl, contentType and consentId
@@ -117,7 +116,6 @@ namespace Lucidtech.Las
         /// This enables the API to learn from past mistakes.
         /// </summary>
         /// <example>
-        /// 
         /// <code>
         /// Client client = new Client(); \n
         /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;() \n
@@ -152,7 +150,6 @@ namespace Lucidtech.Las
         /// Delete documents with this consentId, calls the DELETE /consent/{consentId} endpoint.
         /// </summary>
         /// <example>
-        /// 
         /// <code>
         /// Client client = new Client(); \n
         /// var response = client.DeleteConsentId(&lt;consentId&gt;); \n

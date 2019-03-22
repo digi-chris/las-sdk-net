@@ -33,6 +33,7 @@ namespace Lucidtech.Las
         /// using namespace Lucidtech.Las;
         /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;');
         /// Prediction response = apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice", consentId: "bar");
+        /// Console.WriteLine(response.ToJsonString(Formatting.Indented));
         /// </code></example>
         /// </summary>
         /// <param name="documentPath"> Path to document to run inference on </param>
@@ -62,6 +63,7 @@ namespace Lucidtech.Las
         /// using namespace Lucidtech.Las; \n
         /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); \n
         /// Prediction response = apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice"); \n
+        /// Console.WriteLine(response.ToJsonString(Formatting.Indented));
         /// </code></example>
         /// </summary>
         /// <param name="documentPath"> Path to document to run inference on </param>
@@ -89,6 +91,7 @@ namespace Lucidtech.Las
         ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}} \n
         /// }; \n
         /// FeedbackResponse response = apiClient.SendFeedback(documentId: "&lt;documentId&gt;", feedback: feedback); \n
+        /// Console.WriteLine(response.ToJsonString(Formatting.Indented));
         /// </code></example>
         /// </summary>
         /// <param name="documentId"> Document id </param>
@@ -106,7 +109,8 @@ namespace Lucidtech.Las
         /// <code>
         /// using namespace Lucidtech.Las; \n
         /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); \n
-        /// var response = apiClient.RevokeConsent(consentId: '&lt;consentId&gt;');
+        /// RevokeResponse response = apiClient.RevokeConsent(consentId: '&lt;consentId&gt;');
+        /// Console.WriteLine(response.ToJsonString(Formatting.Indented));
         /// </code>
         /// </example>
         /// </summary>

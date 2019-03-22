@@ -23,9 +23,7 @@ namespace Lucidtech.Las.Utils
                 TestPdf, 
                 TestJpeg
             }; 
-            
             string filetype = "";
-            
             try
             {
                 using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
@@ -37,11 +35,9 @@ namespace Lucidtech.Las.Utils
                     {
                         // Read may return anything from 0 to numBytesToRead.
                         int n = fs.Read(bytes, bytesRead, bytesToRead);
-
                         // Break when the end of the file is reached.
                         if (n == 0)
                             break;
-
                         bytesRead += n;
                         bytesToRead -= n;
                     }
@@ -54,7 +50,6 @@ namespace Lucidtech.Las.Utils
                             break;
                         }
                     }
-                    
                     return filetype;
                 }
             }

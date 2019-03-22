@@ -26,8 +26,26 @@ $ nuget install Lucidtech.Las
 ```C#
 using Lucidtech.Las;
 
+# Run inference and create prediction on document 
+using namespace Lucidtech.Las;
 ApiClient apiClient = new ApiClient("<api endpoint>");
-Prediction response = apiClient.Predict(documentPath: "document.pdf",modelName: "invoice");
+Prediction response = apiClient.Predict(documentPath: "document.pdf", modelName: "invoice");
+Console.WriteLine(response.ToJsonString(Formatting.Indented));
+
+# Send feedback to the model.
+var feedback = new List<Dictionary<string, string>>()
+{ 
+    new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
+    new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+};
+FeedbackResponse response = apiClient.SendFeedback(documentId: "<documentId>", feedback: feedback);
+Console.WriteLine(response.ToJsonString(Formatting.Indented));
+
+# Revoke consent and deleting all documents associated with consentId.
+ApiClient apiClient = new ApiClient("<endpoint>"); \n
+RevokeResponse response = apiClient.RevokeConsent(consentId: "<consentId>");
+Console.WriteLine(response.ToJsonString(Formatting.Indented));
+ 
 ```
 
 ## Contributing
@@ -35,7 +53,7 @@ Prediction response = apiClient.Predict(documentPath: "document.pdf",modelName: 
 ### Prerequisites
 Download the latest and greatest version of [MSBuild](https://github.com/Microsoft/msbuild).
 
-Download NUnit.Console version 3.9.0 or higher to run tests from command line
+Download NUnit.Console version 3.9.0 or higher to run tests from command line.
 ```bash
 $ nuget install NUnit.Console --version 3.9.0
 ```

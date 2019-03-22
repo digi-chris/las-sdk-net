@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las.Core
@@ -39,6 +40,16 @@ namespace Lucidtech.Las.Core
             ModelName = modelName;
             Fields = predictionResponse;
         }
+        
+        /// <summary>
+        /// Convert an object of this class to a string ready to be interpreted as a json object.
+        /// </summary>
+        /// <param name="format"> The format of the string, either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
+        /// <returns> A string that is formatted as a json object </returns>
+        public string ToJsonString(Formatting format = Formatting.None) 
+        {
+            return JsonConvert.SerializeObject(this, format);
+        }
     }
 
     /// <summary>
@@ -60,6 +71,15 @@ namespace Lucidtech.Las.Core
             JObject jsonResponse = JObject.Parse(deleteConsentResponse.ToString());
             ConsentId = jsonResponse["consentId"].ToString();
             DocumentIds = JsonSerialPublisher.ObjectToDict<List<string>>(jsonResponse["documentIds"]);
+        }
+        /// <summary>
+        /// Convert an object of this class to a string ready to be interpreted as a json object.
+        /// </summary>
+        /// <param name="format"> The format of the string, either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
+        /// <returns> A string that is formatted as a json object </returns>
+        public string ToJsonString(Formatting format = Formatting.None) 
+        {
+            return JsonConvert.SerializeObject(this, format);
         }
     }
 
@@ -98,6 +118,16 @@ namespace Lucidtech.Las.Core
             UploadUrl = jsonResponse["uploadUrl"].ToString();
             ContentType = jsonResponse["contentType"].ToString();
             Feedback = JsonSerialPublisher.ObjectToDict<List<Dictionary<string,string>>>(jsonResponse["feedback"]);
+        }
+        
+        /// <summary>
+        /// Convert an object of this class to a string ready to be interpreted as a json object.
+        /// </summary>
+        /// <param name="format"> The format of the string, either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
+        /// <returns> A string that is formatted as a json object </returns>
+        public string ToJsonString(Formatting format = Formatting.None) 
+        {
+            return JsonConvert.SerializeObject(this, format);
         }
     }
     
