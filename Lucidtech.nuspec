@@ -1,22 +1,25 @@
-<?xml version="1.0"?>
-<package>
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Lucidtech.Las</id>
         <version>0.1.1</version>
         <title>Lucidtech AI Services</title>
-        <authors>Lucidtech</authors>
-        <owners>Lucidtech</owners>
-        <projectUrl>https://lucidtech.ai</projectUrl>
+        <authors>Lucidtech AS</authors>
+        <owners>Lucidtech AS</owners>
+        <projectUrl>https://github.com/LucidtechAI/las-sdk-net/</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>SDK for accessing Lucidtech AI Services</description>
         <releaseNotes>First release</releaseNotes>
         <copyright>Copyright 2019</copyright>
-        <tags>las</tags>
+        <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+        <tags>las Lucidtech</tags>
         <dependencies>
             <dependency id="RestSharp" version="105.2.3" />
             <dependency id="INIFileParser" version="2.5.2.0"/>
             <dependency id="Newtonsoft.Json" version="12.0.0.0"/>
+            <dependency id="System.Runtime.InteropServices" version="4.3.0" />
             <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.0.0.0"/>
+            <dependency id="System.Runtime.Serialization.Xml" version="4.3.0"/>
         </dependencies>
     </metadata>
     <files>
