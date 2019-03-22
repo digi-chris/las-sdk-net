@@ -40,7 +40,7 @@ namespace Lucidtech.Las
         /// Client constructor with credentials read from local file.
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
-        public Client(string endpoint) : this(endpoint, new Credentials()) { }
+        public Client(string endpoint) : this(endpoint, new Credentials()) {}
 
         /// <summary>
         /// Creates a document handle, calls the POST /documents endpoint
@@ -174,7 +174,7 @@ namespace Lucidtech.Las
         /// </returns>
         public object DeleteConsentId(string consentId)
         {
-            var dictBody = new Dictionary<string, string>() {} ;
+            var dictBody = new Dictionary<string, string() {};
             RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
             IRestResponse response = RestSharpClient.Execute(request);
             return JsonDecode(response);

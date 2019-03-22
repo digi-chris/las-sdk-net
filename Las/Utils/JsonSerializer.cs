@@ -18,7 +18,7 @@ namespace Lucidtech.Las.Utils
         public string ContentType
         {
             get { return "application/json"; }
-            set { }
+            set {}
         }
         private Newtonsoft.Json.JsonSerializer _serializer;
 

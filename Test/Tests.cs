@@ -108,7 +108,7 @@ namespace Test
             Console.WriteLine("TestPostDocuments");
             Client client = new Client(Example.Endpoint());
             var response = client.PostDocuments(Example.ContentType(), Example.ConsentId());
-            var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"} ;
+            var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"};
             var dictResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(response);
             foreach (var key in expected)
             {
@@ -130,7 +130,7 @@ namespace Test
             string documentId = (string)postDocResponse["documentId"];
             var response = client.PostPredictions(documentId,Example.ModelType());
             
-            var expected = new List<string>(){"documentId", "predictions"} ;
+            var expected = new List<string>(){"documentId", "predictions"};
             JObject jsonResponse = JObject.Parse(response.ToString());
             foreach (var field in jsonResponse)
             {
@@ -156,7 +156,7 @@ namespace Test
             };
             
             var response = client.PostDocumentId(postDocResponse["documentId"], feedback);
-            var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType", "feedback"} ;
+            var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType", "feedback"};
             JObject jsonResponse = JObject.Parse(response.ToString());
             foreach (var field in jsonResponse)
             {
@@ -175,7 +175,7 @@ namespace Test
             
             client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             
-            var expected = new List<string>(){ "consentId", "documentIds"} ;
+            var expected = new List<string>(){"consentId", "documentIds"};
             var response = client.DeleteConsentId(postDocResponse["consentId"]);
             JObject jsonResponse = JObject.Parse(response.ToString());
             

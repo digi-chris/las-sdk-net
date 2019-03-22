@@ -64,7 +64,7 @@ namespace Lucidtech.Las.Core
         /// Credentials constructor where the credentials are located at the default path.
         /// ~/.lucidtech/credentials.cfg for linux and %USERPROFILE%\.lucidtech\credentials.cfg for Windows.
         /// </summary>
-        public Credentials() : this(GetCredentialsPath()){}
+        public Credentials() : this(GetCredentialsPath()) {}
         
         private static string GetCredentialsPath()
         {
@@ -83,7 +83,7 @@ namespace Lucidtech.Las.Core
                 {"AccessKeyId", config[section]["access_key_id"]},
                 {"SecretAccessKey", config[section]["secret_access_key"]},
                 {"ApiKey", config[section]["api_key"]}
-            } ;
+            };
             return ret;
         }
     }

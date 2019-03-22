@@ -53,7 +53,7 @@ namespace Lucidtech.Las.Utils
             catch (FileNotFoundException e)
             {
                 Console.WriteLine(e);
-                throw ;
+                throw;
             }
             throw new NotSupportedException($"{fileName} does not match any of our supported formats");
         }
