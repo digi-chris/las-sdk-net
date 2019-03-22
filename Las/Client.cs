@@ -174,7 +174,7 @@ namespace Lucidtech.Las
         /// </returns>
         public object DeleteConsentId(string consentId)
         {
-            var dictBody = new Dictionary<string, string() {};
+            var dictBody = new Dictionary<string, string> {};
             RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
             IRestResponse response = RestSharpClient.Execute(request);
             return JsonDecode(response);
