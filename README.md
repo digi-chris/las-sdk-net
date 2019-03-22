@@ -4,6 +4,12 @@
 
 [Link to docs](https://docs.lucidtech.ai/dotnet/v1/index.html)
 
+Create documents by using doxygen.
+Download the latest and greatest version of [doxygen](https://github.com/doxygen/doxygen.git).
+```bash
+$ doxygen documentation.conf
+```
+
 ## Installation
 
 ### NuGet
