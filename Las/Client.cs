@@ -6,8 +6,8 @@ using System.Text;
 using RestSharp;
 using Newtonsoft.Json;
 
-using Lucidtech.Las.Utils;
 using Lucidtech.Las.Core;
+using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las
 {

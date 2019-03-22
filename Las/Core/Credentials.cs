@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 using IniParser;
@@ -42,8 +41,7 @@ namespace Lucidtech.Las.Core
         /// <param name="secretAccessKey"> Secret Access Key </param>
         /// <param name="apiKey"> API key </param>
         /// <exception cref="ArgumentException"></exception>
-        public Credentials(string accessKeyId, string secretAccessKey,
-            string apiKey)
+        public Credentials(string accessKeyId, string secretAccessKey, string apiKey)
         {
             AccessKeyId = accessKeyId;
             SecretAccessKey = secretAccessKey;
@@ -70,9 +68,11 @@ namespace Lucidtech.Las.Core
         
         private static string GetCredentialsPath()
         {
-            string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)?"%USERPROFILE%\\.lucidtech\\credentials.cfg":"%HOME%/.lucidtech/credentials.cfg";
+            string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 
+                "%USERPROFILE%\\.lucidtech\\credentials.cfg" : "%HOME%/.lucidtech/credentials.cfg";
             return Environment.ExpandEnvironmentVariables(path);
         }
+        
         private static Dictionary<string, string> ReadCredentials(string credentialPath)
         {
             var parser = new FileIniDataParser();

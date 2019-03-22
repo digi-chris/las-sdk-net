@@ -78,11 +78,12 @@ namespace Lucidtech.Las.Utils
             }
 
             string payloadHash = ComputeHashSha256(body);
+            string query = GetCanonicalQueryString(uri.Query);
             
             var requestComponents = new List<string>() {
                 method,
                 uri.AbsolutePath,
-                uri.Query,
+                query,
                 headerParts,
                 headerList,
                 payloadHash
@@ -93,7 +94,15 @@ namespace Lucidtech.Las.Utils
             
             return canonicalRequest;
         }
-    
+
+        private static string GetCanonicalQueryString(string query)
+        {
+            if (!string.IsNullOrEmpty(query))
+            {
+                throw new NotSupportedException("Creating canonical query string is not implemented");
+            }
+            return query;
+        }
         private Dictionary<string, string> Headers(Uri uri, string amzDate)
         {
             var headers = new Dictionary<string, string>()

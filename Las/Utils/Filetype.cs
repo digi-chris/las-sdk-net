@@ -22,11 +22,10 @@ namespace Lucidtech.Las.Utils
             {
                 TestPdf, 
                 TestJpeg
-            }; 
-            string filetype = "";
+            };
             try
             {
-                using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+                using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
                 {
                     byte[] bytes = new byte[10];
                     int bytesToRead = bytes.Length;
@@ -41,23 +40,22 @@ namespace Lucidtech.Las.Utils
                         bytesRead += n;
                         bytesToRead -= n;
                     }
-
                     foreach (var func in fileTestList)
                     {
-                        filetype = func(bytes);
-                        if (!string.IsNullOrEmpty(filetype))
+                        string fileType = func(bytes);
+                        if (!string.IsNullOrEmpty(fileType))
                         {
-                            break;
+                            return fileType;
                         }
                     }
-                    return filetype;
                 }
             }
             catch (FileNotFoundException e)
             {
                 Console.WriteLine(e);
-                throw;
+                throw ;
             }
+            throw new NotSupportedException($"{fileName} does not match any of our supported formats");
         }
 
         private static bool Exists(byte[] source, byte[] pattern)
@@ -69,7 +67,6 @@ namespace Lucidtech.Las.Utils
                     return true;
                 }
             }
-
             return false;
         }
 

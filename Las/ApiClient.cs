@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 using Newtonsoft.Json.Linq;
 
-using Lucidtech.Las.Utils;
 using Lucidtech.Las.Core;
+using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las
 {

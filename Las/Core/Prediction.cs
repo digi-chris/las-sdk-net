@@ -1,6 +1,8 @@
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las.Core

@@ -6,11 +6,12 @@ using System.Text;
 
 using NUnit.Framework;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 using Lucidtech.Las;
 using Lucidtech.Las.Core;
 using Lucidtech.Las.Utils;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 
 namespace Test
 {
