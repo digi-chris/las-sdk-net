@@ -78,7 +78,8 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// <param name="documentPath"> Path to document to upload </param>
-        /// <param name="contentType"> Mime type of document to upload. Same as provided to <see cref="PostDocuments"/></param>
+        /// <param name="contentType"> Mime type of document to upload.
+        /// Same as provided to <see cref="PostDocuments"/></param>
         /// <param name="presignedUrl"> Presigned upload url from <see cref="PostDocuments"/> </param>
         /// <returns>
         /// An empty object 
@@ -99,14 +100,17 @@ namespace Lucidtech.Las
         /// Run inference and create a prediction, calls the POST /predictions endpoint.
         /// </summary>
         /// <example>
-        /// Run inference and create a prediction using the invoice model on the document specified by '&lt;documentId&gt;'
+        /// Run inference and create a prediction using the invoice model
+        /// on the document specified by '&lt;documentId&gt;'
         /// <code>
         /// Client client = new Client('&lt;endpoint&gt;'); 
         /// var response = client.PostPredictions('&lt;documentId&gt;',"invoice"); 
         /// </code>
         /// </example>
-        /// <param name="documentId"> Path to document to upload Same as provided to <see cref="PostDocuments"/></param>
-        /// <param name="modelName"> Mime type of document to upload. Same as provided to <see cref="PostDocuments"/></param>
+        /// <param name="documentId"> Path to document to
+        /// upload Same as provided to <see cref="PostDocuments"/></param>
+        /// <param name="modelName"> Mime type of document to upload.
+        /// Same as provided to <see cref="PostDocuments"/></param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions.
         /// the value of predictions is the output from the model
@@ -135,7 +139,8 @@ namespace Lucidtech.Las
         /// var response = client.PostDocumentId('&lt;documentId&gt;', feedback); 
         /// </code>
         /// </example>
-        /// <param name="documentId"> Path to document to upload, Same as provided to <see cref="PostDocuments"/></param>
+        /// <param name="documentId"> Path to document to upload,
+        /// Same as provided to <see cref="PostDocuments"/></param>
         /// <param name="feedback"> A list of feedback items </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields

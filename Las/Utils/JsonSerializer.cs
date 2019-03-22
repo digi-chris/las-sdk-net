@@ -6,7 +6,8 @@ using RestSharp.Serializers;
 namespace Lucidtech.Las.Utils
 {
     /// <summary>
-    /// A Json publishes that allows the user to serialize and deserialize back and forth between serialized json objects
+    /// A Json publishes that allows the user to serialize and deserialize
+    /// back and forth between serialized json objects
     /// and deserialized general objects and specific Dictionaries.
     /// </summary>
     public class JsonSerialPublisher: ISerializer, IDeserializer
@@ -24,7 +25,8 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// A default Serializer that can be used by <see cref="RestSharp"/>.
         /// </summary>
-        public static JsonSerialPublisher Default => new JsonSerialPublisher(new Newtonsoft.Json.JsonSerializer(){ NullValueHandling = NullValueHandling.Ignore});  
+        public static JsonSerialPublisher Default => new JsonSerialPublisher(
+            new Newtonsoft.Json.JsonSerializer(){ NullValueHandling = NullValueHandling.Ignore});  
         public JsonSerialPublisher(Newtonsoft.Json.JsonSerializer serializer)
         {
             _serializer = serializer;
@@ -75,7 +77,8 @@ namespace Lucidtech.Las.Utils
         /// <summary>
         /// Convert a general object to a Dictionary of a specific type.
         /// </summary>
-        /// <param name="obj"> A general object with a structure that can be described by <typeparamref name="T"/> </param>
+        /// <param name="obj"> A general object with a structure
+        /// that can be described by <typeparamref name="T"/> </param>
         /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort </typeparam>
         /// <returns> An object of type <typeparamref name="T"/> </returns>
         public static T ObjectToDict<T>(object obj)

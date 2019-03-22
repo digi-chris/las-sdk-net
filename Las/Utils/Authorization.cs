@@ -130,7 +130,8 @@ namespace Lucidtech.Las.Utils
             var parts = new List<string>() {dateStamp, Region, Service, "aws4_request"};
             return string.Join("/", parts);
         }
-        private Dictionary<string, string> BuildAuthHeader(string amzDate, string signature, string credScope, List<string> signedHeaders)
+        private Dictionary<string, string> BuildAuthHeader(
+            string amzDate, string signature, string credScope, List<string> signedHeaders)
         {
             var auth = new Dictionary<string, string>()
             {

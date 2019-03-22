@@ -22,7 +22,8 @@ namespace Test
         public void TestSendFeedback()
         {
             ApiClient apiClient = new ApiClient(Example.Endpoint());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
             apiClient.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             var feedback = new List<Dictionary<string, string>>()
             {
@@ -47,8 +48,10 @@ namespace Test
         public void TestRevokeConsent()
         {
             ApiClient apiClient = new ApiClient(Example.Endpoint());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
-            apiClient.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                apiClient.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            apiClient.PutDocument(
+                Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
             RevokeResponse response = apiClient.RevokeConsent(postDocResponse["consentId"]);
             
             Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
@@ -65,7 +68,8 @@ namespace Test
         public void TestPrediction()
         {
             ApiClient apiClient = new ApiClient(Example.Endpoint());
-            Prediction response = apiClient.Predict(documentPath: Example.DocPath(),modelName: Example.ModelType(),consentId: Example.ConsentId());
+            Prediction response = apiClient.Predict(
+                documentPath: Example.DocPath(),modelName: Example.ModelType(),consentId: Example.ConsentId());
 
             Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
             Console.WriteLine(response.ToJsonString(Formatting.Indented));
@@ -91,8 +95,10 @@ namespace Test
         {
             Console.WriteLine("TestPutDocument");
             Client client = new Client(Example.Endpoint());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
-            var response = client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                client.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            var response = client.PutDocument(
+                Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
             Assert.IsNull(response);
         }
 
@@ -116,7 +122,8 @@ namespace Test
         {
             Console.WriteLine("TestPostPredictions");
             Client client = new Client(Example.Endpoint());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
             client.PutDocument(Example.DocPath(),Example.ContentType(),(string)postDocResponse["uploadUrl"]);
             
@@ -137,7 +144,8 @@ namespace Test
         {
             Console.WriteLine("TestPostDocumentId");
             Client client = new Client(Example.Endpoint());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
             client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             
@@ -162,7 +170,8 @@ namespace Test
         {
             Console.WriteLine("TestDeleteConsentId");
             Client client = new Client(Example.Endpoint());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(client.PostDocuments(Example.ContentType(), Example.ConsentId()));
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                client.PostDocuments(Example.ContentType(), Example.ConsentId()));
             
             client.PutDocument(Example.DocPath(),Example.ContentType(),postDocResponse["uploadUrl"]);
             

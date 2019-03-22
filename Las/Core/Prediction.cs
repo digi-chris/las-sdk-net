@@ -46,7 +46,8 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Convert an object of this class to a string ready to be interpreted as a json object.
         /// </summary>
-        /// <param name="format"> The format of the string, either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
+        /// <param name="format"> The format of the string,
+        /// either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
         /// <returns> A string that is formatted as a json object </returns>
         public string ToJsonString(Formatting format = Formatting.None) 
         {
@@ -77,7 +78,8 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Convert an object of this class to a string ready to be interpreted as a json object.
         /// </summary>
-        /// <param name="format"> The format of the string, either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
+        /// <param name="format"> The format of the string,
+        /// either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
         /// <returns> A string that is formatted as a json object </returns>
         public string ToJsonString(Formatting format = Formatting.None) 
         {
@@ -125,7 +127,8 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Convert an object of this class to a string ready to be interpreted as a json object.
         /// </summary>
-        /// <param name="format"> The format of the string, either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
+        /// <param name="format"> The format of the string,
+        /// either <c>Formatting.None</c> or <c>Formatting.Indented</c> </param>
         /// <returns> A string that is formatted as a json object </returns>
         public string ToJsonString(Formatting format = Formatting.None) 
         {

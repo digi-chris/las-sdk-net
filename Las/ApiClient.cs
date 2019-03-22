@@ -35,7 +35,8 @@ namespace Lucidtech.Las
         /// <example> <code>
         /// using namespace Lucidtech.Las; 
         /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
-        /// Prediction response = apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice", consentId: "bar"); 
+        /// Prediction response =
+        /// apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice", consentId: "bar"); 
         /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
         /// </code></example>
         /// <param name="documentPath"> Path to document to run inference on </param>
@@ -58,7 +59,8 @@ namespace Lucidtech.Las
         }
 
         /// <summary>
-        /// Run inference and create prediction on document without specifying consent Id, this method takes care of creating and uploaded document
+        /// Run inference and create prediction on document without specifying consent Id,
+        /// this method takes care of creating and uploaded document
         /// as well as running inference to create prediction on document.
         /// </summary>
         /// <example><code>
@@ -129,7 +131,8 @@ namespace Lucidtech.Las
         /// <returns></returns>
         private string UploadDocument(string documentPath, string contentType, string consentId)
         {
-            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(PostDocuments(contentType, consentId));
+            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                PostDocuments(contentType, consentId));
             string documentId = postDocumentsResponse["documentId"];
             string presignedUrl = postDocumentsResponse["uploadUrl"];
             PutDocument(documentPath, contentType, presignedUrl);
