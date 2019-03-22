@@ -51,7 +51,6 @@ namespace Lucidtech.Las.Utils
             return authHeader;
         }
         
-        /* Public Static Methods */
         public static string StringFromByteArray(byte[] bytes)
         {
             var builder = new StringBuilder();
@@ -68,7 +67,6 @@ namespace Lucidtech.Las.Utils
             return hmac.ComputeHash(msg);
         }
         
-        /* Private Methods */
         private byte[] GetCanonicalRequest(Uri uri, string method, byte[] body, Dictionary<string, string> headers)
         {
             string headerList = string.Join(";", headers.Keys);

@@ -31,7 +31,7 @@ namespace Lucidtech.Las
         {
             Authorization = new AmazonAuthorization(credentials);
             Endpoint = endpoint;
-            var uri = new Uri(endpoint);	
+            var uri = new Uri(endpoint);
             RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
             Serializer = new JsonSerialPublisher(new JsonSerializer());
         }
@@ -43,7 +43,7 @@ namespace Lucidtech.Las
         public Client(string endpoint) : this(endpoint, new Credentials()) { }
 
         /// <summary>
-        ///	Creates a document handle, calls the POST /documents endpoint
+        /// Creates a document handle, calls the POST /documents endpoint
         /// </summary>
         /// <example>
         /// Create a document handle for a jpeg image
@@ -68,7 +68,7 @@ namespace Lucidtech.Las
         }
 
         /// <summary>
-        ///	Convenience method for putting a document to presigned url.
+        /// Convenience method for putting a document to presigned url.
         /// </summary>
         /// <example>
         /// Put an example file to the location specified by a presigned url
@@ -102,7 +102,7 @@ namespace Lucidtech.Las
         /// Run inference and create a prediction using the invoice model on the document specified by '&lt;documentId&gt;'
         /// <code>
         /// Client client = new Client('&lt;endpoint&gt;'); 
-        ///	var response = client.PostPredictions('&lt;documentId&gt;',"invoice"); 
+        /// var response = client.PostPredictions('&lt;documentId&gt;',"invoice"); 
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to upload Same as provided to <see cref="PostDocuments"/></param>
@@ -111,7 +111,6 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions.
         /// the value of predictions is the output from the model
         /// </returns>
-        ///         
         public object PostPredictions(string documentId, string modelName)
         {
             var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
@@ -228,8 +227,8 @@ namespace Lucidtech.Las
             catch (Exception e)
             {
                 Console.WriteLine($"Error in response. Returned {e}");
-                throw;	
-            }	
+                throw;
+            }
         }
     } 
 } 

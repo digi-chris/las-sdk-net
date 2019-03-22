@@ -29,7 +29,7 @@ namespace Lucidtech.Las
         public ApiClient(string endpoint, Credentials credentials) : base(endpoint, credentials) { }
 
         /// <summary>
-        ///	Run inference and create prediction on document, this method takes care of creating and uploaded document
+        /// Run inference and create prediction on document, this method takes care of creating and uploaded document
         /// as well as running inference to create prediction on document.
         /// </summary>
         /// <example> <code>
@@ -58,7 +58,7 @@ namespace Lucidtech.Las
         }
 
         /// <summary>
-        ///	Run inference and create prediction on document without specifying consent Id, this method takes care of creating and uploaded document
+        /// Run inference and create prediction on document without specifying consent Id, this method takes care of creating and uploaded document
         /// as well as running inference to create prediction on document.
         /// </summary>
         /// <example><code>
@@ -79,7 +79,7 @@ namespace Lucidtech.Las
         }
 
         /// <summary>
-        ///	Send feedback to the model.
+        /// Send feedback to the model.
         /// This method takes care of sending feedback related to a document specified by documentId.
         /// Feedback consists of ground truth values for the document specified as a List of Dictionaries.
         /// </summary>
@@ -150,7 +150,7 @@ namespace Lucidtech.Las
             }
             else
             {
-                throw new FormatException($"The format of {documentPath} is not supported, use jpeg or pdf");	
+                throw new FormatException($"The format of {documentPath} is not supported, use jpeg or pdf");
             }
         }
     } 
