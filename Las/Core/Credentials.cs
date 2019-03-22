@@ -19,14 +19,17 @@ namespace Lucidtech.Las.Core
     /// </summary>
     public class Credentials
     {
+        
         /// <summary>
         /// Amazon Access key ID. Provided by Lucidtech.
         /// </summary>
         public string AccessKeyId { get; }
+        
         /// <summary>
         /// Amazon Secret Access Key. Provided by Lucidtech.
         /// </summary>
         public string SecretAccessKey { get; }
+        
         /// <summary>
         /// AWS API Gateway API key. Provided by Lucidtech.
         /// </summary>
@@ -46,6 +49,7 @@ namespace Lucidtech.Las.Core
             SecretAccessKey = secretAccessKey;
             ApiKey = apiKey;
         }
+        
         /// <summary>
         /// Credentials constructor where the path is provided.
         /// </summary>
@@ -57,14 +61,16 @@ namespace Lucidtech.Las.Core
             SecretAccessKey = credentials["SecretAccessKey"];
             ApiKey = credentials["ApiKey"];
         }
+        
         /// <summary>
-        /// Credentials constructor where the credentials are located at the default path ~/.lucidtech/credentials.cfg.
+        /// Credentials constructor where the credentials are located at the default path.
+        /// ~/.lucidtech/credentials.cfg for linux and %USERPROFILE%\.lucidtech\credentials.cfg for Windows.
         /// </summary>
         public Credentials() : this(GetCredentialsPath()){}
         
         private static string GetCredentialsPath()
         {
-            string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)?"%UserProfile%\\.lucidtech\\credentials.cfg":"%HOME%/.lucidtech/credentials.cfg";
+            string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)?"%USERPROFILE%\\.lucidtech\\credentials.cfg":"%HOME%/.lucidtech/credentials.cfg";
             return Environment.ExpandEnvironmentVariables(path);
         }
         private static Dictionary<string, string> ReadCredentials(string credentialPath)
