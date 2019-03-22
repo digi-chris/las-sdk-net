@@ -147,7 +147,6 @@ namespace Lucidtech.Las.Utils
             return headers;
         }
         
-        /* Private Static Methods */
         private static byte[] GetSignString(string amzDate, string credScope, string reqDigest)
         {
             var parts = new List<string>(){Algorithm, amzDate, credScope, reqDigest};
