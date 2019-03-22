@@ -57,16 +57,18 @@ Console.WriteLine(response.ToJsonString(Formatting.Indented));
 ## Contributing
 
 ### Prerequisites
-Download the latest and greatest version of [MSBuild](https://github.com/Microsoft/msbuild).
-
+Download the latest and greatest version of [MSBuild](https://github.com/Microsoft/msbuild) and [NuGet](https://github.com/NuGet/Home).
 Download NUnit.Console version 3.9.0 or higher to run tests from command line.
 ```bash
-$ nuget install NUnit.Console --version 3.9.0
+$ nuget install NUnit.Console 
 ```
 
-### Run tests
 
+### Build and run tests
+Clone repo and install the necessary packages manually for the las-sdk-net.
 ```bash
+$ clone git@github.com:LucidtechAI/las-sdk-net.git
+$ nuget install -OutputDirectory packages
 $ msbuild Test/Test.csproj # Build 
 $ nunit3-console Test/bin/Debug/Test.dll; # Run
 ```
