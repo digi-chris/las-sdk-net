@@ -11,6 +11,7 @@ namespace Lucidtech.Las.Utils
     /// </summary>
     public static class FileType
     {
+        
         /// <summary>
         /// Tests the type of file.
         /// </summary>

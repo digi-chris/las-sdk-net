@@ -10,6 +10,7 @@ namespace Lucidtech.Las.Utils
 {
     public class AmazonAuthorization
     {
+        
         private string Region { get; }
         private string Service { get; }
         private Credentials Creds { get; }
@@ -103,6 +104,7 @@ namespace Lucidtech.Las.Utils
             }
             return query;
         }
+        
         private Dictionary<string, string> Headers(Uri uri, string amzDate)
         {
             var headers = new Dictionary<string, string>()
@@ -130,6 +132,7 @@ namespace Lucidtech.Las.Utils
             var parts = new List<string>() {dateStamp, Region, Service, "aws4_request"};
             return string.Join("/", parts);
         }
+        
         private Dictionary<string, string> BuildAuthHeader(
             string amzDate, string signature, string credScope, List<string> signedHeaders)
         {

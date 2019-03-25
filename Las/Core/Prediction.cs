@@ -12,6 +12,7 @@ namespace Lucidtech.Las.Core
     /// </summary>
     public class Prediction
     {
+        
         /// <summary>
         /// Document id
         /// </summary>
@@ -60,6 +61,7 @@ namespace Lucidtech.Las.Core
     /// </summary>
     public class RevokeResponse
     {
+        
         /// <summary>
         /// The consent Id where documents where deleted. 
         /// </summary>
@@ -75,6 +77,7 @@ namespace Lucidtech.Las.Core
             ConsentId = jsonResponse["consentId"].ToString();
             DocumentIds = JsonSerialPublisher.ObjectToDict<List<string>>(jsonResponse["documentIds"]);
         }
+        
         /// <summary>
         /// Convert an object of this class to a string ready to be interpreted as a json object.
         /// </summary>
@@ -92,6 +95,7 @@ namespace Lucidtech.Las.Core
     /// </summary>
     public class FeedbackResponse
     {
+        
         /// <summary>
         /// Document id
         /// </summary>

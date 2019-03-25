@@ -12,6 +12,7 @@ namespace Lucidtech.Las.Utils
     /// </summary>
     public class JsonSerialPublisher: ISerializer, IDeserializer
     {
+        
         public string RootElement { get; set; }
         public string Namespace { get; set; }
         public string DateFormat { get; set; }
@@ -27,6 +28,7 @@ namespace Lucidtech.Las.Utils
         /// </summary>
         public static JsonSerialPublisher Default => new JsonSerialPublisher(
             new Newtonsoft.Json.JsonSerializer(){ NullValueHandling = NullValueHandling.Ignore});  
+        
         public JsonSerialPublisher(Newtonsoft.Json.JsonSerializer serializer)
         {
             _serializer = serializer;
