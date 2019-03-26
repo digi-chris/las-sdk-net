@@ -25,7 +25,7 @@ $ nuget install Lucidtech.Las
 - Documents must be in upright position
 - Only one receipt or invoice per document is supported
 - Supported file formats are: jpeg, pdf
-- Lucidtech.Las requires compatibility with .NET standard 4.7
+- Lucidtech.Las requires compatibility with .NET standard 2.0
 
 ### Quick start
 

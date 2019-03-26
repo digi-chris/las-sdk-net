@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Lucidtech.Las</id>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
         <title>Lucidtech AI Services</title>
         <authors>Lucidtech AS</authors>
         <owners>Lucidtech AS</owners>
@@ -14,12 +14,14 @@
         <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
         <tags>las Lucidtech</tags>
         <dependencies>
-            <dependency id="RestSharp" version="105.2.3" />
-            <dependency id="INIFileParser" version="2.5.2.0"/>
-            <dependency id="Newtonsoft.Json" version="12.0.0.0"/>
-            <dependency id="System.Runtime.InteropServices" version="4.3.0" />
-            <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.0.0.0"/>
-            <dependency id="System.Runtime.Serialization.Xml" version="4.3.0"/>
+            <group targetFramework="netstandard2.0">
+                <dependency id="RestSharp" version="105.2.3" />
+                <dependency id="ini-parser" version="2.5.2.0"/>
+                <dependency id="Newtonsoft.Json" version="12.0.0.0"/>
+                <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+                <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.0.0.0"/>
+                <dependency id="System.Runtime.Serialization.Xml" version="4.3.0"/>
+            </group>
         </dependencies>
     </metadata>
     <files>
