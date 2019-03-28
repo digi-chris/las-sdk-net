@@ -63,10 +63,14 @@ Console.WriteLine(response.ToJsonString(Formatting.Indented));
 Do a prediction of type document split.
 ```C#
 using Lucidtech.Las;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+
 string contentType = "application/pdf";
 string modelType = "documentSplit";
-
 ApiClient apiClient = new ApiClient("<endpoint>");
+
 var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
     apiClient.PostDocuments(contentType, "<consentId>");
 
