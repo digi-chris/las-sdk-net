@@ -60,6 +60,30 @@ RevokeResponse response = apiClient.RevokeConsent(consentId: "<consentId>");
 Console.WriteLine(response.ToJsonString(Formatting.Indented));
 ```
 
+Do a prediction of type document split.
+```C#
+using Lucidtech.Las;
+string contentType = "application/pdf";
+string modelType = "documentSplit";
+
+ApiClient apiClient = new ApiClient("<endpoint>");
+var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+    apiClient.PostDocuments(contentType, "<consentId>");
+
+apiClient.PutDocument(documentPath: "document.pdf", contentType, res["uploadUrl"]);
+
+var predictionResponse = apiClient.PostPredictions(res["documentId"], modelType);
+
+JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
+var preds = JsonSerialPublisher.ObjectToDict<List<Dictionary<string, object>>>(jsonResponse["predictions"]);
+// preds will now be a list with dictionaries with the following structure: List<Dictionary<string, object>>
+// type: invoice
+// start: 1
+// end: 3
+// confidence: 0.9912641852
+    
+```
+
 ## Contributing
 
 ### Prerequisites
