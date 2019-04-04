@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 
 using RestSharp;
@@ -220,7 +221,19 @@ namespace Lucidtech.Las
         
         private object JsonDecode(IRestResponse response)
         {
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.Forbidden && response.ErrorMessage.Contains("Forbidden"))
+            {
+                throw new InvalidCredentialsException("Credentials provided is not valid.");
+            }
+            if ( (int)response.StatusCode == 429 && response.ErrorMessage.Contains("Too Many Requests"))
+            {
+                throw new TooManyRequestsException("You have reached the limit of requests per second.");
+            }
+            if ( (int)response.StatusCode == 429 && response.ErrorMessage.Contains("Limit Exceeded"))
+            {
+                throw new LimitExceededException("You have reached the limit of total requests per month.");
+            }
+            if (response.StatusCode != HttpStatusCode.OK)
             {
                 throw new ApplicationException(response.ErrorMessage);
             }
