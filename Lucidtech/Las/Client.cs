@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
+using Polly;
 
 using RestSharp;
 using Newtonsoft.Json;
@@ -127,9 +129,7 @@ namespace Lucidtech.Las
         /// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
         /// Posting feedback means posting the ground truth data for the particular document.
-        /// This enables the API to learn from past mistakes.
-        /// </summary>
-        /// <example>
+        /// This enables the API to learn from past mistakes. /// </summary> /// <example>
         /// <code>
         /// Client client = new Client('&lt;endpoint&gt;'); 
         /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;() 
@@ -217,6 +217,27 @@ namespace Lucidtech.Las
                 headers.Add("Content-Type", "application/json");
             
             return headers;
+        }
+
+        private object ExecuteRequestResilient(RestRequest request)
+        {
+            var policy = Policy
+                .Handle<InvalidCredentialsException>()
+                .WaitAndRetry(new[]
+                {
+                    TimeSpan.FromSeconds(0.5),
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4)
+                });
+            var result = policy.Execute(() => ExecuteRequest(request));
+            return result;
+        }
+        
+        private object ExecuteRequest(RestRequest request)
+        {
+            IRestResponse response = RestSharpClient.Execute(request);
+            return JsonDecode(response);
         }
         
         private object JsonDecode(IRestResponse response)

@@ -213,7 +213,6 @@ namespace Test
                 byte[] res = AmazonAuthorization.SignHash(bytes, Encoding.UTF8.GetBytes(testDict[key]));
                 Assert.Zero(string.CompareOrdinal(AmazonAuthorization.StringFromByteArray(res), answers[i]));
             }
-            
         }
     }
     
@@ -223,17 +222,9 @@ namespace Test
         public static string ContentType() { return "image/jpeg"; }
         public static string ModelType() { return "invoice"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
-        public static string DocPath() {
-            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            try
-            {
-                return dirInfo.Parent.Parent.FullName + "/Files/example.jpeg";
-            }
-            catch (NullReferenceException e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+        public static string DocPath() { 
+            return Environment.ExpandEnvironmentVariables(
+                "%HOME%/dev/src/las-sdk-net-base/Test/Files/example.jpeg");
         }
     }
 }
