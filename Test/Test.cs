@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 
 using NUnit.Framework;
@@ -18,6 +19,32 @@ namespace Test
     [TestFixture]
     public class TestApi
     {
+        [Test]
+        public void TestDocumentSplit()
+        {
+            ApiClient apiClient = new ApiClient(ExampleDocSplit.Endpoint());
+
+            var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                apiClient.PostDocuments(ExampleDocSplit.ContentType(), ExampleDocSplit.ConsentId()));
+            
+            apiClient.PutDocument(ExampleDocSplit.DocPath(), ExampleDocSplit.ContentType(), res["uploadUrl"]);
+            
+            var predictionResponse = apiClient.PostPredictions(res["documentId"], ExampleDocSplit.ModelType());
+            JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
+            Console.WriteLine(jsonResponse.ToString());
+            var preds = JsonSerialPublisher.ObjectToDict<List<Dictionary<string, object>>>(jsonResponse["predictions"]);
+                
+
+            Console.WriteLine($"\n$ Predict Document split response response = apiClient.PostPredictions(...);");
+            foreach (var pred in preds)
+            {
+                Console.WriteLine($"type: {pred["type"]}");
+                Console.WriteLine($"start: {pred["start"]}");
+                Console.WriteLine($"end: {pred["end"]}");
+                Console.WriteLine($"confidence: {pred["confidence"]}");
+            }
+        }
+
         [Test]
         public void TestSendFeedback()
         {
@@ -65,10 +92,33 @@ namespace Test
             
         }
         [Test]
+        public void TestDocSpiltPrediction()
+        {
+            ApiClient apiClient = new ApiClient(ExampleDocSplit.Endpoint());
+            var response = apiClient.Predict(
+                documentPath: ExampleDocSplit.DocPath(),modelName: ExampleDocSplit.ModelType(),consentId: ExampleDocSplit.ConsentId());
+
+            Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
+            Console.WriteLine(response.ToJsonString(Formatting.Indented));
+            
+            Assert.IsTrue(response.ConsentId.Equals(ExampleDocSplit.ConsentId()));
+            Assert.IsTrue(response.ModelName.Equals(ExampleDocSplit.ModelType()));
+            foreach (var field in response.Fields)
+            {
+                Assert.IsTrue(field.ContainsKey("type"));
+                Assert.IsTrue(field.ContainsKey("start"));
+                Assert.IsTrue(field.ContainsKey("end"));
+                Assert.IsTrue(field.ContainsKey("confidence"));
+                
+                Assert.IsTrue(field["type"] is string);
+                Assert.IsTrue(field["confidence"] is double);
+            }
+        }
+        [Test]
         public void TestPrediction()
         {
             ApiClient apiClient = new ApiClient(Example.Endpoint());
-            Prediction response = apiClient.Predict(
+            var response = apiClient.Predict(
                 documentPath: Example.DocPath(),modelName: Example.ModelType(),consentId: Example.ConsentId());
 
             Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
@@ -222,9 +272,20 @@ namespace Test
         public static string ContentType() { return "image/jpeg"; }
         public static string ModelType() { return "invoice"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
-        public static string DocPath() { 
+        public static string DocPath() { return Environment.ExpandEnvironmentVariables(
+                "%HOME%/dev/src/las-sdk-net-base/Test/Files/example.jpeg"); }
+    }
+
+    public static class ExampleDocSplit
+    {
+        public static string ConsentId() { return "bar"; }
+        public static string ContentType() { return "application/pdf"; }
+        public static string ModelType() { return "documentSplit"; }
+        public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
+        public static string DocPath() {
             return Environment.ExpandEnvironmentVariables(
-                "%HOME%/dev/src/las-sdk-net-base/Test/Files/example.jpeg");
+                "%HOME%/dev/src/las-sdk-net-base/Test/Files/example.pdf");
         }
     }
+
 }

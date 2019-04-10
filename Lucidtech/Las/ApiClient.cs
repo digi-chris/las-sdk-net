@@ -54,7 +54,7 @@ namespace Lucidtech.Las
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
             var predictionString = jsonResponse["predictions"].ToString();
             var predictions = Serializer.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
-            Prediction prediction = new Prediction(documentId, consentId, modelName, predictions); 
+            Prediction prediction = new Prediction(documentId, consentId, modelName, predictions);
             return prediction;
         }
 

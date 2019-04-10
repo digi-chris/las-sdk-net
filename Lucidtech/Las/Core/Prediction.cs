@@ -14,10 +14,6 @@ namespace Lucidtech.Las.Core
     {
         
         /// <summary>
-        /// Document id
-        /// </summary>
-        public string DocumentId { get; }
-        /// <summary>
         /// Consent id
         /// </summary>
         public string ConsentId { get; }
@@ -25,6 +21,10 @@ namespace Lucidtech.Las.Core
         /// Upload url
         /// </summary>
         public string ModelName { get; }
+        /// <summary>
+        /// Document id
+        /// </summary>
+        public string DocumentId { get; }
         /// A list of the responses from a prediction
         public List<Dictionary<string, object>> Fields { get; }
 
@@ -36,14 +36,13 @@ namespace Lucidtech.Las.Core
         /// <param name="modelName"> The name of the model used </param>
         /// <param name="predictionResponse"> The response from prediction </param>
         public Prediction(string documentId, string consentId, string modelName,
-            List<Dictionary<string, object>> predictionResponse)
+            List<Dictionary<string, object>> predictionResponse) 
         {
-            DocumentId = documentId;
             ConsentId = consentId;
             ModelName = modelName;
+            DocumentId = documentId;
             Fields = predictionResponse;
         }
-        
         /// <summary>
         /// Convert an object of this class to a string ready to be interpreted as a json object.
         /// </summary>
@@ -55,6 +54,7 @@ namespace Lucidtech.Las.Core
             return JsonConvert.SerializeObject(this, format);
         }
     }
+
 
     /// <summary>
     /// The structured format of the response from a revoke consent request.
