@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Security.Policy;
 using System.Text;
+using System.Web;
 using Polly;
 
 using RestSharp;
@@ -66,8 +67,7 @@ namespace Lucidtech.Las
         {
             var dictBody = new Dictionary<string, string>() { {"contentType", contentType}, {"consentId", consentId} };
             RestRequest request = ClientRestRequest(Method.POST, "/documents", dictBody);
-            IRestResponse response = RestSharpClient.Execute(request);
-            return JsonDecode(response);
+            return ExecuteRequestResilient(RestSharpClient, request);
         }
 
         /// <summary>
@@ -95,8 +95,7 @@ namespace Lucidtech.Las
             request.AddHeader("Content-Type", contentType);
             request.AddParameter(contentType, body, ParameterType.RequestBody);
             RestClient client = new RestClient(presignedUrl);
-            IRestResponse response = client.Execute(request);
-            return JsonDecode(response);
+            return ExecuteRequestResilient(client, request);
         }
         
         /// <summary>
@@ -122,8 +121,7 @@ namespace Lucidtech.Las
         {
             var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
             RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
-            IRestResponse response = RestSharpClient.Execute(request);
-            return JsonDecode(response);
+            return ExecuteRequestResilient(RestSharpClient, request);
         }
         
         /// <summary>
@@ -157,8 +155,7 @@ namespace Lucidtech.Las
             object body = JsonConvert.DeserializeObject(bodyString);
             
             RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
-            IRestResponse response = RestSharpClient.Execute(request);
-            return JsonDecode(response);
+            return ExecuteRequestResilient(RestSharpClient, request);
         }
         
         /// <summary>
@@ -177,8 +174,7 @@ namespace Lucidtech.Las
         {
             var dictBody = new Dictionary<string, string> {};
             RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
-            IRestResponse response = RestSharpClient.Execute(request);
-            return JsonDecode(response);
+            return ExecuteRequestResilient(RestSharpClient, request);
         }
         
         /// <summary>
@@ -219,10 +215,10 @@ namespace Lucidtech.Las
             return headers;
         }
 
-        private object ExecuteRequestResilient(RestRequest request)
+        private object ExecuteRequestResilient(RestClient client, RestRequest request)
         {
-            var policy = Policy
-                .Handle<InvalidCredentialsException>()
+            var clogged = Policy
+                .Handle<TooManyRequestsException>()
                 .WaitAndRetry(new[]
                 {
                     TimeSpan.FromSeconds(0.5),
@@ -230,33 +226,43 @@ namespace Lucidtech.Las
                     TimeSpan.FromSeconds(2),
                     TimeSpan.FromSeconds(4)
                 });
-            var result = policy.Execute(() => ExecuteRequest(request));
+            var bad = Policy
+                .Handle<RequestException>(e => !FatalCode(e.Response.StatusCode))
+                .Retry();
+
+            var policy = Policy.Wrap(clogged, bad);
+            var result = policy.Execute(() => ExecuteRequest(client, request));
             return result;
         }
         
-        private object ExecuteRequest(RestRequest request)
+        private object ExecuteRequest(RestClient client, RestRequest request)
         {
-            IRestResponse response = RestSharpClient.Execute(request);
+            IRestResponse response = client.Execute(request);
             return JsonDecode(response);
+        }
+
+        private bool FatalCode(HttpStatusCode code)
+        {
+            return 400 <= (int) code && (int) code < 500;
         }
         
         private object JsonDecode(IRestResponse response)
         {
-            if (response.StatusCode == HttpStatusCode.Forbidden && response.ErrorMessage.Contains("Forbidden"))
+            if (response.StatusCode == HttpStatusCode.Forbidden)
             {
                 throw new InvalidCredentialsException("Credentials provided is not valid.");
             }
-            if ( (int)response.StatusCode == 429 && response.ErrorMessage.Contains("Too Many Requests"))
+            if ( (int)response.StatusCode == 429 && response.Content.Contains("Too Many Requests"))
             {
                 throw new TooManyRequestsException("You have reached the limit of requests per second.");
             }
-            if ( (int)response.StatusCode == 429 && response.ErrorMessage.Contains("Limit Exceeded"))
+            if ( (int)response.StatusCode == 429 && response.Content.Contains("Limit Exceeded"))
             {
                 throw new LimitExceededException("You have reached the limit of total requests per month.");
             }
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (response.ResponseStatus == ResponseStatus.Error || response.StatusCode != HttpStatusCode.OK)
             {
-                throw new ApplicationException(response.ErrorMessage);
+                throw new RequestException(response);
             }
             try
             {
@@ -266,7 +272,7 @@ namespace Lucidtech.Las
             catch (Exception e)
             {
                 Console.WriteLine($"Error in response. Returned {e}");
-                throw;
+                throw new Exception(response.ToString());
             }
         }
     } 

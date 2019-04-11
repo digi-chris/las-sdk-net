@@ -62,7 +62,7 @@ namespace Lucidtech.Las.Utils
             return builder.ToString();  
         }
         
-        public static byte[] SignHash(byte[] key, byte[] msg)
+        private static byte[] SignHash(byte[] key, byte[] msg)
         {
             var hmac = new HMACSHA256(key);
             return hmac.ComputeHash(msg);

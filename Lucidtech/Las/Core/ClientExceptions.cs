@@ -1,4 +1,5 @@
 using System;
+using RestSharp;
 
 namespace Lucidtech.Las.Core
 {
@@ -28,7 +29,6 @@ namespace Lucidtech.Las.Core
       public TooManyRequestsException(string s) : base(s) {}
    }
 
-
    /// <summary>
    /// A LimitExceededException is raised if you have reached the limit of total requests per month
    /// associated with your credentials.
@@ -36,6 +36,20 @@ namespace Lucidtech.Las.Core
    public class LimitExceededException : ClientException 
    {
       public LimitExceededException(string s) : base(s) {}
+   }
+    
+   /// <summary>
+   /// A RequestException is raised if something went wrong with the request.
+   /// </summary>
+   public class RequestException : ClientException 
+   {
+      public IRestResponse Response { get; }
+      public RequestException(string s) : base(s) {}
+
+      public RequestException(IRestResponse response) : base(string.Concat(response.Content, response.ErrorMessage))
+      {
+         Response = response;
+      }
    }
     
 }
