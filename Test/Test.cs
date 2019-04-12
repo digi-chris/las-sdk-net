@@ -228,8 +228,7 @@ namespace Test
         public static string ContentType() { return "image/jpeg"; }
         public static string ModelType() { return "invoice"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
-        public static string DocPath() { return Environment.ExpandEnvironmentVariables(
-                "Test/Files/example.jpeg"); }
+        public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.jpeg"); }
     }
 
     public static class ExampleDocSplit
@@ -238,10 +237,7 @@ namespace Test
         public static string ContentType() { return "application/pdf"; }
         public static string ModelType() { return "documentSplit"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
-        public static string DocPath() {
-            return Environment.ExpandEnvironmentVariables(
-                "Test/Files/example.pdf");
-        }
+        public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); }
     }
 
 }

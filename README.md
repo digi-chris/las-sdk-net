@@ -63,10 +63,18 @@ Console.WriteLine(response.ToJsonString(Formatting.Indented));
 ## Contributing
 
 ### Prerequisites
-Download The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/msbuild-stable.git) (arch linux),
-and the latest and greatest version of [NuGet](https://github.com/NuGet/Home).
-Download [nunit](http://nunit.org/download/) version 3.9.0 or higher to run tests from command line.
-Download [.NET-SDK v2.2](https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial/install)  
+Download the following packages: 
+* The latest and greatest stable version of [MSBuild](https://github.com/Microsoft/msbuild)
+* The latest and greatest version of [NuGet](https://github.com/NuGet/Home)
+* [nunit](http://nunit.org/download/) version 3.9.0 or higher to run tests from command line
+* [.NET-SDK](https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial/install) version 2.2.105
+
+### Prerequisites for Arch Users
+Download the following packages: 
+* The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/msbuild-stable.git) 
+* The latest and greatest version of [NuGet](https://www.archlinux.org/packages/extra/any/nuget/)
+* [nunit](https://aur.archlinux.org/nunit3-console.git) version 3.9.0 or higher to run tests from command line
+* [.NET-SDK](https://www.archlinux.org/packages/community/x86_64/dotnet-sdk/) version 2.2.105
 
 ### Build and run tests
 Clone repo and install the necessary packages manually for the las-sdk-net.

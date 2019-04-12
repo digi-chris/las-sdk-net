@@ -68,7 +68,8 @@ namespace Lucidtech.Las.Utils
             return hmac.ComputeHash(msg);
         }
         
-        private static byte[] GetCanonicalRequest(Uri uri, string method, byte[] body, Dictionary<string, string> headers)
+        private static byte[] GetCanonicalRequest(Uri uri, string method, byte[] body, 
+            Dictionary<string, string> headers)
         {
             string headerList = string.Join(";", headers.Keys);
             
