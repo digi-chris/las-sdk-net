@@ -25,7 +25,7 @@ $ nuget install Lucidtech.Las
 - Documents must be in upright position
 - Only one receipt or invoice per document is supported
 - Supported file formats are: jpeg, pdf
-- Lucidtech.Las requires compatibility with .NET standard 2.0
+- Necessary keys and credentials to an endpoint on the form: "https://<your prefix>.api.lucidtech.ai/<version>".
 
 ### Quick start
 
@@ -33,8 +33,8 @@ Run inference and create prediction on document
 ```C#
 using Lucidtech.Las;
 
-ApiClient apiClient = new ApiClient("<api endpoint>");
-Prediction response = apiClient.Predict(documentPath: "document.pdf", modelName: "invoice");
+ApiClient apiClient = new ApiClient("<endpoint>");
+Prediction response = apiClient.Predict(documentPath: "document.pdf", modelName: "invoice|receipt|documentSplit");
 Console.WriteLine(response.ToJsonString(Formatting.Indented));
 ```
 
@@ -60,38 +60,10 @@ RevokeResponse response = apiClient.RevokeConsent(consentId: "<consentId>");
 Console.WriteLine(response.ToJsonString(Formatting.Indented));
 ```
 
-Do a prediction of type document split.
-```C#
-using Lucidtech.Las;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-
-string contentType = "application/pdf";
-string modelType = "documentSplit";
-ApiClient apiClient = new ApiClient("<endpoint>");
-
-var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
-    apiClient.PostDocuments(contentType, "<consentId>");
-
-apiClient.PutDocument(documentPath: "document.pdf", contentType, res["uploadUrl"]);
-
-var predictionResponse = apiClient.PostPredictions(res["documentId"], modelType);
-
-JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
-var preds = JsonSerialPublisher.ObjectToDict<List<Dictionary<string, object>>>(jsonResponse["predictions"]);
-// preds will now be a list with dictionaries with the following structure: List<Dictionary<string, object>>
-// type: invoice
-// start: 1
-// end: 3
-// confidence: 0.9912641852
-    
-```
-
 ## Contributing
 
 ### Prerequisites
-Download version 14.1.0.0 of [MSBuild](https://aur.archlinux.org/msbuild-bin.git) (arch linux),
+Download The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/msbuild-stable.git) (arch linux),
 and the latest and greatest version of [NuGet](https://github.com/NuGet/Home).
 Download NUnit.Console version 3.9.0 or higher to run tests from command line.
 ```bash
@@ -104,8 +76,8 @@ Clone repo and install the necessary packages manually for the las-sdk-net.
 ```bash
 $ git clone git@github.com:LucidtechAI/las-sdk-net.git
 $ cd las-sdk-net
-$ nuget install -OutputDirectory packages
-$ msbuild Test/Test.csproj # Build 
-$ nunit3-console Test/bin/Debug/Test.dll # Run
+$ msbuild Lucidtech/Lucidtech.csproj # Build Las library
+$ msbuild Test/Test.csproj # Build Tests
+$ nunit3-console Test/bin/<framework-version>/Debug/Test.dll # Run
 ```
 
