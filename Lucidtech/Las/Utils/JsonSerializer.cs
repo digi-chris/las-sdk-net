@@ -13,9 +13,6 @@ namespace Lucidtech.Las.Utils
     public class JsonSerialPublisher: ISerializer, IDeserializer
     {
         
-        public string RootElement { get; set; }
-        public string Namespace { get; set; }
-        public string DateFormat { get; set; }
         public string ContentType
         {
             get { return "application/json"; }
@@ -60,7 +57,7 @@ namespace Lucidtech.Las.Utils
         /// </summary>
         /// <param name="response"> A json formatted string </param>
         /// <returns> A general deserialized object </returns>
-        public object DeserializeObject(string response)
+        public static object DeserializeObject(string response)
         {
             return JsonConvert.DeserializeObject(response);
         }
@@ -71,7 +68,7 @@ namespace Lucidtech.Las.Utils
         /// <param name="response"> A json formatted string</param>
         /// <typeparam name="T"> The type of the output, e.g. Dictionary or a List of some sort </typeparam>
         /// <returns> A deserialized object of type <typeparamref name="T"/> </returns>
-        public T DeserializeObject<T>(string response)
+        public static T DeserializeObject<T>(string response)
         {
             return JsonConvert.DeserializeObject<T>(response);
         }

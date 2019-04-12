@@ -53,7 +53,7 @@ namespace Lucidtech.Las
             
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
             var predictionString = jsonResponse["predictions"].ToString();
-            var predictions = Serializer.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
+            var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
             Prediction prediction = new Prediction(documentId, consentId, modelName, predictions);
             return prediction;
         }
@@ -147,14 +147,11 @@ namespace Lucidtech.Las
                     {"pdf", "application/pdf"}
                 };
             string fmt = FileType.WhatFile(documentPath);
-            if (supportedFormats.ContainsKey(fmt))
-            {
-                return supportedFormats[fmt];
-            }
-            else
+            if (!supportedFormats.ContainsKey(fmt))
             {
                 throw new FormatException($"The format of {documentPath} is not supported, use jpeg or pdf");
             }
+            return supportedFormats[fmt];
         }
     } 
 } 

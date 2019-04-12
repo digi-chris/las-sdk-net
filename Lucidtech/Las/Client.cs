@@ -20,8 +20,6 @@ namespace Lucidtech.Las
     /// </summary>
     public class Client 
     {
-        /// The serializer that is used to convert between json format and standard C# types like object and Dictionary
-        public JsonSerialPublisher Serializer{ get; }
         private string Endpoint { get; }
         private RestClient RestSharpClient { get; }
         private AmazonAuthorization Authorization { get; }
@@ -37,7 +35,6 @@ namespace Lucidtech.Las
             Endpoint = endpoint;
             var uri = new Uri(endpoint);
             RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
-            Serializer = new JsonSerialPublisher(new JsonSerializer());
         }
         
         /// <summary>
@@ -191,9 +188,8 @@ namespace Lucidtech.Las
         {
             Uri endpoint = new Uri(string.Concat(Endpoint, path));
 
-            var request = new RestRequest(endpoint, method);
+            var request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
-            request.RequestFormat = DataFormat.Json;
             request.AddJsonBody(dictBody);
 
             byte[] body = Encoding.UTF8.GetBytes(request.JsonSerializer.Serialize(dictBody));
@@ -241,7 +237,7 @@ namespace Lucidtech.Las
             return JsonDecode(response);
         }
 
-        private bool FatalCode(HttpStatusCode code)
+        private static bool FatalCode(HttpStatusCode code)
         {
             return 400 <= (int) code && (int) code < 500;
         }
@@ -266,7 +262,7 @@ namespace Lucidtech.Las
             }
             try
             {
-                var jsonResponse = Serializer.DeserializeObject(response.Content);
+                var jsonResponse = JsonSerialPublisher.DeserializeObject(response.Content);
                 return jsonResponse;
             }
             catch (Exception e)

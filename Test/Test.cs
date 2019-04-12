@@ -25,8 +25,8 @@ namespace Test
     public class TestApi
     {
 
-        public ApiClient Luke { get; set; }
-        public ApiClient Sara { get; set; }
+        private ApiClient Luke { get; set; }
+        private ApiClient Sara { get; set; }
         
         [OneTimeSetUp]
         public void Init()
@@ -35,7 +35,7 @@ namespace Test
             Sara = new ApiClient(ExampleDocSplit.Endpoint());
         }
         
-        private void CheckFields<T>(List<Dictionary<string, T>> fields, Dictionary<string, Type> expected) 
+        private static void CheckFields<T>(List<Dictionary<string, T>> fields, Dictionary<string, Type> expected) 
         {
             foreach (var field in fields)
             {
@@ -101,7 +101,9 @@ namespace Test
                 return;
             }
             var response = Sara.Predict(
-                documentPath: ExampleDocSplit.DocPath(),modelName: ExampleDocSplit.ModelType(),consentId: ExampleDocSplit.ConsentId());
+                documentPath: ExampleDocSplit.DocPath(),
+                modelName: ExampleDocSplit.ModelType(),
+                consentId: ExampleDocSplit.ConsentId());
 
             Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
             Console.WriteLine(response.ToJsonString(Formatting.Indented));
@@ -149,7 +151,7 @@ namespace Test
             return Toby.PutDocument(Example.DocPath(), Example.ContentType(), (string) PostDocResponse["uploadUrl"]);
         }
         
-        private void CheckKeys(List<string> expected, object response)
+        private static void CheckKeys(List<string> expected, object response)
         {
             var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
             Console.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
