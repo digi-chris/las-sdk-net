@@ -65,11 +65,7 @@ Console.WriteLine(response.ToJsonString(Formatting.Indented));
 ### Prerequisites
 Download The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/msbuild-stable.git) (arch linux),
 and the latest and greatest version of [NuGet](https://github.com/NuGet/Home).
-Download NUnit.Console version 3.9.0 or higher to run tests from command line.
-```bash
-$ nuget install NUnit.Console 
-```
-
+Download [nunit](http://nunit.org/download/) version 3.9.0 or higher to run tests from command line.
 
 ### Build and run tests
 Clone repo and install the necessary packages manually for the las-sdk-net.
