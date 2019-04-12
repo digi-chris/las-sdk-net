@@ -22,6 +22,8 @@
     <PackageProjectUrl>https://github.com/LucidtechAI/las-sdk-net</PackageProjectUrl>
     <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/LucidtechAI/las-sdk-net</RepositoryUrl>
+    <PackageTags>las Lucidtech invoice receipt intelligentOCR Automation MachineLearing OCR Document DataExtraction</PackageTags>
+    <PackageReleaseNotes>Supporting document split, adding support for .NET Framework 4.7.2, better exception handling and refactoring. </PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DocumentationFile>bin/$(Configuration)/$(AssemblyName).xml</DocumentationFile>
