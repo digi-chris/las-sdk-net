@@ -229,7 +229,7 @@ namespace Test
         public static string ModelType() { return "invoice"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables(
-                "%HOME%/dev/src/las-sdk-net-base/Test/Files/example.jpeg"); }
+                "Test/Files/example.jpeg"); }
     }
 
     public static class ExampleDocSplit
@@ -240,7 +240,7 @@ namespace Test
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
         public static string DocPath() {
             return Environment.ExpandEnvironmentVariables(
-                "%HOME%/dev/src/las-sdk-net-base/Test/Files/example.pdf");
+                "Test/Files/example.pdf");
         }
     }
 

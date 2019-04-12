@@ -66,14 +66,15 @@ Console.WriteLine(response.ToJsonString(Formatting.Indented));
 Download The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/msbuild-stable.git) (arch linux),
 and the latest and greatest version of [NuGet](https://github.com/NuGet/Home).
 Download [nunit](http://nunit.org/download/) version 3.9.0 or higher to run tests from command line.
+Download [.NET-SDK v2.2](https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial/install)  
 
 ### Build and run tests
 Clone repo and install the necessary packages manually for the las-sdk-net.
 ```bash
 $ git clone git@github.com:LucidtechAI/las-sdk-net.git
 $ cd las-sdk-net
-$ msbuild Lucidtech/Lucidtech.csproj # Build Las library
+$ dotnet restore Test # Restore nuget packages dependencies
 $ msbuild Test/Test.csproj # Build Tests
-$ nunit3-console Test/bin/<framework-version>/Debug/Test.dll # Run
+$ nunit3-console Test/bin/Debug/<framework-version>/Test.dll # Run
 ```
 
