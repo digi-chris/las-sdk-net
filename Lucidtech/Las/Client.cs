@@ -85,11 +85,19 @@ namespace Lucidtech.Las
         /// An empty object 
         /// </returns>
         ///         
-        public object PutDocument(string documentPath, string contentType, string presignedUrl)
+        public object PutDocument(string documentPath, string contentType, string presignedUrl, 
+            Dictionary<string, string> kwargs = null)
         {
             byte[] body = File.ReadAllBytes(documentPath);
             var request = new RestRequest(Method.PUT);
             request.AddHeader("Content-Type", contentType);
+            if (kwargs != null)
+            {
+                foreach (var pair in kwargs)
+                {
+                    request.AddHeader(pair.Key, pair.Value);
+                } 
+            }
             request.AddParameter(contentType, body, ParameterType.RequestBody);
             RestClient client = new RestClient(presignedUrl);
             return ExecuteRequestResilient(client, request);
