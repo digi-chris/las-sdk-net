@@ -84,5 +84,7 @@ $ cd las-sdk-net
 $ dotnet restore Test # Restore nuget packages dependencies
 $ msbuild Test/Test.csproj # Build Tests
 $ nunit3-console Test/bin/Debug/<framework-version>/Test.dll # Run
+$ # Build for release and make nuget package
+$ msbuild Lucidtech/Lucidtech.csproj /t:Rebuild /p:Configuration=Release
 ```
 
