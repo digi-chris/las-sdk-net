@@ -35,19 +35,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Test.cs" />
+    <!-- Uncomment these lines when debugging
+    <Compile Include="..\Lucidtech\Las\*" />
+    <Compile Include="..\Lucidtech\Las\Core\*" />
+    <Compile Include="..\Lucidtech\Las\Utils\*" />
+    -->
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="NUnit" Version="3.11.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Lucidtech\Lucidtech.csproj" />
-  </ItemGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <!-- Comment out the official lucidtech package when making a new one -->
+  <PackageReference Include="Lucidtech.Las" Version="0.1.4" />
+</ItemGroup>
+<!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+     Other similar extension points exist, see Microsoft.Common.targets.
+<Target Name="BeforeBuild">
+</Target>
+<Target Name="AfterBuild">
+</Target>
+-->
 </Project>

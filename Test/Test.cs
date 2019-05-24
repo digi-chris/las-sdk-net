@@ -222,6 +222,49 @@ namespace Test
         }
     }
 
+    [TestFixture]
+    public class TestClientKms
+    {
+        private Dictionary<string, object> PostDocResponse { get; set; }
+
+        [Test]
+        public void TestPrediction()
+        {
+            if (ExampleExtraFlags.Endpoint() == Example.Endpoint())
+            {
+                Console.WriteLine($"The Demo API does currently not support extra flags, use another endpoint"); 
+                return;
+            }
+            
+            var flags = new Dictionary<string, string>() {{"x-amz-server-side-encryption", "aws:kms"}};
+            
+            ApiClient apiClient = new ApiClient(ExampleExtraFlags.Endpoint(), new Credentials(
+                ExampleExtraFlags.accessKey(), 
+                ExampleExtraFlags.secretKey(), 
+                ExampleExtraFlags.apiKey()));
+            
+            var postResponse = apiClient.PostDocuments(ExampleExtraFlags.ContentType(), ExampleExtraFlags.ConsentId());
+            PostDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(postResponse);
+            
+            var putResponse = apiClient.PutDocument(ExampleExtraFlags.DocPath(), ExampleExtraFlags.ContentType(),
+                (string) PostDocResponse["uploadUrl"], flags);
+            
+            var response = apiClient.PostPredictions((string) PostDocResponse["documentId"], ExampleExtraFlags.ModelType());
+            
+            JObject jsonResponse = JObject.Parse(response.ToString());
+            var predictionString = jsonResponse["predictions"].ToString();
+            var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, Dictionary<string, object>>>>(predictionString);
+            foreach (var line in predictions)
+            {
+                Console.WriteLine("\n New Line Found");
+                foreach (var field in line)
+                {
+                    Console.WriteLine($"{field.Key}: {field.Value["val"]}, confidence: {field.Value["confidence"]}");
+                }
+            }
+        }
+    }
+
     public static class Example
     {
         public static string ConsentId() { return "bar"; }
@@ -238,6 +281,20 @@ namespace Test
         public static string ModelType() { return "documentSplit"; }
         public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); }
+    }
+
+    public static class ExampleExtraFlags
+    {
+        public static string ConsentId() { return "bar"; }
+        public static string ContentType() { return "application/pdf"; }
+        public static string ModelType() { return "invoice"; }
+        public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
+        public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); }
+
+        public static string apiKey() { return ""; }
+        public static string secretKey() { return ""; }
+        public static string accessKey() { return ""; }
+            
     }
 
 }
