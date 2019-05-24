@@ -86,14 +86,14 @@ namespace Lucidtech.Las
         /// </returns>
         ///         
         public object PutDocument(string documentPath, string contentType, string presignedUrl, 
-            Dictionary<string, string> kwargs = null)
+            Dictionary<string, string> additionalHeaders = null)
         {
             byte[] body = File.ReadAllBytes(documentPath);
             var request = new RestRequest(Method.PUT);
             request.AddHeader("Content-Type", contentType);
-            if (kwargs != null)
+            if (additionalHeaders != null)
             {
-                foreach (var pair in kwargs)
+                foreach (var pair in additionalHeaders)
                 {
                     request.AddHeader(pair.Key, pair.Value);
                 } 
