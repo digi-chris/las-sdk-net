@@ -10,7 +10,7 @@ namespace Lucidtech.Las.Core
     /// <summary>
     /// Used to fetch and store credentials. One of 3 conditions must be met to successfully create credentials.
     /// 1. The path to the file where the credentials are stored is provided
-    /// 2. AccessKeyId, SecretAccessKey and ApiKey are provided
+    /// 2. ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided
     /// 3. Credentials are located in default path ~/.lucidtech/credentials.cfg
     /// 
     /// Get credentials by contacting hello@lucidtech.ai
@@ -22,12 +22,12 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Amazon Access key ID. Provided by Lucidtech.
         /// </summary>
-        public string AccessKeyId { get; }
+        public string ClientId { get; }
         
         /// <summary>
         /// Amazon Secret Access Key. Provided by Lucidtech.
         /// </summary>
-        public string SecretAccessKey { get; }
+        public string ClientSecret { get; }
         
         /// <summary>
         /// AWS API Gateway API key. Provided by Lucidtech.
@@ -35,17 +35,32 @@ namespace Lucidtech.Las.Core
         public string ApiKey{ get; }
         
         /// <summary>
-        /// Credentials constructor where AccessKeyId, SecretAccessKey and ApiKey are provided.
+        /// AWS Authorization endpoint. Provided by Lucidtech.
         /// </summary>
-        /// <param name="accessKeyId"> Access key id </param>
-        /// <param name="secretAccessKey"> Secret Access Key </param>
+        public string AuthEndpoint{ get; }
+        
+        /// <summary>
+        /// AWS API Gateway API endpoint. Provided by Lucidtech.
+        /// </summary>
+        public string ApiEndpoint{ get; }
+        
+        /// <summary>
+        /// Credentials constructor where ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided.
+        /// </summary>
+        /// <param name="clientId"> Access key id </param>
+        /// <param name="clientSecret"> Secret Access Key </param>
         /// <param name="apiKey"> API key </param>
+        /// <param name="authEndpoint"> Authorization endpoint </param>
+        /// <param name="apiEndpoint"> API endpoint </param>
         /// <exception cref="ArgumentException"></exception>
-        public Credentials(string accessKeyId, string secretAccessKey, string apiKey)
+        public Credentials(string clientId, string clientSecret, string apiKey, string authEndpoint, string apiEndpoint)
         {
-            AccessKeyId = accessKeyId;
-            SecretAccessKey = secretAccessKey;
+            ClientId = clientId;
+            ClientSecret = clientSecret;
             ApiKey = apiKey;
+            AuthEndpoint = authEndpoint;
+            ApiEndpoint = apiEndpoint;
+
         }
         
         /// <summary>
@@ -55,9 +70,11 @@ namespace Lucidtech.Las.Core
         public Credentials(string credentialsPath)
         {
             var credentials = ReadCredentials(credentialsPath);
-            AccessKeyId = credentials["AccessKeyId"];
-            SecretAccessKey = credentials["SecretAccessKey"];
+            ClientId = credentials["ClientId"];
+            ClientSecret = credentials["ClientSecret"];
             ApiKey = credentials["ApiKey"];
+            AuthEndpoint = credentials["AuthEndpoint"];
+            ApiEndpoint = credentials["ApiEndpoint"];
         }
         
         /// <summary>
@@ -80,9 +97,11 @@ namespace Lucidtech.Las.Core
             IniData config = parser.ReadFile(credentialPath);
             var ret = new Dictionary<string, string>()
             {
-                {"AccessKeyId", config[section]["access_key_id"]},
-                {"SecretAccessKey", config[section]["secret_access_key"]},
+                {"ClientId", config[section]["client_id"]},
+                {"ClientSecret", config[section]["client_secret"]},
                 {"ApiKey", config[section]["api_key"]}
+                {"AuthEndpoint", config[section]["auth_endpoint"]}
+                {"ApiEndpoint", config[section]["api_endpoint"]}
             };
             return ret;
         }
