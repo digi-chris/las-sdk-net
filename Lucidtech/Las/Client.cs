@@ -141,6 +141,29 @@ namespace Lucidtech.Las
         }
         
         /// <summary>
+        /// Create a new batch for your documents, calls the POST /batches endpoint.
+        /// </summary>
+        /// <example>
+        /// Create a new batch with the provided description.
+        /// on the document specified by '&lt;documentId&gt;'
+        /// <code>
+        /// Client client = new Client(); 
+        /// var response = client.PostBatches("training data gathered from the Mars Rover"); 
+        /// </code>
+        /// </example>
+        /// <param name="description"> A brief description of the purpose of the batch
+        /// <returns>
+        /// A deserialized object that can be interpreted as a Dictionary with the fields batchId and description.
+        /// batchId can be used as an input when posting documents to make them a part of this batch.
+        /// </returns>
+        public object PostBatches(string description)
+        {
+            var dictBody = new Dictionary<string, string>() { {"description", description} };
+            RestRequest request = ClientRestRequest(Method.POST, "/batches", dictBody);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+        
+        /// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
         /// Posting feedback means posting the ground truth data for the particular document.
         /// This enables the API to learn from past mistakes. /// </summary> /// <example>
