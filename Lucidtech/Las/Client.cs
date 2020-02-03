@@ -60,10 +60,21 @@ namespace Lucidtech.Las
         /// with documentId, uploadUrl, contentType and consentId
         /// </returns>
         ///         
-        public object PostDocuments(string contentType, string consentId)
+        public object PostDocuments(byte[] content, string contentType, string consentId, 
+            string batchId = null, List<Dictionary<string, string>> feedback = null)
         {
-            var dictBody = new Dictionary<string, string>() { {"contentType", contentType}, {"consentId", consentId} };
-            RestRequest request = ClientRestRequest(Method.POST, "/documents", dictBody);
+            string base64Content = System.Convert.ToBase64String(content)
+            //string base64String = System.Text.Encoding.UTF8.GetString(base64Content)
+            var dictBody = new Dictionary<string, string>()
+            {
+                {"content", base64Content},
+                {"contentType", contentType}, 
+                {"consentId", consentId},
+            };
+            if (batchId) { dictBody.Add("batchId", batchId); }
+            if (feedback) { dictBody.Add("feedback", feedback); }
+            
+            RestRequest request = ClientRestRequest(Method.PATCH , "/documents", dictBody);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
