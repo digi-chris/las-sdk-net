@@ -22,7 +22,7 @@ namespace Lucidtech.Las
     {
         private string Endpoint { get; }
         private RestClient RestSharpClient { get; }
-        private AmazonAuthorization Authorization { get; }
+        private AmazonCredentials Credentials { get; }
 
         /// <summary>
         /// Client constructor.
@@ -31,7 +31,7 @@ namespace Lucidtech.Las
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
         public Client(string endpoint, Credentials credentials)
         {
-            Authorization = new AmazonAuthorization(credentials);
+            Credentials = new AmazonCredentials(credentials);
             Endpoint = endpoint;
             var uri = new Uri(endpoint);
             RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
@@ -207,14 +207,14 @@ namespace Lucidtech.Las
             return request;
         }
         
-        private Dictionary<string, string> CreateSigningHeaders(string method, string path, byte[] body)
+
+        private Dictionary<string, string> CreateSigningHeaders(string path)
         {
-            var uri = new Uri(string.Concat(Endpoint, path));
-            Dictionary<string, string> headers = Authorization.SignHeaders(
-                uri: uri,
-                method: method,
-                body: body);
-                headers.Add("Content-Type", "application/json");
+            Dictionary<string, string> headers = {
+                'Authorization', $'Bearer {Credentials.AccessToken}',
+                'X-Api-Key': Credentials.ApiKey
+            }
+            headers.Add("Content-Type", "application/json")
             
             return headers;
         }
