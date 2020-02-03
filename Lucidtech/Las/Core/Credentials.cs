@@ -19,7 +19,7 @@ namespace Lucidtech.Las.Core
     /// Get credentials by contacting hello@lucidtech.ai
     /// 
     /// </summary>
-    public class Credentials
+    public class AmazonCredentials
     {
         
         /// <summary>
@@ -47,8 +47,9 @@ namespace Lucidtech.Las.Core
         /// </summary>
         public string ApiEndpoint{ get; }
 
-        private Tuple<string, int> AccessTokenAndTimestamp;
-
+        /// <summary>
+        /// Access token to API endpoint.
+        /// </summary>
         public string AccessToken
         {
             get
@@ -62,6 +63,11 @@ namespace Lucidtech.Las.Core
                 return accessToken
             }
         }
+        
+        /// <summary>
+        /// Access token and timestamp to API endpoint. Provided and updated by calling AccessToken.
+        /// </summary>
+        private Tuple<string, int> AccessTokenAndTimestamp;
 
         private Tuple<string, int> GetClientCredentials()
         {
@@ -108,7 +114,7 @@ namespace Lucidtech.Las.Core
         /// <param name="authEndpoint"> Authorization endpoint </param>
         /// <param name="apiEndpoint"> API endpoint </param>
         /// <exception cref="ArgumentException"></exception>
-        public Credentials(string clientId, string clientSecret, string apiKey, string authEndpoint, string apiEndpoint)
+        public AmazonCredentials(string clientId, string clientSecret, string apiKey, string authEndpoint, string apiEndpoint)
         {
             ClientId = clientId;
             ClientSecret = clientSecret;
@@ -122,7 +128,7 @@ namespace Lucidtech.Las.Core
         /// Credentials constructor where the path is provided.
         /// </summary>
         /// <param name="credentialsPath"> Path to the file where the credentials are stored </param>
-        public Credentials(string credentialsPath)
+        public AmazonCredentials(string credentialsPath)
         {
             var credentials = ReadCredentials(credentialsPath);
             ClientId = credentials["ClientId"];
@@ -136,7 +142,7 @@ namespace Lucidtech.Las.Core
         /// Credentials constructor where the credentials are located at the default path.
         /// ~/.lucidtech/credentials.cfg for linux and %USERPROFILE%\.lucidtech\credentials.cfg for Windows.
         /// </summary>
-        public Credentials() : this(GetCredentialsPath()) {}
+        public AmazonCredentials() : this(GetCredentialsPath()) {}
         
         private static string GetCredentialsPath()
         {
