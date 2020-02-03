@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 using IniParser;
 using IniParser.Model;
 
+using RestSharp;
+using Newtonsoft.Json;
+
 namespace Lucidtech.Las.Core
 {
     /// <summary>
@@ -43,6 +46,58 @@ namespace Lucidtech.Las.Core
         /// AWS API Gateway API endpoint. Provided by Lucidtech.
         /// </summary>
         public string ApiEndpoint{ get; }
+
+        private Tuple<string, int> AccessTokenAndTimestamp;
+
+        public string AccessToken
+        {
+            get
+            {
+                accessToken, expiration = AccesTokenAndTimestamp;
+                if !accessToken || (DateTime.UtcNow > expiration)
+                {
+                    accessToken, expiration = GetClientCredentials();
+                    AccesTokenAndTimestamp = Tuple.Create(accessToken, expiration)
+                }
+                return accessToken
+            }
+        }
+
+        private Tuple<string, int> GetClientCredentials()
+        {
+            url = $"https://{AuthEndpoint}/oauth2/token?grant_type=client_credentials"  
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+            var restClient = new RestClient(ApiEndpoint);
+            restClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret)
+
+            var request = new RestRequest(url, Method.POST, DataFormat.Json);
+            request.JsonSerializer = JsonSerialPublisher.Default;
+            foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
+
+            var response = restClient.Execute(request);
+            var response_data = JsonDecode(response);
+            var a = response_data['access_token'];
+            var b = response_data['expires_in'];
+            var exp = DateTime.UtcNow + b;
+            
+            return new Tuple<String,Int32>(a, exp);
+        }
+        
+        private object JsonDecode(IRestResponse response)
+        {
+            try
+            {
+                var jsonResponse = JsonSerialPublisher.DeserializeObject(response.Content);
+                return jsonResponse;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error in response. Returned {e}");
+                throw new Exception(response.ToString());
+            }
+            
+        }
         
         /// <summary>
         /// Credentials constructor where ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided.
