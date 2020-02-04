@@ -65,19 +65,19 @@ namespace Lucidtech.Las
         {
             string base64Content = System.Convert.ToBase64String(content);
             //string base64String = System.Text.Encoding.UTF8.GetString(base64Content)
-            var dictBody = new Dictionary<string, string>()
+            var body = new Dictionary<string, string>()
             {
                 {"content", base64Content},
                 {"contentType", contentType}, 
                 {"consentId", consentId},
             };
-            if (!string.IsNullOrEmpty(batchId)) { dictBody.Add("batchId", batchId); }
+            if (!string.IsNullOrEmpty(batchId)) { body.Add("batchId", batchId); }
             if (feedback != null) { 
                 string fb = JsonConvert.SerializeObject(feedback);
-                dictBody.Add("feedback", fb);
+                body.Add("feedback", fb);
             }
             
-            RestRequest request = ClientRestRequest(Method.PATCH , "/documents", dictBody);
+            RestRequest request = ClientRestRequest(Method.PATCH , "/documents", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -112,10 +112,10 @@ namespace Lucidtech.Las
         /// </returns>
         public object PostPredictions(string documentId, string modelName, bool? autoRotate = null, int? maxPages = null)
         {
-            var dictBody = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
-            if (maxPages != null) { dictBody.Add("maxPages", maxPages);}
-            if (autoRotate != null) { dictBody.Add("autoRotate", autoRotate);}
-            RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
+            var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
+            if (maxPages != null) { body.Add("maxPages", maxPages);}
+            if (autoRotate != null) { body.Add("autoRotate", autoRotate);}
+            RestRequest request = ClientRestRequest(Method.POST, "/predictions", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
@@ -149,10 +149,10 @@ namespace Lucidtech.Las
         ///         
         public object PostDocumentId(string documentId, List<Dictionary<string, string>> feedback)
         {
-            var dictBody = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
+            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
             
             // Doing a manual cast from Dictionary to object to help out the serialization process
-            string bodyString = JsonConvert.SerializeObject(dictBody);
+            string bodyString = JsonConvert.SerializeObject(bodyDict);
             object body = JsonConvert.DeserializeObject(bodyString);
             
             RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
@@ -195,15 +195,15 @@ namespace Lucidtech.Las
         /// </returns>
         public object PostBatches(string description)
         {
-            var dictBody = new Dictionary<string, string>() { {"description", description} };
-            RestRequest request = ClientRestRequest(Method.POST, "/batches", dictBody);
+            var body = new Dictionary<string, string>() { {"description", description} };
+            RestRequest request = ClientRestRequest(Method.POST, "/batches", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
 		public object PatchUserId(string userId, string consentHash)
 		{
-            var dictBody = new Dictionary<string, string>() { {"consentHash", consentHash} };
-            RestRequest request = ClientRestRequest(Method.PATCH, $"/users/{userId}", dictBody);
+            var body = new Dictionary<string, string>() { {"consentHash", consentHash} };
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/users/{userId}", body);
             return ExecuteRequestResilient(RestSharpClient, request);
 		}
 
@@ -221,17 +221,17 @@ namespace Lucidtech.Las
         /// <param name="method"> The request method, e.g. POST, PUT, GET, DELETE </param>
         /// <param name="path"> The path to the domain upon which to apply the request,
         /// the total path will be <see cref="Endpoint"/>path</param>
-        /// <param name="dictBody"> The content of the request </param>
+        /// <param name="body"> The content of the request </param>
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input
         /// </returns>
-        private RestRequest ClientRestRequest(Method method, string path, object? dictBody = null)
+        private RestRequest ClientRestRequest(Method method, string path, object? body = null)
         {
             Uri endpoint = new Uri(string.Concat(Endpoint, path));
 
             var request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
-			if(dictBody != null) { request.AddJsonBody(dictBody); }
+			if(body != null) { request.AddJsonBody(body); }
 
             var headers = CreateSigningHeaders();
             foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
