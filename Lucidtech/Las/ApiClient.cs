@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 using Newtonsoft.Json.Linq;
@@ -26,7 +27,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
-        public ApiClient(string endpoint, Credentials credentials) : base(endpoint, credentials) {}
+        public ApiClient(string endpoint, AmazonCredentials credentials) : base(endpoint, credentials) {}
 
         /// <summary>
         /// Run inference and create prediction on document, this method takes care of creating and uploaded document
@@ -48,7 +49,10 @@ namespace Lucidtech.Las
         public Prediction Predict(string documentPath, string modelName, string consentId)
         {
             string contentType = GetContentType(documentPath);
-            string documentId = UploadDocument(documentPath, contentType, consentId);
+            byte[] body = File.ReadAllBytes(documentPath);
+            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+                PostDocuments(body, contentType, consentId));
+            string documentId = postDocumentsResponse["documentId"];
             var predictionResponse = PostPredictions(documentId, modelName);
             
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
@@ -119,24 +123,6 @@ namespace Lucidtech.Las
         public RevokeResponse RevokeConsent(string consentId)
         {
             return new RevokeResponse(DeleteConsentId(consentId));
-        }
-
-        /// <summary>
-        /// Upload a document of type contentType currently located at documentPath to the cloud location
-        /// that corresponds to consentId.
-        /// </summary>
-        /// <param name="documentPath"> The local path to the document that is going to be uploaded </param>
-        /// <param name="contentType"> The type of the file located at documentPath </param>
-        /// <param name="consentId"> The consent id </param>
-        /// <returns></returns>
-        private string UploadDocument(string documentPath, string contentType, string consentId)
-        {
-            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
-                PostDocuments(contentType, consentId));
-            string documentId = postDocumentsResponse["documentId"];
-            string presignedUrl = postDocumentsResponse["uploadUrl"];
-            PutDocument(documentPath, contentType, presignedUrl);
-            return documentId;
         }
         
         private static string GetContentType(string documentPath)

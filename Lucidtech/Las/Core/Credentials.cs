@@ -6,7 +6,10 @@ using IniParser;
 using IniParser.Model;
 
 using RestSharp;
+using RestSharp.Authenticators;
 using Newtonsoft.Json;
+
+using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las.Core
 {
@@ -46,6 +49,11 @@ namespace Lucidtech.Las.Core
         /// AWS API Gateway API endpoint. Provided by Lucidtech.
         /// </summary>
         public string ApiEndpoint{ get; }
+        
+        /// <summary>
+        /// Access token and timestamp to API endpoint. Provided and updated by calling AccessToken.
+        /// </summary>
+        private Tuple<string, DateTime> AccessTokenAndTimestamp;
 
         /// <summary>
         /// Access token to API endpoint.
@@ -54,28 +62,23 @@ namespace Lucidtech.Las.Core
         {
             get
             {
-                accessToken, expiration = AccesTokenAndTimestamp;
-                if !accessToken || (DateTime.UtcNow > expiration)
+                (string accessToken, DateTime expiration) = AccessTokenAndTimestamp;
+                if (!string.IsNullOrEmpty(accessToken) || (DateTime.UtcNow > expiration))
                 {
-                    accessToken, expiration = GetClientCredentials();
-                    AccesTokenAndTimestamp = Tuple.Create(accessToken, expiration)
+                    (accessToken, expiration) = GetClientCredentials();
+                    AccessTokenAndTimestamp = Tuple.Create(accessToken, expiration);
                 }
-                return accessToken
+                return accessToken;
             }
         }
-        
-        /// <summary>
-        /// Access token and timestamp to API endpoint. Provided and updated by calling AccessToken.
-        /// </summary>
-        private Tuple<string, int> AccessTokenAndTimestamp;
 
-        private Tuple<string, int> GetClientCredentials()
+        private Tuple<string, DateTime> GetClientCredentials()
         {
-            url = $"https://{AuthEndpoint}/oauth2/token?grant_type=client_credentials"  
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            string url = $"https://{AuthEndpoint}/oauth2/token?grant_type=client_credentials";
+            var headers = new Dictionary<string, string>(){{"Content-Type", "application/x-www-form-urlencoded"}};
 
             var restClient = new RestClient(ApiEndpoint);
-            restClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret)
+            restClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
 
             var request = new RestRequest(url, Method.POST, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
@@ -83,11 +86,12 @@ namespace Lucidtech.Las.Core
 
             var response = restClient.Execute(request);
             var response_data = JsonDecode(response);
-            var a = response_data['access_token'];
-            var b = response_data['expires_in'];
-            var exp = DateTime.UtcNow + b;
+            var response_dict = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response_data);
+            string a = (string)response_dict["access_token"];
+            int b = (int)response_dict["expires_in"];
+            DateTime exp = DateTime.UtcNow.AddSeconds(b);
             
-            return new Tuple<String,Int32>(a, exp);
+            return new Tuple<string, DateTime>(a, exp);
         }
         
         private object JsonDecode(IRestResponse response)
@@ -160,8 +164,8 @@ namespace Lucidtech.Las.Core
             {
                 {"ClientId", config[section]["client_id"]},
                 {"ClientSecret", config[section]["client_secret"]},
-                {"ApiKey", config[section]["api_key"]}
-                {"AuthEndpoint", config[section]["auth_endpoint"]}
+                {"ApiKey", config[section]["api_key"]},
+                {"AuthEndpoint", config[section]["auth_endpoint"]},
                 {"ApiEndpoint", config[section]["api_endpoint"]}
             };
             return ret;

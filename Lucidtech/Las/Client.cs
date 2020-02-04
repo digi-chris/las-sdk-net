@@ -29,9 +29,9 @@ namespace Lucidtech.Las
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
-        public Client(string endpoint, Credentials credentials)
+        public Client(string endpoint, AmazonCredentials credentials)
         {
-            Credentials = new AmazonCredentials(credentials);
+            Credentials = credentials;
             Endpoint = endpoint;
             var uri = new Uri(endpoint);
             RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
@@ -41,7 +41,7 @@ namespace Lucidtech.Las
         /// Client constructor with credentials read from local file.
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
-        public Client(string endpoint) : this(endpoint, new Credentials()) {}
+        public Client(string endpoint) : this(endpoint, new AmazonCredentials()) {}
 
         /// <summary>
         /// Creates a document handle, calls the POST /documents endpoint
@@ -63,7 +63,7 @@ namespace Lucidtech.Las
         public object PostDocuments(byte[] content, string contentType, string consentId, 
             string batchId = null, List<Dictionary<string, string>> feedback = null)
         {
-            string base64Content = System.Convert.ToBase64String(content)
+            string base64Content = System.Convert.ToBase64String(content);
             //string base64String = System.Text.Encoding.UTF8.GetString(base64Content)
             var dictBody = new Dictionary<string, string>()
             {
@@ -71,8 +71,11 @@ namespace Lucidtech.Las
                 {"contentType", contentType}, 
                 {"consentId", consentId},
             };
-            if (batchId) { dictBody.Add("batchId", batchId); }
-            if (feedback) { dictBody.Add("feedback", feedback); }
+            if (!string.IsNullOrEmpty(batchId)) { dictBody.Add("batchId", batchId); }
+            if (feedback != null) { 
+                string fb = JsonConvert.SerializeObject(feedback);
+                dictBody.Add("feedback", fb);
+            }
             
             RestRequest request = ClientRestRequest(Method.PATCH , "/documents", dictBody);
             return ExecuteRequestResilient(RestSharpClient, request);
@@ -133,9 +136,10 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions.
         /// the value of predictions is the output from the model
         /// </returns>
-        public object PostPredictions(string documentId, string modelName)
+        public object PostPredictions(string documentId, string modelName, bool autoRotate = false, int maxPages = 0)
         {
-            var dictBody = new Dictionary<string, string>() { {"documentId", documentId}, {"modelName", modelName} };
+            var dictBody = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}, {"autoRotate", autoRotate} };
+			if (maxPages != 0) { dictBody.Add("maxPages", maxPages);}
             RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
@@ -235,7 +239,7 @@ namespace Lucidtech.Las
             request.AddJsonBody(dictBody);
 
             byte[] body = Encoding.UTF8.GetBytes(request.JsonSerializer.Serialize(dictBody));
-            var headers = CreateSigningHeaders(method.ToString(), path, body);
+            var headers = CreateSigningHeaders(path);
             foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
 
             return request;
@@ -244,11 +248,11 @@ namespace Lucidtech.Las
 
         private Dictionary<string, string> CreateSigningHeaders(string path)
         {
-            Dictionary<string, string> headers = {
-                'Authorization', $'Bearer {Credentials.AccessToken}',
-                'X-Api-Key': Credentials.ApiKey
-            }
-            headers.Add("Content-Type", "application/json")
+            var headers = new Dictionary<string, string>(){
+                {"Authorization", $"Bearer {Credentials.AccessToken}"},
+                {"X-Api-Key", Credentials.ApiKey}
+                };
+            headers.Add("Content-Type", "application/json");
             
             return headers;
         }
@@ -314,4 +318,5 @@ namespace Lucidtech.Las
             }
         }
     } 
-} 
+}
+
