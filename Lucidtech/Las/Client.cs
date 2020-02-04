@@ -81,42 +81,16 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        /// <summary>
-        /// Convenience method for putting a document to presigned url.
-        /// </summary>
-        /// <example>
-        /// Put an example file to the location specified by a presigned url
-        /// <code>
-        /// Client client = new Client('&lt;endpoint&gt;'); 
-        /// client.PutDocument("/full/path/to/example.jpeg","image/jpeg",'&lt;presignedUrl&gt;'); 
-        /// </code>
-        /// </example>
-        /// <param name="documentPath"> Path to document to upload </param>
-        /// <param name="contentType"> Mime type of document to upload.
-        /// Same as provided to <see cref="PostDocuments"/></param>
-        /// <param name="presignedUrl"> Presigned upload url from <see cref="PostDocuments"/> </param>
-        /// <returns>
-        /// An empty object 
-        /// </returns>
-        ///         
-        public object PutDocument(string documentPath, string contentType, string presignedUrl, 
-            Dictionary<string, string> additionalHeaders = null)
+        public object GetDocuments(string batchId = null, string consentId = null)
         {
-            byte[] body = File.ReadAllBytes(documentPath);
-            var request = new RestRequest(Method.PUT);
-            request.AddHeader("Content-Type", contentType);
-            if (additionalHeaders != null)
-            {
-                foreach (var pair in additionalHeaders)
-                {
-                    request.AddHeader(pair.Key, pair.Value);
-                } 
-            }
-            request.AddParameter(contentType, body, ParameterType.RequestBody);
-            RestClient client = new RestClient(presignedUrl);
-            return ExecuteRequestResilient(client, request);
-        }
-        
+            var body = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(batchId)) { body.Add("batchId", batchId); }
+            if (!string.IsNullOrEmpty(consentId)) { body.Add("consentId", consentId); }
+            if (body.Count == 0) { body = null; }
+            RestRequest request = ClientRestRequest(Method.GET, "/documents", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        } 
+
         /// <summary>
         /// Run inference and create a prediction, calls the POST /predictions endpoint.
         /// </summary>
@@ -136,37 +110,21 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions.
         /// the value of predictions is the output from the model
         /// </returns>
-        public object PostPredictions(string documentId, string modelName, bool autoRotate = false, int maxPages = 0)
+        public object PostPredictions(string documentId, string modelName, bool? autoRotate = null, int? maxPages = null)
         {
-            var dictBody = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}, {"autoRotate", autoRotate} };
-			if (maxPages != 0) { dictBody.Add("maxPages", maxPages);}
+            var dictBody = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
+            if (maxPages != null) { dictBody.Add("maxPages", maxPages);}
+            if (autoRotate != null) { dictBody.Add("autoRotate", autoRotate);}
             RestRequest request = ClientRestRequest(Method.POST, "/predictions", dictBody);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
-        /// <summary>
-        /// Create a new batch for your documents, calls the POST /batches endpoint.
-        /// </summary>
-        /// <example>
-        /// Create a new batch with the provided description.
-        /// on the document specified by '&lt;documentId&gt;'
-        /// <code>
-        /// Client client = new Client(); 
-        /// var response = client.PostBatches("training data gathered from the Mars Rover"); 
-        /// </code>
-        /// </example>
-        /// <param name="description"> A brief description of the purpose of the batch
-        /// <returns>
-        /// A deserialized object that can be interpreted as a Dictionary with the fields batchId and description.
-        /// batchId can be used as an input when posting documents to make them a part of this batch.
-        /// </returns>
-        public object PostBatches(string description)
+        public object GetDocumentId(string documentId)
         {
-            var dictBody = new Dictionary<string, string>() { {"description", description} };
-            RestRequest request = ClientRestRequest(Method.POST, "/batches", dictBody);
+            RestRequest request = ClientRestRequest(Method.GET, $"/documents/{documentId}");
             return ExecuteRequestResilient(RestSharpClient, request);
-        }
-        
+        } 
+
         /// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
         /// Posting feedback means posting the ground truth data for the particular document.
@@ -215,11 +173,48 @@ namespace Lucidtech.Las
         /// </returns>
         public object DeleteConsentId(string consentId)
         {
-            var dictBody = new Dictionary<string, string> {};
-            RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}", dictBody);
+            RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>
+        /// Create a new batch for your documents, calls the POST /batches endpoint.
+        /// </summary>
+        /// <example>
+        /// Create a new batch with the provided description.
+        /// on the document specified by '&lt;documentId&gt;'
+        /// <code>
+        /// Client client = new Client(); 
+        /// var response = client.PostBatches("training data gathered from the Mars Rover"); 
+        /// </code>
+        /// </example>
+        /// <param name="description"> A brief description of the purpose of the batch
+        /// <returns>
+        /// A deserialized object that can be interpreted as a Dictionary with the fields batchId and description.
+        /// batchId can be used as an input when posting documents to make them a part of this batch.
+        /// </returns>
+        public object PostBatches(string description)
+        {
+            var dictBody = new Dictionary<string, string>() { {"description", description} };
+            RestRequest request = ClientRestRequest(Method.POST, "/batches", dictBody);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
+		public object PatchUserId(string userId, string consentHash)
+		{
+            var dictBody = new Dictionary<string, string>() { {"consentHash", consentHash} };
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/users/{userId}", dictBody);
+            return ExecuteRequestResilient(RestSharpClient, request);
+		}
+
+		public object GetUserId(string userId)
+		{
+            RestRequest request = ClientRestRequest(Method.GET, $"/users/{userId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+		}
+	
+
+
         /// <summary>
         /// Create a HTTP web request for the REST API. 
         /// </summary>
@@ -230,23 +225,22 @@ namespace Lucidtech.Las
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input
         /// </returns>
-        private RestRequest ClientRestRequest(Method method, string path, object dictBody)
+        private RestRequest ClientRestRequest(Method method, string path, object? dictBody = null)
         {
             Uri endpoint = new Uri(string.Concat(Endpoint, path));
 
             var request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
-            request.AddJsonBody(dictBody);
+			if(dictBody != null) { request.AddJsonBody(dictBody); }
 
-            byte[] body = Encoding.UTF8.GetBytes(request.JsonSerializer.Serialize(dictBody));
-            var headers = CreateSigningHeaders(path);
+            var headers = CreateSigningHeaders();
             foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
 
             return request;
         }
         
 
-        private Dictionary<string, string> CreateSigningHeaders(string path)
+        private Dictionary<string, string> CreateSigningHeaders()
         {
             var headers = new Dictionary<string, string>(){
                 {"Authorization", $"Bearer {Credentials.AccessToken}"},
