@@ -151,6 +151,14 @@ namespace Test
         }
         
         [Test]
+        public void TestGetDocuments()
+        {
+			var response = Toby.GetDocuments();
+            var expected = new List<string>(){"documentId", "contentType", "consentId"};
+            CheckKeys(expected, response);
+        }
+        
+        [Test]
         public void TestPostPredictions()
         {
             var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), true, 1);
@@ -160,6 +168,15 @@ namespace Test
             CheckKeys(expected, response);
         }
 
+        [Test]
+        public void TestGetDocumentId()
+        {
+			//var response = Toby.GetDocumentId(Example.DocumentId());
+			var response = Toby.GetDocumentId((string)PostDocResponse["documentId"]);
+            var expected = new List<string>(){"documentId", "contentType", "consentId"};
+            CheckKeys(expected, response);
+        }
+        
         [Test]
         public void TestPostDocumentId()
         {
@@ -180,6 +197,32 @@ namespace Test
             var response = Toby.DeleteConsentId((string)PostDocResponse["consentId"]);
             CheckKeys(expected, response);
         }
+
+        [Test]
+        public void TestPostBatches()
+        {
+			var response = Toby.PostBatches(Example.Description());
+            var expected = new List<string>(){"batchId", "description"};
+            CheckKeys(expected, PostDocResponse);
+        }
+        
+        [Test]
+        public void TestPatchUserId()
+        {
+			var response = Toby.PatchUserId("me", "consentHash");
+            var expected = new List<string>(){"userId", "consentHash"};
+            CheckKeys(expected, response);
+        }
+        
+        
+        [Test]
+        public void TestGetUserId()
+        {
+			var response = Toby.GetUserId("me");
+            var expected = new List<string>(){"documentId", "contentType", "consentId"};
+            CheckKeys(expected, response);
+        }
+        
     }
 
 /*
@@ -234,6 +277,7 @@ namespace Test
         public static string ConsentId() { return "bar"; }
         public static string ContentType() { return "image/jpeg"; }
         public static string DocumentId() { return "abcdefghijklabcdefghijklabcdefghijkl"; }
+        public static string Description() { return "This is my new batch for receipts july 2020"; }
         public static string ModelType() { return "invoice"; }
         public static string ModelName() { return "invoice"; }
         public static string Endpoint() { return "http://127.0.0.1:4010"; }
