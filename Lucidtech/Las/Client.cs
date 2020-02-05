@@ -20,7 +20,6 @@ namespace Lucidtech.Las
     /// </summary>
     public class Client 
     {
-        private string Endpoint { get; }
         private RestClient RestSharpClient { get; }
         private AmazonCredentials Credentials { get; }
 
@@ -29,11 +28,10 @@ namespace Lucidtech.Las
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
-        public Client(string endpoint, AmazonCredentials credentials)
+        public Client(AmazonCredentials credentials)
         {
             Credentials = credentials;
-            Endpoint = endpoint;
-            var uri = new Uri(endpoint);
+            var uri = new Uri(Credentials.ApiEndpoint);
             RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
         }
         
@@ -41,7 +39,7 @@ namespace Lucidtech.Las
         /// Client constructor with credentials read from local file.
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
-        public Client(string endpoint) : this(endpoint, new AmazonCredentials()) {}
+        public Client() : this(new AmazonCredentials()) {}
 
         /// <summary>
         /// Creates a document handle, calls the POST /documents endpoint
@@ -77,7 +75,7 @@ namespace Lucidtech.Las
                 body.Add("feedback", fb);
             }
             
-            RestRequest request = ClientRestRequest(Method.PATCH , "/documents", body);
+            RestRequest request = ClientRestRequest(Method.POST, "/documents", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -200,19 +198,19 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
-		public object PatchUserId(string userId, string consentHash)
-		{
+        public object PatchUserId(string userId, string consentHash)
+        {
             var body = new Dictionary<string, string>() { {"consentHash", consentHash} };
             RestRequest request = ClientRestRequest(Method.PATCH, $"/users/{userId}", body);
             return ExecuteRequestResilient(RestSharpClient, request);
-		}
+        }
 
-		public object GetUserId(string userId)
-		{
+        public object GetUserId(string userId)
+        {
             RestRequest request = ClientRestRequest(Method.GET, $"/users/{userId}");
             return ExecuteRequestResilient(RestSharpClient, request);
-		}
-	
+        }
+    
 
 
         /// <summary>
@@ -220,18 +218,19 @@ namespace Lucidtech.Las
         /// </summary>
         /// <param name="method"> The request method, e.g. POST, PUT, GET, DELETE </param>
         /// <param name="path"> The path to the domain upon which to apply the request,
-        /// the total path will be <see cref="Endpoint"/>path</param>
+        /// the total path will be <see cref="Credentials.ApiEndpoint"/>path</param>
         /// <param name="body"> The content of the request </param>
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input
         /// </returns>
         private RestRequest ClientRestRequest(Method method, string path, object? body = null)
         {
-            Uri endpoint = new Uri(string.Concat(Endpoint, path));
+            Uri endpoint = new Uri(string.Concat(Credentials.ApiEndpoint, path));
 
             var request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
-			if(body != null) { request.AddJsonBody(body); }
+            if(body == null) { body = new Dictionary<string, string>(); }
+			request.AddJsonBody(body); 
 
             var headers = CreateSigningHeaders();
             foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
@@ -242,10 +241,11 @@ namespace Lucidtech.Las
 
         private Dictionary<string, string> CreateSigningHeaders()
         {
-            var headers = new Dictionary<string, string>(){
-                {"Authorization", $"Bearer {Credentials.AccessToken}"},
+            var headers = new Dictionary<string, string>()
+            {
+                {"Authorization", $"Bearer {Credentials.GetAccessToken()}"},
                 {"X-Api-Key", Credentials.ApiKey}
-                };
+            };
             headers.Add("Content-Type", "application/json");
             
             return headers;

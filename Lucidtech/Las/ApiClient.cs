@@ -20,14 +20,14 @@ namespace Lucidtech.Las
         /// ApiClient constructor with credentials read from local file.
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
-        public ApiClient(string endpoint) : base(endpoint) {}
+        public ApiClient() : base() {}
         
         /// <summary>
         /// ApiClient constructor.
         /// </summary>
         /// <param name="endpoint"> Url to the host </param>
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
-        public ApiClient(string endpoint, AmazonCredentials credentials) : base(endpoint, credentials) {}
+        public ApiClient(AmazonCredentials credentials) : base(credentials) {}
 
         /// <summary>
         /// Run inference and create prediction on document, this method takes care of creating and uploaded document
@@ -46,7 +46,7 @@ namespace Lucidtech.Las
         /// <returns>
         /// Prediction on document
         /// </returns>
-        public Prediction Predict(string documentPath, string modelName, string consentId)
+        public Prediction Predict(string documentPath, string modelName, string consentId = "LT_DEFAULT_CONSENT_ID")
         {
             string contentType = GetContentType(documentPath);
             byte[] body = File.ReadAllBytes(documentPath);
@@ -60,28 +60,6 @@ namespace Lucidtech.Las
             var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
             Prediction prediction = new Prediction(documentId, consentId, modelName, predictions);
             return prediction;
-        }
-
-        /// <summary>
-        /// Run inference and create prediction on document without specifying consent Id,
-        /// this method takes care of creating and uploaded document
-        /// as well as running inference to create prediction on document.
-        /// </summary>
-        /// <example><code>
-        /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
-        /// Prediction response = apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice"); 
-        /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
-        /// </code></example>
-        /// <param name="documentPath"> Path to document to run inference on </param>
-        /// <param name="modelName"> The name of the model to use for inference </param>
-        /// <returns>
-        /// Prediction on document
-        /// </returns>
-        public Prediction Predict(string documentPath, string modelName)
-        {
-            string consentId = Guid.NewGuid().ToString();
-            return Predict(documentPath, modelName, consentId);
         }
 
         /// <summary>

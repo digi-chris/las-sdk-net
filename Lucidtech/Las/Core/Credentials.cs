@@ -53,47 +53,47 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Access token and timestamp to API endpoint. Provided and updated by calling AccessToken.
         /// </summary>
-        private Tuple<string, DateTime> AccessTokenAndTimestamp;
+        private string AccessToken;
 
         /// <summary>
-        /// Access token to API endpoint.
+        /// Timestamp for access token to API endpoint. Provided and updated by calling AccessToken.
         /// </summary>
-        public string AccessToken
-        {
-            get
-            {
-                (string accessToken, DateTime expiration) = AccessTokenAndTimestamp;
-                if (!string.IsNullOrEmpty(accessToken) || (DateTime.UtcNow > expiration))
-                {
-                    (accessToken, expiration) = GetClientCredentials();
-                    AccessTokenAndTimestamp = Tuple.Create(accessToken, expiration);
-                }
-                return accessToken;
-            }
-        }
+        private DateTime ExpirationTime;
+    
+        private RestClient RestSharpClient { get; set; }
 
-        private Tuple<string, DateTime> GetClientCredentials()
+        private (string, DateTime) GetClientCredentials()
         {
-            string url = $"https://{AuthEndpoint}/oauth2/token?grant_type=client_credentials";
-            var headers = new Dictionary<string, string>(){{"Content-Type", "application/x-www-form-urlencoded"}};
-
-            var restClient = new RestClient(ApiEndpoint);
-            restClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
+            string url = "oauth2/token?grant_type=client_credentials";
+            var headers = new Dictionary<string, string>(){ {"Content-Type", "application/x-www-form-urlencoded"} };
 
             var request = new RestRequest(url, Method.POST, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
             foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
 
-            var response = restClient.Execute(request);
+            var response = RestSharpClient.Execute(request);
             var response_data = JsonDecode(response);
             var response_dict = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response_data);
-            string a = (string)response_dict["access_token"];
-            int b = (int)response_dict["expires_in"];
-            DateTime exp = DateTime.UtcNow.AddSeconds(b);
+        
+            string accessToken = (string)response_dict["access_token"];
+            double expiresIn = Convert.ToDouble(response_dict["expires_in"]);
+            DateTime exp = DateTime.UtcNow.AddSeconds(expiresIn);
             
-            return new Tuple<string, DateTime>(a, exp);
+            return (accessToken, exp);
         }
         
+        /// <summary>
+        /// Access token to API endpoint.
+        /// </summary>
+        public string GetAccessToken()
+        {
+            if (string.IsNullOrEmpty(AccessToken) || (DateTime.UtcNow > ExpirationTime))
+            {
+                (AccessToken, ExpirationTime) = GetClientCredentials();
+            }
+            return AccessToken;
+        }
+
         private object JsonDecode(IRestResponse response)
         {
             try
@@ -125,7 +125,7 @@ namespace Lucidtech.Las.Core
             ApiKey = apiKey;
             AuthEndpoint = authEndpoint;
             ApiEndpoint = apiEndpoint;
-
+            CommonConstructor();
         }
         
         /// <summary>
@@ -140,6 +140,7 @@ namespace Lucidtech.Las.Core
             ApiKey = credentials["ApiKey"];
             AuthEndpoint = credentials["AuthEndpoint"];
             ApiEndpoint = credentials["ApiEndpoint"];
+            CommonConstructor();
         }
         
         /// <summary>
@@ -148,6 +149,13 @@ namespace Lucidtech.Las.Core
         /// </summary>
         public AmazonCredentials() : this(GetCredentialsPath()) {}
         
+        private void CommonConstructor()
+        {
+            AccessToken = null;
+            ExpirationTime = DateTime.UtcNow;
+            RestSharpClient = new RestClient($"https://{AuthEndpoint}");
+            RestSharpClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
+        }
         private static string GetCredentialsPath()
         {
             string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 

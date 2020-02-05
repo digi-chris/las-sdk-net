@@ -21,6 +21,7 @@ using RestSharp;
 
 namespace Test
 {
+/*
     [TestFixture]
     public class TestApi
     {
@@ -50,7 +51,7 @@ namespace Test
         private Dictionary<string, string>PostAndPutDoc()
         {
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
-                Luke.PostDocuments(Example.ContentType(), Example.ConsentId()));
+                Luke.PostDocuments(Example.Content(), Example.ContentType(), Example.ConsentId()));
             Luke.PutDocument(Example.DocPath(),Example.ContentType(), postDocResponse["uploadUrl"]);
             return postDocResponse;
         }
@@ -140,17 +141,13 @@ namespace Test
             CheckFields(response.Fields, expected);
         }
     }
+*/
     [TestFixture]
     public class TestClient 
     {
         private Client Toby { get; set; }
         private Dictionary<string, object> PostDocResponse { get; set; }
 
-        private object PutDocument()
-        {
-            return Toby.PutDocument(Example.DocPath(), Example.ContentType(), (string) PostDocResponse["uploadUrl"]);
-        }
-        
         private static void CheckKeys(List<string> expected, object response)
         {
             var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
@@ -165,35 +162,31 @@ namespace Test
         [OneTimeSetUp]
         public void InitClient()
         {
-            Toby = new Client(Example.Endpoint());
+            //Toby = new Client(Example.Creds());
+            Toby = new Client();
         }
         
         [SetUp]
         public void PostDocs()
         {
-            var response = Toby.PostDocuments(Example.ContentType(), Example.ConsentId());
+            byte[] body = File.ReadAllBytes(Example.DocPath());
+            var response = Toby.PostDocuments(body, Example.ContentType(), Example.ConsentId());
             PostDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
         }
         
         [Test]
         public void TestPostDocuments()
         {
-            var expected = new List<string>(){"documentId", "uploadUrl", "contentType", "consentId"};
+            var expected = new List<string>(){"documentId", "contentType", "consentId"};
             CheckKeys(expected, PostDocResponse);
         }
         
         [Test]
-        public void TestPutDocument()
-        {
-            var response = PutDocument();
-            Assert.IsNull(response);
-        }
-
-        [Test]
         public void TestPostPredictions()
         {
-            PutDocument();     
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"],Example.ModelType());
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), true, 1);
+            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), true, 1);
+            Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
         }
@@ -201,27 +194,26 @@ namespace Test
         [Test]
         public void TestPostDocumentId()
         {
-            PutDocument();
             var feedback = new List<Dictionary<string, string>>()
             {
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
                 new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
             };
             var response = Toby.PostDocumentId((string)PostDocResponse["documentId"], feedback);
-            var expected = new List<string>(){"documentId", "consentId", "uploadUrl", "contentType", "feedback"};
+            var expected = new List<string>(){"documentId", "consentId", "contentType", "feedback"};
             CheckKeys(expected, response);
         }
         
         [Test]
         public void TestDeleteConsentId()
         {
-            PutDocument();
             var expected = new List<string>(){"consentId", "documentIds"};
             var response = Toby.DeleteConsentId((string)PostDocResponse["consentId"]);
             CheckKeys(expected, response);
         }
     }
 
+/*
     [TestFixture]
     public class TestClientKms
     {
@@ -265,13 +257,19 @@ namespace Test
         }
     }
 
-    public static class Example
+*/
+    public static class Example 
     {
+
+        public static byte[] Content() { return  Encoding.ASCII.GetBytes("%PDF-1.4foobarbaz");; }
         public static string ConsentId() { return "bar"; }
         public static string ContentType() { return "image/jpeg"; }
+        public static string DocumentId() { return "abcdefghijklabcdefghijklabcdefghijkl"; }
         public static string ModelType() { return "invoice"; }
-        public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
+        public static string ModelName() { return "invoice"; }
+        public static string Endpoint() { return "http://127.0.0.1:4010"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.jpeg"); }
+		public static AmazonCredentials Creds() {return new AmazonCredentials("foo", "bar", "baz", "baaz", "http://127.0.0.1:4010"); }
     }
 
     public static class ExampleDocSplit
@@ -288,7 +286,7 @@ namespace Test
         public static string ConsentId() { return "bar"; }
         public static string ContentType() { return "application/pdf"; }
         public static string ModelType() { return "invoice"; }
-        public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
+        public static string Endpoint() { return "http://127.0.0.1:4010"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); }
 
         public static string apiKey() { return ""; }
