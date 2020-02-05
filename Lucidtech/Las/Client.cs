@@ -198,21 +198,6 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
-        public object PatchUserId(string userId, string consentHash)
-        {
-            var body = new Dictionary<string, string>() { {"consentHash", consentHash} };
-            RestRequest request = ClientRestRequest(Method.PATCH, $"/users/{userId}", body);
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
-
-        public object GetUserId(string userId)
-        {
-            RestRequest request = ClientRestRequest(Method.GET, $"/users/{userId}");
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
-    
-
-
         /// <summary>
         /// Create a HTTP web request for the REST API. 
         /// </summary>

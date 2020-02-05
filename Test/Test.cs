@@ -206,23 +206,6 @@ namespace Test
             CheckKeys(expected, PostDocResponse);
         }
         
-        [Test]
-        public void TestPatchUserId()
-        {
-			var response = Toby.PatchUserId("me", "consentHash");
-            var expected = new List<string>(){"userId", "consentHash"};
-            CheckKeys(expected, response);
-        }
-        
-        
-        [Test]
-        public void TestGetUserId()
-        {
-			var response = Toby.GetUserId("me");
-            var expected = new List<string>(){"documentId", "contentType", "consentId"};
-            CheckKeys(expected, response);
-        }
-        
     }
 
 /*
