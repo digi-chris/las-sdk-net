@@ -46,9 +46,11 @@ namespace Lucidtech.Las
         /// Create a document handle for a jpeg image
         /// <code>
         /// Client client = new Client();
-        /// var response = client.PostDocuments("image/jpeg", "bar");
+        /// byte[] content = File.ReadAllBytes("MyReceipt.jpeg");
+        /// var response = client.PostDocuments(content, "image/jpeg", "bar");
         /// </code>
         /// </example>
+        /// <param name="content"> Content to POST </param>
         /// <param name="contentType"> A mime type for the document handle </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <param name="batchId"> Specifies the batch to which the document will be associated with </param>
@@ -87,8 +89,8 @@ namespace Lucidtech.Las
         /// var response = client.GetDocuments('&lt;batchId&gt;');
         /// </code>
         /// </example>
-        /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <param name="batchId"> The batch id that contains the documents of interest </param>
+        /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <returns> Documents from REST API contained in batch </returns>
         public object GetDocuments(string batchId = null, string consentId = null)
         {
@@ -112,17 +114,16 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="documentId"> Path to document to
         /// upload Same as provided to <see cref="PostDocuments"/></param>
-        /// <param name="modelName"> Mime type of document to upload.
-        /// Same as provided to <see cref="PostDocuments"/></param>
+        /// <param name="modelName"> The name of the model to use for inference </param>
+        /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
         /// <param name="autoRotate"> Whether or not to let the API try different 
         /// rotations on the document when running </param>
-        /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
         /// <param name="extras"> Extra information to add to json body </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
         /// the value of predictions is the output from the model.
         /// </returns>
-        public object PostPredictions(string documentId, string modelName, bool? autoRotate = null, int? maxPages = null, 
+        public object PostPredictions(string documentId, string modelName, int? maxPages = null, bool? autoRotate = null, 
                                       Dictionary<string, object>? extras = null)
         {
             var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
@@ -143,7 +144,7 @@ namespace Lucidtech.Las
         /// Get document from the REST API, calls the GET /documents/{documentId} endpoint.
         /// </summary>
         /// <example>
-        /// Create a document handle for a jpeg image
+        /// Get information of document specified by &lt;documentId&gt;
         /// <code>
         /// Client client = new Client();
         /// var response = client.GetDocumentId('&lt;documentId&gt;');
@@ -160,7 +161,8 @@ namespace Lucidtech.Las
         /// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
         /// Posting feedback means posting the ground truth data for the particular document.
-        /// This enables the API to learn from past mistakes. /// </summary> 
+        /// This enables the API to learn from past mistakes. 
+        /// </summary> 
         /// <example>
         /// <code>
         /// Client client = new Client(); 
@@ -218,7 +220,7 @@ namespace Lucidtech.Las
         /// on the document specified by '&lt;batchId&gt;'
         /// <code>
         /// Client client = new Client(); 
-        /// var response = client.PostBatches("training data gathered from the Mars Rover"); 
+        /// var response = client.PostBatches("Data gathered from the Mars Rover Invoice Scan Mission"); 
         /// </code>
         /// </example>
         /// <param name="description"> A brief description of the purpose of the batch

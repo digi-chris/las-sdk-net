@@ -161,8 +161,8 @@ namespace Test
         [Test]
         public void TestPostPredictions()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), true, 1);
-            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), true, 1);
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), 1, true);
+            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
