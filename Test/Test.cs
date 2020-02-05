@@ -146,7 +146,7 @@ namespace Test
         [Test]
         public void TestPostDocuments()
         {
-            var expected = new List<string>(){"documentId", "contentType", "consentId"};
+            var expected = new List<string>(){"documentId", "contentType", "consentId", "batchId"};
             CheckKeys(expected, PostDocResponse);
         }
         
@@ -154,7 +154,7 @@ namespace Test
         public void TestGetDocuments()
         {
 			var response = Toby.GetDocuments();
-            var expected = new List<string>(){"documentId", "contentType", "consentId"};
+            var expected = new List<string>(){"documents"};
             CheckKeys(expected, response);
         }
         
@@ -203,7 +203,7 @@ namespace Test
         {
 			var response = Toby.PostBatches(Example.Description());
             var expected = new List<string>(){"batchId", "description"};
-            CheckKeys(expected, PostDocResponse);
+            CheckKeys(expected, response);
         }
         
     }
