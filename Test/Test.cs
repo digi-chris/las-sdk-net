@@ -21,19 +21,17 @@ using RestSharp;
 
 namespace Test
 {
-/*
     [TestFixture]
     public class TestApi
     {
 
         private ApiClient Luke { get; set; }
-        private ApiClient Sara { get; set; }
         
         [OneTimeSetUp]
         public void Init()
         {
-            Luke = new ApiClient(Example.Endpoint());
-            Sara = new ApiClient(ExampleDocSplit.Endpoint());
+            //Luke = new ApiClient(Example.Endpoint());
+            Luke = new ApiClient();
         }
         
         private static void CheckFields<T>(List<Dictionary<string, T>> fields, Dictionary<string, Type> expected) 
@@ -48,18 +46,17 @@ namespace Test
             }
         }
 
-        private Dictionary<string, string>PostAndPutDoc()
+        private Dictionary<string, string>PostDoc()
         {
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
-                Luke.PostDocuments(Example.Content(), Example.ContentType(), Example.ConsentId()));
-            Luke.PutDocument(Example.DocPath(),Example.ContentType(), postDocResponse["uploadUrl"]);
-            return postDocResponse;
+            byte[] body = File.ReadAllBytes(Example.DocPath());
+            var response = Luke.PostDocuments(body, Example.ContentType(), Example.ConsentId());
+            return JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(response);
         }
         
         [Test]
         public void TestSendFeedback()
         {
-            var postDocResponse = PostAndPutDoc();
+            var postDocResponse = PostDoc();
             var feedback = new List<Dictionary<string, string>>()
             {
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
@@ -80,7 +77,7 @@ namespace Test
         [Test]
         public void TestRevokeConsent()
         {
-            var postDocResponse = PostAndPutDoc();
+            var postDocResponse = PostDoc();
             RevokeResponse response = Luke.RevokeConsent(postDocResponse["consentId"]);
             
             Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
@@ -94,38 +91,10 @@ namespace Test
         }
         
         [Test]
-        public void TestDocSpiltPrediction()
-        {
-            if (ExampleDocSplit.Endpoint() == Example.Endpoint())
-            {
-                Console.WriteLine($"The Demo API does currently not support Document split, use another endpoint"); 
-                return;
-            }
-            var response = Sara.Predict(
-                documentPath: ExampleDocSplit.DocPath(),
-                modelName: ExampleDocSplit.ModelType(),
-                consentId: ExampleDocSplit.ConsentId());
-
-            Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
-            Console.WriteLine(response.ToJsonString(Formatting.Indented));
-            
-            Assert.IsTrue(response.ConsentId.Equals(ExampleDocSplit.ConsentId()));
-            Assert.IsTrue(response.ModelName.Equals(ExampleDocSplit.ModelType()));
-            var expected = new Dictionary<string, Type>()
-            {
-                {"type", typeof(string)},
-                {"start", typeof(Int64)},
-                {"end", typeof(Int64)},
-                {"confidence", typeof(double)}
-            };
-            CheckFields(response.Fields, expected);
-        }
-        
-        [Test]
         public void TestPrediction()
         {
             var response = Luke.Predict(
-                documentPath: Example.DocPath(),modelName: Example.ModelType(),consentId: Example.ConsentId());
+                documentPath: Example.DocPath(), modelName: Example.ModelType(), consentId: Example.ConsentId());
 
             Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
             Console.WriteLine(response.ToJsonString(Formatting.Indented));
@@ -141,7 +110,7 @@ namespace Test
             CheckFields(response.Fields, expected);
         }
     }
-*/
+
     [TestFixture]
     public class TestClient 
     {

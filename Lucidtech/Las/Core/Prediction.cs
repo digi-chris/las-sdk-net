@@ -105,10 +105,6 @@ namespace Lucidtech.Las.Core
         /// </summary>
         public string ConsentId { get; }
         /// <summary>
-        /// Upload url
-        /// </summary>
-        public string UploadUrl { get; }
-        /// <summary>
         /// Content type
         /// </summary>
         public string ContentType { get; }
@@ -123,7 +119,6 @@ namespace Lucidtech.Las.Core
             
             DocumentId = jsonResponse["documentId"].ToString();
             ConsentId = jsonResponse["consentId"].ToString();
-            UploadUrl = jsonResponse["uploadUrl"].ToString();
             ContentType = jsonResponse["contentType"].ToString();
             Feedback = JsonSerialPublisher.ObjectToDict<List<Dictionary<string,string>>>(jsonResponse["feedback"]);
         }
