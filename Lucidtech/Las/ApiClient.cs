@@ -19,13 +19,11 @@ namespace Lucidtech.Las
         /// <summary>
         /// ApiClient constructor with credentials read from local file.
         /// </summary>
-        /// <param name="endpoint"> Url to the host </param>
         public ApiClient() : base() {}
         
         /// <summary>
         /// ApiClient constructor.
         /// </summary>
-        /// <param name="endpoint"> Url to the host </param>
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
         public ApiClient(AmazonCredentials credentials) : base(credentials) {}
 
@@ -35,7 +33,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <example> <code>
         /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
+        /// ApiClient apiClient = new ApiClient(); 
         /// Prediction response =
         /// apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice", consentId: "bar"); 
         /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
@@ -69,7 +67,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <example><code>
         /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
+        /// ApiClient apiClient = new ApiClient(); 
         /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;() 
         /// { 
         ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}}, 
@@ -92,7 +90,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <example><code>
         /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
+        /// ApiClient apiClient = new ApiClient(); 
         /// RevokeResponse response = apiClient.RevokeConsent(consentId: '&lt;consentId&gt;'); 
         /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
         /// </code></example>
