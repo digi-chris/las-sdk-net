@@ -54,7 +54,8 @@ namespace Lucidtech.Las
         /// <param name="contentType"> A mime type for the document handle </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <param name="batchId"> Specifies the batch to which the document will be associated with </param>
-        /// <param name="feedback"> A list of feedback items {label: value} representing the ground truth values for the document </param>
+        /// <param name="feedback"> A list of feedback items {label: value},
+        /// representing the ground truth values for the document </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// with batchId, documentId, contentType and consentId
@@ -123,8 +124,8 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
         /// the value of predictions is the output from the model.
         /// </returns>
-        public object PostPredictions(string documentId, string modelName, int? maxPages = null, bool? autoRotate = null, 
-                                      Dictionary<string, object>? extras = null)
+        public object PostPredictions(string documentId, string modelName, int? maxPages = null, 
+                                      bool? autoRotate = null, Dictionary<string, object>? extras = null)
         {
             var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
             if (maxPages != null) { body.Add("maxPages", maxPages);}

@@ -113,7 +113,8 @@ namespace Lucidtech.Las.Core
         }
         
         /// <summary>
-        /// Credentials constructor where ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided by Lucidtech.
+        /// Credentials constructor where ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided by
+        /// Lucidtech.
         /// </summary>
         /// <param name="clientId"> client id </param>
         /// <param name="clientSecret"> client secret </param>
@@ -121,7 +122,8 @@ namespace Lucidtech.Las.Core
         /// <param name="authEndpoint"> Authorization endpoint </param>
         /// <param name="apiEndpoint"> API endpoint </param>
         /// <exception cref="ArgumentException"></exception>
-        public AmazonCredentials(string clientId, string clientSecret, string apiKey, string authEndpoint, string apiEndpoint)
+        public AmazonCredentials(string clientId, string clientSecret, string apiKey, 
+            string authEndpoint, string apiEndpoint)
         {
             ClientId = clientId;
             ClientSecret = clientSecret;

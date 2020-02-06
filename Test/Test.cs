@@ -186,7 +186,8 @@ namespace Test
         [Test]
         public void TestPostPredictionsMaxPages()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), maxPages: 2);
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(),
+                                                maxPages: 2);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -195,7 +196,8 @@ namespace Test
         [Test]
         public void TestPostPredictionsAutoRotate()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), autoRotate: true);
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), 
+                                                autoRotate: true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -205,7 +207,8 @@ namespace Test
         public void TestPostPredictionsExtras()
         {
             var extras = new Dictionary<string, object>() {{"maxPages", 1}};
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), extras: extras);
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), 
+                                                extras: extras);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -307,7 +310,10 @@ namespace Test
         public static string ModelName() { return "invoice"; }
         public static string Endpoint() { return "http://127.0.0.1:4010"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.jpeg"); }
-        public static AmazonCredentials Creds() {return new AmazonCredentials("foo", "bar", "baz", "baaz", "http://127.0.0.1:4010"); }
+        public static AmazonCredentials Creds() 
+        {
+            return new AmazonCredentials("foo", "bar", "baz", "baaz", "http://127.0.0.1:4010"); 
+        }
     }
 
     public static class ExampleDocSplit
@@ -325,8 +331,10 @@ namespace Test
         public static string ContentType() { return "application/pdf"; }
         public static string ModelType() { return "invoice"; }
         public static string Endpoint() { return "http://127.0.0.1:4010"; }
-        public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); }
-
+        public static string DocPath() 
+        { 
+            return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); 
+        }
         public static string apiKey() { return ""; }
         public static string secretKey() { return ""; }
         public static string accessKey() { return ""; }
