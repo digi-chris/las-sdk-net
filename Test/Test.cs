@@ -159,9 +159,40 @@ namespace Test
         }
         
         [Test]
-        public void TestPostPredictions()
+        public void TestPostPredictionsBareMinimum()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), 1, true);
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName());
+            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
+            Console.WriteLine($"PostPredictions. {response}");
+            var expected = new List<string>(){"documentId", "predictions"};
+            CheckKeys(expected, response);
+        }
+
+        [Test]
+        public void TestPostPredictionsMaxPages()
+        {
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), maxPages: 2);
+            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
+            Console.WriteLine($"PostPredictions. {response}");
+            var expected = new List<string>(){"documentId", "predictions"};
+            CheckKeys(expected, response);
+        }
+
+        [Test]
+        public void TestPostPredictionsAutoRotate()
+        {
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), autoRotate: true);
+            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
+            Console.WriteLine($"PostPredictions. {response}");
+            var expected = new List<string>(){"documentId", "predictions"};
+            CheckKeys(expected, response);
+        }
+
+        [Test]
+        public void TestPostPredictionsExtras()
+        {
+            var extras = new Dictionary<string, object>() {{"maxPages", 1}};
+            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), extras: extras);
             //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
