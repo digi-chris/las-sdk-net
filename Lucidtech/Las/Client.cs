@@ -223,7 +223,7 @@ namespace Lucidtech.Las
         /// var response = client.PostBatches("Data gathered from the Mars Rover Invoice Scan Mission"); 
         /// </code>
         /// </example>
-        /// <param name="description"> A brief description of the purpose of the batch
+        /// <param name="description"> A brief description of the purpose of the batch </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields batchId and description.
         /// batchId can be used as an input when posting documents to make them a part of this batch.

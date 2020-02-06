@@ -25,7 +25,9 @@ namespace Lucidtech.Las.Core
         /// Document id
         /// </summary>
         public string DocumentId { get; }
+        /// <summary>
         /// A list of the responses from a prediction
+        /// </summary>
         public List<Dictionary<string, object>> Fields { get; }
 
         /// <summary>

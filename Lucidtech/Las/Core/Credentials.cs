@@ -15,8 +15,8 @@ namespace Lucidtech.Las.Core
 {
     /// <summary>
     /// Used to fetch and store credentials. One of 3 conditions must be met to successfully create credentials.
-    /// 1. The path to the file where the credentials are stored is provided
-    /// 2. ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided
+    /// 1. ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided
+    /// 2. The path to the file where the credentials are stored is provided
     /// 3. Credentials are located in default path ~/.lucidtech/credentials.cfg
     /// 
     /// Get credentials by contacting hello@lucidtech.ai

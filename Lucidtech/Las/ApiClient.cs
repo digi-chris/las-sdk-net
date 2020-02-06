@@ -44,7 +44,7 @@ namespace Lucidtech.Las
         /// <returns>
         /// Prediction on document
         /// </returns>
-        public Prediction Predict(string documentPath, string modelName, string consentId = "LT_DEFAULT_CONSENT_ID")
+        public Prediction Predict(string documentPath, string modelName, string consentId = "default")
         {
             string contentType = GetContentType(documentPath);
             byte[] body = File.ReadAllBytes(documentPath);
