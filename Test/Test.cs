@@ -30,7 +30,7 @@ namespace Test
         [OneTimeSetUp]
         public void Init()
         {
-            //Luke = new ApiClient(Example.Endpoint());
+            //Luke = new ApiClient(Example.Creds());
             Luke = new ApiClient();
         }
         
@@ -141,6 +141,7 @@ namespace Test
             byte[] body = File.ReadAllBytes(Example.DocPath());
             var response = Toby.PostDocuments(body, Example.ContentType(), Example.ConsentId());
             PostDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
+            //PostDocResponse["documentId"] = Example.DocumentId() // in the case of a mock api
         }
         
         [Test]
@@ -162,7 +163,6 @@ namespace Test
         public void TestPostPredictionsBareMinimum()
         {
             var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName());
-            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -172,7 +172,6 @@ namespace Test
         public void TestPostPredictionsMaxPages()
         {
             var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), maxPages: 2);
-            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -182,7 +181,6 @@ namespace Test
         public void TestPostPredictionsAutoRotate()
         {
             var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), autoRotate: true);
-            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -193,7 +191,6 @@ namespace Test
         {
             var extras = new Dictionary<string, object>() {{"maxPages", 1}};
             var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), extras: extras);
-            //var response = Toby.PostPredictions(Example.DocumentId(), Example.ModelName(), 1, true);
             Console.WriteLine($"PostPredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
@@ -202,7 +199,6 @@ namespace Test
         [Test]
         public void TestGetDocumentId()
         {
-            //var response = Toby.GetDocumentId(Example.DocumentId());
             var response = Toby.GetDocumentId((string)PostDocResponse["documentId"]);
             var expected = new List<string>(){"documentId", "contentType", "consentId"};
             CheckKeys(expected, response);
