@@ -26,12 +26,12 @@ namespace Lucidtech.Las.Core
     {
         
         /// <summary>
-        /// Amazon Access key ID. Provided by Lucidtech.
+        /// Client ID. Provided by Lucidtech.
         /// </summary>
         public string ClientId { get; }
         
         /// <summary>
-        /// Amazon Secret Access Key. Provided by Lucidtech.
+        /// Client Secret. Provided by Lucidtech.
         /// </summary>
         public string ClientSecret { get; }
         
@@ -60,6 +60,9 @@ namespace Lucidtech.Las.Core
         /// </summary>
         private DateTime ExpirationTime;
     
+        /// <summary>
+        /// RestClient for making request to the authorization endpoint.
+        /// </summary>
         private RestClient RestSharpClient { get; set; }
 
         private (string, DateTime) GetClientCredentials()
@@ -83,7 +86,7 @@ namespace Lucidtech.Las.Core
         }
         
         /// <summary>
-        /// Access token to API endpoint.
+        /// Get Access token to API endpoint.
         /// </summary>
         public string GetAccessToken()
         {
@@ -110,10 +113,10 @@ namespace Lucidtech.Las.Core
         }
         
         /// <summary>
-        /// Credentials constructor where ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided.
+        /// Credentials constructor where ClientId, ClientSecret, ApiKey, AuthEndpoint and ApiEndpoint are provided by Lucidtech.
         /// </summary>
-        /// <param name="clientId"> Access key id </param>
-        /// <param name="clientSecret"> Secret Access Key </param>
+        /// <param name="clientId"> client id </param>
+        /// <param name="clientSecret"> client secret </param>
         /// <param name="apiKey"> API key </param>
         /// <param name="authEndpoint"> Authorization endpoint </param>
         /// <param name="apiEndpoint"> API endpoint </param>
@@ -129,7 +132,7 @@ namespace Lucidtech.Las.Core
         }
         
         /// <summary>
-        /// Credentials constructor where the path is provided.
+        /// Credentials constructor where the path to the credentials config is provided.
         /// </summary>
         /// <param name="credentialsPath"> Path to the file where the credentials are stored </param>
         public AmazonCredentials(string credentialsPath)
