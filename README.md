@@ -83,7 +83,9 @@ $ git clone git@github.com:LucidtechAI/las-sdk-net.git
 $ cd las-sdk-net
 $ dotnet restore Test # Restore nuget packages dependencies
 $ msbuild Test/Test.csproj # Build Tests
+$ prism mock -d open_api_spec_for_lucidtech_api.json
 $ nunit3-console Test/bin/Debug/<framework-version>/Test.dll # Run
+$ nunit3-console Test/bin/Debug/<framework-version>/Test.dll --test=Test.TestApi # Run partial tests
 $ # Build for release and make nuget package
 $ msbuild Lucidtech/Lucidtech.csproj /t:Rebuild /p:Configuration=Release
 ```
