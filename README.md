@@ -7,7 +7,11 @@
 Create documents by using doxygen.
 Download the latest and greatest version of [doxygen](https://github.com/doxygen/doxygen.git).
 ```bash
+$ cd Lucidtech
 $ doxygen documentation.conf
+$ sudo npm install moxygen -g # Download moxygen for markdown generation.
+$ moxygen xml # Generate markdown file
+
 ```
 
 ## Installation
