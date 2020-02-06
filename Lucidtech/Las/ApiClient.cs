@@ -48,9 +48,9 @@ namespace Lucidtech.Las
         {
             string contentType = GetContentType(documentPath);
             byte[] body = File.ReadAllBytes(documentPath);
-            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
+            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(
                 PostDocuments(body, contentType, consentId));
-            string documentId = postDocumentsResponse["documentId"];
+            string documentId = (string)postDocumentsResponse["documentId"];
             var predictionResponse = PostPredictions(documentId, modelName);
             
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());

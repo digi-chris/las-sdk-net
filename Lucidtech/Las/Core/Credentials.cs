@@ -75,11 +75,11 @@ namespace Lucidtech.Las.Core
             foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
 
             var response = RestSharpClient.Execute(request);
-            var response_data = JsonDecode(response);
-            var response_dict = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response_data);
+            var responseData = JsonDecode(response);
+            var responseDict = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(responseData);
         
-            string accessToken = (string)response_dict["access_token"];
-            double expiresIn = Convert.ToDouble(response_dict["expires_in"]);
+            string accessToken = (string)responseDict["access_token"];
+            double expiresIn = Convert.ToDouble(responseDict["expires_in"]);
             DateTime exp = DateTime.UtcNow.AddSeconds(expiresIn);
             
             return (accessToken, exp);

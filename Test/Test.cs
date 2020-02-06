@@ -30,8 +30,15 @@ namespace Test
         [OneTimeSetUp]
         public void Init()
         {
-            //Luke = new ApiClient(Example.Creds());
-            Luke = new ApiClient();
+            AmazonCredentials creds = new AmazonCredentials();
+            AmazonCredentials mockCreds = new AmazonCredentials(
+                clientId: creds.ClientId, 
+                clientSecret: creds.ClientSecret, 
+                apiKey: creds.ApiKey, 
+                authEndpoint: creds.AuthEndpoint, 
+                apiEndpoint: Example.Endpoint()
+            );
+            Luke = new ApiClient(mockCreds);
         }
         
         private static void CheckFields<T>(List<Dictionary<string, T>> fields, Dictionary<string, Type> expected) 
@@ -45,12 +52,13 @@ namespace Test
                 }
             }
         }
-
-        private Dictionary<string, string>PostDoc()
+        
+        private Dictionary<string, object>PostDoc()
         {
             byte[] body = File.ReadAllBytes(Example.DocPath());
             var response = Luke.PostDocuments(body, Example.ContentType(), Example.ConsentId());
-            return JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(response);
+            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
+            return postDocResponse;
         }
         
         [Test]
@@ -62,7 +70,7 @@ namespace Test
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
                 new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
             };
-            var response = Luke.SendFeedback(postDocResponse["documentId"], feedback);
+            var response = Luke.SendFeedback((string)postDocResponse["documentId"], feedback);
             
             Console.WriteLine($"\n$ FeedbackResponse response = apiClient.SendFeedback(...);");
             Console.WriteLine(response.ToJsonString(Formatting.Indented));
@@ -78,12 +86,13 @@ namespace Test
         public void TestRevokeConsent()
         {
             var postDocResponse = PostDoc();
-            RevokeResponse response = Luke.RevokeConsent(postDocResponse["consentId"]);
+            RevokeResponse response = Luke.RevokeConsent((string)postDocResponse["consentId"]);
             
             Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
             Console.WriteLine(response.ToJsonString(Formatting.Indented));
             
-            Assert.IsTrue(response.ConsentId.Equals(Example.ConsentId()));
+            //Assert.IsTrue(response.ConsentId.Equals(Example.ConsentId()));
+            Assert.IsNotEmpty(response.ConsentId);
             foreach (var documentId in response.DocumentIds)
             {
                 Assert.IsNotEmpty(documentId);
@@ -131,8 +140,15 @@ namespace Test
         [OneTimeSetUp]
         public void InitClient()
         {
-            //Toby = new Client(Example.Creds());
-            Toby = new Client();
+            AmazonCredentials creds = new AmazonCredentials();
+            AmazonCredentials mockCreds = new AmazonCredentials(
+                clientId: creds.ClientId, 
+                clientSecret: creds.ClientSecret, 
+                apiKey: creds.ApiKey, 
+                authEndpoint: creds.AuthEndpoint, 
+                apiEndpoint: Example.Endpoint()
+            );
+            Toby = new Client(mockCreds);
         }
         
         [SetUp]
@@ -141,7 +157,6 @@ namespace Test
             byte[] body = File.ReadAllBytes(Example.DocPath());
             var response = Toby.PostDocuments(body, Example.ContentType(), Example.ConsentId());
             PostDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
-            //PostDocResponse["documentId"] = Example.DocumentId() // in the case of a mock api
         }
         
         [Test]
