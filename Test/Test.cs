@@ -153,7 +153,7 @@ namespace Test
         [Test]
         public void TestGetDocuments()
         {
-			var response = Toby.GetDocuments();
+            var response = Toby.GetDocuments();
             var expected = new List<string>(){"documents"};
             CheckKeys(expected, response);
         }
@@ -171,8 +171,8 @@ namespace Test
         [Test]
         public void TestGetDocumentId()
         {
-			//var response = Toby.GetDocumentId(Example.DocumentId());
-			var response = Toby.GetDocumentId((string)PostDocResponse["documentId"]);
+            //var response = Toby.GetDocumentId(Example.DocumentId());
+            var response = Toby.GetDocumentId((string)PostDocResponse["documentId"]);
             var expected = new List<string>(){"documentId", "contentType", "consentId"};
             CheckKeys(expected, response);
         }
@@ -201,7 +201,7 @@ namespace Test
         [Test]
         public void TestPostBatches()
         {
-			var response = Toby.PostBatches(Example.Description());
+            var response = Toby.PostBatches(Example.Description());
             var expected = new List<string>(){"batchId", "description"};
             CheckKeys(expected, response);
         }
@@ -265,7 +265,7 @@ namespace Test
         public static string ModelName() { return "invoice"; }
         public static string Endpoint() { return "http://127.0.0.1:4010"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.jpeg"); }
-		public static AmazonCredentials Creds() {return new AmazonCredentials("foo", "bar", "baz", "baaz", "http://127.0.0.1:4010"); }
+        public static AmazonCredentials Creds() {return new AmazonCredentials("foo", "bar", "baz", "baaz", "http://127.0.0.1:4010"); }
     }
 
     public static class ExampleDocSplit
