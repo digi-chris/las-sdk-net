@@ -12,14 +12,14 @@
     <AssemblyName>Lucidtech</AssemblyName>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworks>net47;net472</TargetFrameworks>
+    <TargetFrameworks>net461</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Lucidtech.Las</PackageId>
     <PackageVersion>0.2.0</PackageVersion>
     <Title>Lucidtech AI Services</Title>
     <Authors>Lucidtech AS</Authors>
     <Description>SDK for accessing Lucidtech AI Services</Description>
-    <Copyright>Copyright 2019</Copyright>
+    <Copyright>Copyright 2020</Copyright>
     <PackageProjectUrl>https://github.com/LucidtechAI/las-sdk-net</PackageProjectUrl>
     <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/LucidtechAI/las-sdk-net</RepositoryUrl>
