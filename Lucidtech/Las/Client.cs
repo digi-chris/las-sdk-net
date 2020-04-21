@@ -241,7 +241,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <param name="method"> The request method, e.g. POST, PUT, GET, DELETE </param>
         /// <param name="path"> The path to the domain upon which to apply the request,
-        /// the total path will be <see cref="Credentials.ApiEndpoint"/>path</param>
+        /// the total path will be <see href="Credentials.ApiEndpoint"/>path</param>
         /// <param name="body"> The content of the request </param>
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input
