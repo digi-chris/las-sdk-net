@@ -12,7 +12,7 @@
     <RootNamespace>Test</RootNamespace>
     <AssemblyName>Test</AssemblyName>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <TargetFrameworks>net461;net472</TargetFrameworks>
+    <TargetFrameworks>net461;net47;net472</TargetFrameworks>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
