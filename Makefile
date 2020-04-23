@@ -14,9 +14,9 @@ build-test: restore-test
 	msbuild Test/Test.csproj
 
 test: build-test
-	nunit3-console.exe ./Test/bin/Debug/net461/Test.dll
-	nunit3-console.exe ./Test/bin/Debug/net47/Test.dll
-	nunit3-console.exe ./Test/bin/Debug/net472/Test.dll
+	nunit3-console ./Test/bin/Debug/net461/Test.dll
+	nunit3-console ./Test/bin/Debug/net47/Test.dll
+	nunit3-console ./Test/bin/Debug/net472/Test.dll
 
 prism-start:
 	@echo "Starting mock API..."
