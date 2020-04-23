@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Mime;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.XPath;
 using NUnit.Framework;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Moq;
+using Moq.Protected;
 
 using Lucidtech.Las;
 using Lucidtech.Las.Core;
 using Lucidtech.Las.Utils;
-using Newtonsoft.Json.Bson;
-using RestSharp;
 
 namespace Test
 {
@@ -26,19 +19,20 @@ namespace Test
     {
 
         private ApiClient Luke { get; set; }
-        
+
         [OneTimeSetUp]
         public void Init()
         {
-            AmazonCredentials creds = new AmazonCredentials();
-            AmazonCredentials mockCreds = new AmazonCredentials(
-                clientId: creds.ClientId, 
-                clientSecret: creds.ClientSecret, 
-                apiKey: creds.ApiKey, 
-                authEndpoint: creds.AuthEndpoint, 
-                apiEndpoint: Example.Endpoint()
-            );
-            Luke = new ApiClient(mockCreds);
+            var mockCreds = new Mock<AmazonCredentials>("test", "test", "test", "test", "http://localhost:4010");
+            mockCreds
+              .Protected()
+              .Setup<(string, DateTime)>("GetClientCredentials")
+              .Returns(("foobar", DateTime.Now));
+            mockCreds
+              .Protected()
+              .Setup("CommonConstructor");
+
+            Luke = new ApiClient(mockCreds.Object);
         }
         
         private static void CheckFields<T>(List<Dictionary<string, T>> fields, Dictionary<string, Type> expected) 
@@ -140,15 +134,17 @@ namespace Test
         [OneTimeSetUp]
         public void InitClient()
         {
-            AmazonCredentials creds = new AmazonCredentials();
-            AmazonCredentials mockCreds = new AmazonCredentials(
-                clientId: creds.ClientId, 
-                clientSecret: creds.ClientSecret, 
-                apiKey: creds.ApiKey, 
-                authEndpoint: creds.AuthEndpoint, 
-                apiEndpoint: Example.Endpoint()
-            );
-            Toby = new Client(mockCreds);
+          var mockCreds = new Mock<AmazonCredentials>("test", "test", "test", "test", "http://localhost:4010");
+
+          mockCreds
+            .Protected()
+            .Setup<(string, DateTime)>("GetClientCredentials")
+            .Returns(("foobar", DateTime.Now));
+          mockCreds
+            .Protected()
+            .Setup("CommonConstructor");
+
+          Toby = new Client(mockCreds.Object);
         }
         
         [SetUp]

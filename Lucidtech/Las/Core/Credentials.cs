@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -7,7 +8,6 @@ using IniParser.Model;
 
 using RestSharp;
 using RestSharp.Authenticators;
-using Newtonsoft.Json;
 
 using Lucidtech.Las.Utils;
 
@@ -65,7 +65,7 @@ namespace Lucidtech.Las.Core
         /// </summary>
         private RestClient RestSharpClient { get; set; }
 
-        private (string, DateTime) GetClientCredentials()
+        protected virtual (string, DateTime) GetClientCredentials()
         {
             string url = "oauth2/token?grant_type=client_credentials";
             var headers = new Dictionary<string, string>(){ {"Content-Type", "application/x-www-form-urlencoded"} };
@@ -132,13 +132,17 @@ namespace Lucidtech.Las.Core
             ApiEndpoint = apiEndpoint;
             CommonConstructor();
         }
-        
+
         /// <summary>
         /// Credentials constructor where the path to the credentials config is provided.
         /// </summary>
         /// <param name="credentialsPath"> Path to the file where the credentials are stored </param>
         public AmazonCredentials(string credentialsPath)
         {
+            if (!File.Exists(credentialsPath)) {
+              return;
+            }
+
             var credentials = ReadCredentials(credentialsPath);
             ClientId = credentials["ClientId"];
             ClientSecret = credentials["ClientSecret"];
@@ -147,27 +151,28 @@ namespace Lucidtech.Las.Core
             ApiEndpoint = credentials["ApiEndpoint"];
             CommonConstructor();
         }
-        
+
         /// <summary>
         /// Credentials constructor where the credentials are located at the default path.
         /// ~/.lucidtech/credentials.cfg for linux and %USERPROFILE%\.lucidtech\credentials.cfg for Windows.
         /// </summary>
         public AmazonCredentials() : this(GetCredentialsPath()) {}
-        
-        private void CommonConstructor()
+
+        protected virtual void CommonConstructor()
         {
             AccessToken = null;
             ExpirationTime = DateTime.UtcNow;
             RestSharpClient = new RestClient($"https://{AuthEndpoint}");
             RestSharpClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
         }
+
         private static string GetCredentialsPath()
         {
             string path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 
                 "%USERPROFILE%\\.lucidtech\\credentials.cfg" : "%HOME%/.lucidtech/credentials.cfg";
             return Environment.ExpandEnvironmentVariables(path);
         }
-        
+
         private static Dictionary<string, string> ReadCredentials(string credentialPath)
         {
             var parser = new FileIniDataParser();
