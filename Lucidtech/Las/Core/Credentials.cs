@@ -139,16 +139,24 @@ namespace Lucidtech.Las.Core
         /// <param name="credentialsPath"> Path to the file where the credentials are stored </param>
         public AmazonCredentials(string credentialsPath)
         {
-            if (!File.Exists(credentialsPath)) {
-              return;
+            var envCred = GetCredentialsFromEnv();
+            if (!File.Exists(credentialsPath))
+            {
+                ClientId = envCred["ClientId"];
+                ClientSecret = envCred["ClientSecret"];
+                ApiKey = envCred["ApiKey"];
+                AuthEndpoint = envCred["AuthEndpoint"];
+                ApiEndpoint = envCred["ApiEndpoint"];
             }
-
-            var credentials = ReadCredentials(credentialsPath);
-            ClientId = credentials["ClientId"];
-            ClientSecret = credentials["ClientSecret"];
-            ApiKey = credentials["ApiKey"];
-            AuthEndpoint = credentials["AuthEndpoint"];
-            ApiEndpoint = credentials["ApiEndpoint"];
+            else
+            {
+                var pathCred = ReadCredentials(credentialsPath);
+                ClientId = envCred["ClientId"] != null ? envCred["ClientId"] : pathCred["ClientId"];
+                ClientSecret = envCred["ClientSecret"] != null ? envCred["ClientSecret"] : pathCred["ClientSecret"];
+                ApiKey = envCred["ApiKey"] != null ? envCred["ApiKey"] : pathCred["ApiKey"];
+                AuthEndpoint = envCred["AuthEndpoint"] != null ? envCred["AuthEndpoint"] : pathCred["AuthEndpoint"];
+                ApiEndpoint = envCred["ApiEndpoint"] != null ? envCred["ApiEndpoint"] : pathCred["ApiEndpoint"];
+            }
             CommonConstructor();
         }
 
@@ -165,6 +173,21 @@ namespace Lucidtech.Las.Core
             RestSharpClient = new RestClient($"https://{AuthEndpoint}");
             RestSharpClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
         }
+
+        private Dictionary<string, string> GetCredentialsFromEnv()
+        {
+            var envVars = new Dictionary<string, string>()
+            {
+                {"ClientId", Environment.GetEnvironmentVariable("LAS_CLIENT_ID")},
+                {"ClientSecret", Environment.GetEnvironmentVariable("LAS_CLIENT_SECRET")},
+                {"ApiKey", Environment.GetEnvironmentVariable("LAS_API_KEY")},
+                {"AuthEndpoint", Environment.GetEnvironmentVariable("LAS_AUTH_ENDPOINT")},
+                {"ApiEndpoint", Environment.GetEnvironmentVariable("LAS_API_ENDPOINT")}
+            };
+
+            return envVars;
+        }
+
 
         private static string GetCredentialsPath()
         {
