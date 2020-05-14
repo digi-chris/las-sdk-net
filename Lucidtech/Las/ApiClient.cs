@@ -48,11 +48,11 @@ namespace Lucidtech.Las
         {
             string contentType = GetContentType(documentPath);
             byte[] body = File.ReadAllBytes(documentPath);
-            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(
-                PostDocuments(body, contentType, consentId));
-            string documentId = (string)postDocumentsResponse["documentId"];
-            var predictionResponse = PostPredictions(documentId, modelName);
-            
+            var createDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(
+                CreateDocuments(body, contentType, consentId));
+            string documentId = (string)createDocumentsResponse["documentId"];
+            var predictionResponse = CreatePredictions(documentId, modelName);
+
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
             var predictionString = jsonResponse["predictions"].ToString();
             var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
@@ -81,7 +81,7 @@ namespace Lucidtech.Las
         /// <returns> Data that can be used to confirm that the feedback uploaded was successful </returns>
         public FeedbackResponse SendFeedback(string documentId, List<Dictionary<string, string>> feedback)
         {
-            return new FeedbackResponse(PostDocumentId(documentId, feedback));
+            return new FeedbackResponse(CreateDocumentId(documentId, feedback));
         }
 
         /// <summary>

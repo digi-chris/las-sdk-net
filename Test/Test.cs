@@ -47,10 +47,10 @@ namespace Test
             }
         }
         
-        private Dictionary<string, object>PostDoc()
+        private Dictionary<string, object>CreateDoc()
         {
             byte[] body = File.ReadAllBytes(Example.DocPath());
-            var response = Luke.PostDocuments(body, Example.ContentType(), Example.ConsentId());
+            var response = Luke.CreateDocuments(body, Example.ContentType(), Example.ConsentId());
             var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
             return postDocResponse;
         }
@@ -58,7 +58,7 @@ namespace Test
         [Test]
         public void TestSendFeedback()
         {
-            var postDocResponse = PostDoc();
+            var postDocResponse = CreateDoc();
             var feedback = new List<Dictionary<string, string>>()
             {
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
@@ -79,7 +79,7 @@ namespace Test
         [Test]
         public void TestRevokeConsent()
         {
-            var postDocResponse = PostDoc();
+            var postDocResponse = CreateDoc();
             RevokeResponse response = Luke.RevokeConsent((string)postDocResponse["consentId"]);
             
             Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
@@ -118,7 +118,7 @@ namespace Test
     public class TestClient 
     {
         private Client Toby { get; set; }
-        private Dictionary<string, object> PostDocResponse { get; set; }
+        private Dictionary<string, object> CreateDocResponse { get; set; }
 
         private static void CheckKeys(List<string> expected, object response)
         {
@@ -148,18 +148,18 @@ namespace Test
         }
         
         [SetUp]
-        public void PostDocs()
+        public void CreateDocs()
         {
             byte[] body = File.ReadAllBytes(Example.DocPath());
-            var response = Toby.PostDocuments(body, Example.ContentType(), Example.ConsentId());
-            PostDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
+            var response = Toby.CreateDocuments(body, Example.ContentType(), Example.ConsentId());
+            CreateDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
         }
         
         [Test]
-        public void TestPostDocuments()
+        public void TestCreateDocuments()
         {
             var expected = new List<string>(){"documentId", "contentType", "consentId", "batchId"};
-            CheckKeys(expected, PostDocResponse);
+            CheckKeys(expected, CreateDocResponse);
         }
         
         [Test]
@@ -171,41 +171,41 @@ namespace Test
         }
         
         [Test]
-        public void TestPostPredictionsBareMinimum()
+        public void TestCreatePredictionsBareMinimum()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName());
-            Console.WriteLine($"PostPredictions. {response}");
+            var response = Toby.CreatePredictions((string)CreateDocResponse["documentId"], Example.ModelName());
+            Console.WriteLine($"CreatePredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
         }
 
         [Test]
-        public void TestPostPredictionsMaxPages()
+        public void TestCreatePredictionsMaxPages()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(),
+            var response = Toby.CreatePredictions((string)CreateDocResponse["documentId"], Example.ModelName(),
                                                 maxPages: 2);
-            Console.WriteLine($"PostPredictions. {response}");
+            Console.WriteLine($"CreatePredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
         }
 
         [Test]
-        public void TestPostPredictionsAutoRotate()
+        public void TestCreatePredictionsAutoRotate()
         {
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), 
+            var response = Toby.CreatePredictions((string)CreateDocResponse["documentId"], Example.ModelName(), 
                                                 autoRotate: true);
-            Console.WriteLine($"PostPredictions. {response}");
+            Console.WriteLine($"CreatePredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
         }
 
         [Test]
-        public void TestPostPredictionsExtras()
+        public void TestCreatePredictionsExtras()
         {
             var extras = new Dictionary<string, object>() {{"maxPages", 1}};
-            var response = Toby.PostPredictions((string)PostDocResponse["documentId"], Example.ModelName(), 
+            var response = Toby.CreatePredictions((string)CreateDocResponse["documentId"], Example.ModelName(), 
                                                 extras: extras);
-            Console.WriteLine($"PostPredictions. {response}");
+            Console.WriteLine($"CreatePredictions. {response}");
             var expected = new List<string>(){"documentId", "predictions"};
             CheckKeys(expected, response);
         }
@@ -213,20 +213,20 @@ namespace Test
         [Test]
         public void TestGetDocumentId()
         {
-            var response = Toby.GetDocumentId((string)PostDocResponse["documentId"]);
+            var response = Toby.GetDocumentId((string)CreateDocResponse["documentId"]);
             var expected = new List<string>(){"documentId", "contentType", "consentId"};
             CheckKeys(expected, response);
         }
         
         [Test]
-        public void TestPostDocumentId()
+        public void TestCreateDocumentId()
         {
             var feedback = new List<Dictionary<string, string>>()
             {
                 new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
                 new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
             };
-            var response = Toby.PostDocumentId((string)PostDocResponse["documentId"], feedback);
+            var response = Toby.CreateDocumentId((string)CreateDocResponse["documentId"], feedback);
             var expected = new List<string>(){"documentId", "consentId", "contentType", "feedback"};
             CheckKeys(expected, response);
         }
@@ -235,14 +235,14 @@ namespace Test
         public void TestDeleteConsentId()
         {
             var expected = new List<string>(){"consentId", "documentIds"};
-            var response = Toby.DeleteConsentId((string)PostDocResponse["consentId"]);
+            var response = Toby.DeleteConsentId((string)CreateDocResponse["consentId"]);
             CheckKeys(expected, response);
         }
 
         [Test]
-        public void TestPostBatches()
+        public void TestCreateBatches()
         {
-            var response = Toby.PostBatches(Example.Description());
+            var response = Toby.CreateBatches(Example.Description());
             var expected = new List<string>(){"batchId", "description"};
             CheckKeys(expected, response);
         }
@@ -253,7 +253,7 @@ namespace Test
     [TestFixture]
     public class TestClientKms
     {
-        private Dictionary<string, object> PostDocResponse { get; set; }
+        private Dictionary<string, object> CreateDocResponse { get; set; }
 
         [Test]
         public void TestPrediction()
@@ -271,13 +271,13 @@ namespace Test
                 ExampleExtraFlags.secretKey(), 
                 ExampleExtraFlags.apiKey()));
             
-            var postResponse = apiClient.PostDocuments(ExampleExtraFlags.ContentType(), ExampleExtraFlags.ConsentId());
-            PostDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(postResponse);
+            var postResponse = apiClient.CreateDocuments(ExampleExtraFlags.ContentType(), ExampleExtraFlags.ConsentId());
+            CreateDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(postResponse);
             
             var putResponse = apiClient.PutDocument(ExampleExtraFlags.DocPath(), ExampleExtraFlags.ContentType(),
-                (string) PostDocResponse["uploadUrl"], flags);
+                (string) CreateDocResponse["uploadUrl"], flags);
             
-            var response = apiClient.PostPredictions((string) PostDocResponse["documentId"], ExampleExtraFlags.ModelType());
+            var response = apiClient.CreatePredictions((string) CreateDocResponse["documentId"], ExampleExtraFlags.ModelType());
             
             JObject jsonResponse = JObject.Parse(response.ToString());
             var predictionString = jsonResponse["predictions"].ToString();

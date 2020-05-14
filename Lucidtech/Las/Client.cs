@@ -47,7 +47,7 @@ namespace Lucidtech.Las
         /// <code>
         /// Client client = new Client();
         /// byte[] content = File.ReadAllBytes("MyReceipt.jpeg");
-        /// var response = client.PostDocuments(content, "image/jpeg", "bar");
+        /// var response = client.CreateDocuments(content, "image/jpeg", "bar");
         /// </code>
         /// </example>
         /// <param name="content"> Content to POST </param>
@@ -60,7 +60,7 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// with batchId, documentId, contentType and consentId
         /// </returns>
-        public object PostDocuments(byte[] content, string contentType, string consentId, 
+        public object CreateDocuments(byte[] content, string contentType, string consentId,
             string batchId = null, List<Dictionary<string, string>> feedback = null)
         {
             string base64Content = System.Convert.ToBase64String(content);
@@ -109,12 +109,12 @@ namespace Lucidtech.Las
         /// Run inference and create a prediction using the invoice model
         /// on the document specified by '&lt;documentId&gt;'
         /// <code>
-        /// Client client = new Client(); 
-        /// var response = client.PostPredictions('&lt;documentId&gt;',"invoice"); 
+        /// Client client = new Client();
+        /// var response = client.CreatePredictions('&lt;documentId&gt;',"invoice");
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to
-        /// upload Same as provided to <see cref="PostDocuments"/></param>
+        /// upload Same as provided to <see cref="CreateDocuments"/></param>
         /// <param name="modelName"> The name of the model to use for inference </param>
         /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
         /// <param name="autoRotate"> Whether or not to let the API try different 
@@ -124,7 +124,7 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
         /// the value of predictions is the output from the model.
         /// </returns>
-        public object PostPredictions(string documentId, string modelName, int? maxPages = null, 
+        public object CreatePredictions(string documentId, string modelName, int? maxPages = null,
                                       bool? autoRotate = null, Dictionary<string, object>? extras = null)
         {
             var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
@@ -166,24 +166,24 @@ namespace Lucidtech.Las
         /// </summary> 
         /// <example>
         /// <code>
-        /// Client client = new Client(); 
-        /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;() 
-        /// { 
-        ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}}, 
-        ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}} 
-        /// }; 
-        /// var response = client.PostDocumentId('&lt;documentId&gt;', feedback); 
+        /// Client client = new Client();
+        /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;()
+        /// {
+        ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}},
+        ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+        /// };
+        /// var response = client.CreateDocumentId('&lt;documentId&gt;', feedback);
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to upload,
-        /// Same as provided to <see cref="PostDocuments"/></param>
+        /// Same as provided to <see cref="CreateDocuments"/></param>
         /// <param name="feedback"> A list of feedback items </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// documentId, consentId, uploadUrl, contentType and feedback.
         /// </returns>
-        ///         
-        public object PostDocumentId(string documentId, List<Dictionary<string, string>> feedback)
+        ///
+        public object CreateDocumentId(string documentId, List<Dictionary<string, string>> feedback)
         {
             var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
             
@@ -220,8 +220,8 @@ namespace Lucidtech.Las
         /// Create a new batch with the provided description.
         /// on the document specified by '&lt;batchId&gt;'
         /// <code>
-        /// Client client = new Client(); 
-        /// var response = client.PostBatches("Data gathered from the Mars Rover Invoice Scan Mission"); 
+        /// Client client = new Client();
+        /// var response = client.CreateBatches("Data gathered from the Mars Rover Invoice Scan Mission");
         /// </code>
         /// </example>
         /// <param name="description"> A brief description of the purpose of the batch </param>
@@ -229,7 +229,7 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields batchId and description.
         /// batchId can be used as an input when posting documents to make them a part of this batch.
         /// </returns>
-        public object PostBatches(string description)
+        public object CreateBatches(string description)
         {
             var body = new Dictionary<string, string>() { {"description", description} };
             RestRequest request = ClientRestRequest(Method.POST, "/batches", body);
