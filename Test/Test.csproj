@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{40056D44-B9F3-4704-9CAA-9A32604C7487}</ProjectGuid>
@@ -11,7 +12,7 @@
     <RootNamespace>Test</RootNamespace>
     <AssemblyName>Test</AssemblyName>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net461;net47;net472</TargetFrameworks>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -35,18 +36,24 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Test.cs" />
-    <!-- Uncomment these lines when debugging
+    <!-- Uncomment the lines below when debugging
+    -->
     <Compile Include="..\Lucidtech\Las\*" />
     <Compile Include="..\Lucidtech\Las\Core\*" />
     <Compile Include="..\Lucidtech\Las\Utils\*" />
-    -->
+    <PackageReference Include="ini-parser" Version="3.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Polly" Version="7.1.0" />
+    <PackageReference Include="RestSharp" Version="106.6.9" />
+    <PackageReference Include="Moq" Version="4.13.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-  <!-- Comment out the official lucidtech package when making a new one -->
-  <PackageReference Include="Lucidtech.Las" Version="0.1.4" />
-</ItemGroup>
+  <!-- Comment out the official lucidtech package when making a new one 
+    <PackageReference Include="Lucidtech.Las" Version="0.2.0" />
+-->
+  </ItemGroup>
 <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
      Other similar extension points exist, see Microsoft.Common.targets.
 <Target Name="BeforeBuild">

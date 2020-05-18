@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 using Newtonsoft.Json.Linq;
@@ -18,15 +19,13 @@ namespace Lucidtech.Las
         /// <summary>
         /// ApiClient constructor with credentials read from local file.
         /// </summary>
-        /// <param name="endpoint"> Url to the host </param>
-        public ApiClient(string endpoint) : base(endpoint) {}
+        public ApiClient() : base() {}
         
         /// <summary>
         /// ApiClient constructor.
         /// </summary>
-        /// <param name="endpoint"> Url to the host </param>
         /// <param name="credentials"> Keys and credentials needed for authorization </param>
-        public ApiClient(string endpoint, Credentials credentials) : base(endpoint, credentials) {}
+        public ApiClient(AmazonCredentials credentials) : base(credentials) {}
 
         /// <summary>
         /// Run inference and create prediction on document, this method takes care of creating and uploaded document
@@ -34,7 +33,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <example> <code>
         /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
+        /// ApiClient apiClient = new ApiClient(); 
         /// Prediction response =
         /// apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice", consentId: "bar"); 
         /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
@@ -45,39 +44,20 @@ namespace Lucidtech.Las
         /// <returns>
         /// Prediction on document
         /// </returns>
-        public Prediction Predict(string documentPath, string modelName, string consentId)
+        public Prediction Predict(string documentPath, string modelName, string consentId = "default")
         {
             string contentType = GetContentType(documentPath);
-            string documentId = UploadDocument(documentPath, contentType, consentId);
-            var predictionResponse = PostPredictions(documentId, modelName);
-            
+            byte[] body = File.ReadAllBytes(documentPath);
+            var createDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(
+                CreateDocument(body, contentType, consentId));
+            string documentId = (string)createDocumentsResponse["documentId"];
+            var predictionResponse = CreatePrediction(documentId, modelName);
+
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
             var predictionString = jsonResponse["predictions"].ToString();
             var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
             Prediction prediction = new Prediction(documentId, consentId, modelName, predictions);
             return prediction;
-        }
-
-        /// <summary>
-        /// Run inference and create prediction on document without specifying consent Id,
-        /// this method takes care of creating and uploaded document
-        /// as well as running inference to create prediction on document.
-        /// </summary>
-        /// <example><code>
-        /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
-        /// Prediction response = apiClient.Predict(documentPath: "document.jpeg", modelName: "invoice"); 
-        /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
-        /// </code></example>
-        /// <param name="documentPath"> Path to document to run inference on </param>
-        /// <param name="modelName"> The name of the model to use for inference </param>
-        /// <returns>
-        /// Prediction on document
-        /// </returns>
-        public Prediction Predict(string documentPath, string modelName)
-        {
-            string consentId = Guid.NewGuid().ToString();
-            return Predict(documentPath, modelName, consentId);
         }
 
         /// <summary>
@@ -87,7 +67,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <example><code>
         /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
+        /// ApiClient apiClient = new ApiClient(); 
         /// var feedback = new List&lt;Dictionary&lt;string, string&gt;&gt;() 
         /// { 
         ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}}, 
@@ -101,7 +81,7 @@ namespace Lucidtech.Las
         /// <returns> Data that can be used to confirm that the feedback uploaded was successful </returns>
         public FeedbackResponse SendFeedback(string documentId, List<Dictionary<string, string>> feedback)
         {
-            return new FeedbackResponse(PostDocumentId(documentId, feedback));
+            return new FeedbackResponse(UpdateDocument(documentId, feedback));
         }
 
         /// <summary>
@@ -110,7 +90,7 @@ namespace Lucidtech.Las
         /// </summary>
         /// <example><code>
         /// using namespace Lucidtech.Las; 
-        /// ApiClient apiClient = new ApiClient('&lt;endpoint&gt;'); 
+        /// ApiClient apiClient = new ApiClient(); 
         /// RevokeResponse response = apiClient.RevokeConsent(consentId: '&lt;consentId&gt;'); 
         /// Console.WriteLine(response.ToJsonString(Formatting.Indented)); 
         /// </code></example>
@@ -118,27 +98,9 @@ namespace Lucidtech.Las
         /// <returns> The document ids of the deleted documents, and their consent id </returns>
         public RevokeResponse RevokeConsent(string consentId)
         {
-            return new RevokeResponse(DeleteConsentId(consentId));
+            return new RevokeResponse(DeleteConsent(consentId));
         }
 
-        /// <summary>
-        /// Upload a document of type contentType currently located at documentPath to the cloud location
-        /// that corresponds to consentId.
-        /// </summary>
-        /// <param name="documentPath"> The local path to the document that is going to be uploaded </param>
-        /// <param name="contentType"> The type of the file located at documentPath </param>
-        /// <param name="consentId"> The consent id </param>
-        /// <returns></returns>
-        private string UploadDocument(string documentPath, string contentType, string consentId)
-        {
-            var postDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, string>>(
-                PostDocuments(contentType, consentId));
-            string documentId = postDocumentsResponse["documentId"];
-            string presignedUrl = postDocumentsResponse["uploadUrl"];
-            PutDocument(documentPath, contentType, presignedUrl);
-            return documentId;
-        }
-        
         private static string GetContentType(string documentPath)
         {
             var supportedFormats = new Dictionary<string, string>()
