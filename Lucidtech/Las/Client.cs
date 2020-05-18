@@ -47,7 +47,7 @@ namespace Lucidtech.Las
         /// <code>
         /// Client client = new Client();
         /// byte[] content = File.ReadAllBytes("MyReceipt.jpeg");
-        /// var response = client.CreateDocuments(content, "image/jpeg", "bar");
+        /// var response = client.CreateDocument(content, "image/jpeg", "bar");
         /// </code>
         /// </example>
         /// <param name="content"> Content to POST </param>
@@ -60,7 +60,7 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// with batchId, documentId, contentType and consentId
         /// </returns>
-        public object CreateDocuments(byte[] content, string contentType, string consentId,
+        public object CreateDocument(byte[] content, string contentType, string consentId,
             string batchId = null, List<Dictionary<string, string>> feedback = null)
         {
             string base64Content = System.Convert.ToBase64String(content);
@@ -87,13 +87,13 @@ namespace Lucidtech.Las
         /// Create a document handle for a jpeg image
         /// <code>
         /// Client client = new Client();
-        /// var response = client.GetDocuments('&lt;batchId&gt;');
+        /// var response = client.ListDocuments('&lt;batchId&gt;');
         /// </code>
         /// </example>
         /// <param name="batchId"> The batch id that contains the documents of interest </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <returns> Documents from REST API contained in batch </returns>
-        public object GetDocuments(string batchId = null, string consentId = null)
+        public object ListDocuments(string batchId = null, string consentId = null)
         {
             var body = new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(batchId)) { body.Add("batchId", batchId); }
@@ -110,11 +110,11 @@ namespace Lucidtech.Las
         /// on the document specified by '&lt;documentId&gt;'
         /// <code>
         /// Client client = new Client();
-        /// var response = client.CreatePredictions('&lt;documentId&gt;',"invoice");
+        /// var response = client.CreatePrediction('&lt;documentId&gt;',"invoice");
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to
-        /// upload Same as provided to <see cref="CreateDocuments"/></param>
+        /// upload Same as provided to <see cref="CreateDocument"/></param>
         /// <param name="modelName"> The name of the model to use for inference </param>
         /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
         /// <param name="autoRotate"> Whether or not to let the API try different 
@@ -124,7 +124,7 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
         /// the value of predictions is the output from the model.
         /// </returns>
-        public object CreatePredictions(string documentId, string modelName, int? maxPages = null,
+        public object CreatePrediction(string documentId, string modelName, int? maxPages = null,
                                       bool? autoRotate = null, Dictionary<string, object>? extras = null)
         {
             var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
@@ -148,16 +148,16 @@ namespace Lucidtech.Las
         /// Get information of document specified by &lt;documentId&gt;
         /// <code>
         /// Client client = new Client();
-        /// var response = client.GetDocumentId('&lt;documentId&gt;');
+        /// var response = client.GetDocument('&lt;documentId&gt;');
         /// </code>
         /// </example>
         /// <param name="documentId"> The document id to run inference and create a prediction on </param>
         /// <returns> Document information from REST API </returns>
-        public object GetDocumentId(string documentId)
+        public object GetDocument(string documentId)
         {
             RestRequest request = ClientRestRequest(Method.GET, $"/documents/{documentId}");
             return ExecuteRequestResilient(RestSharpClient, request);
-        } 
+        }
 
         /// <summary>
         /// Post feedback to the REST API, calls the POST /documents/{documentId} endpoint.
@@ -172,18 +172,18 @@ namespace Lucidtech.Las
         ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}},
         ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}}
         /// };
-        /// var response = client.CreateDocumentId('&lt;documentId&gt;', feedback);
+        /// var response = client.UpdateDocument('&lt;documentId&gt;', feedback);
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to upload,
-        /// Same as provided to <see cref="CreateDocuments"/></param>
+        /// Same as provided to <see cref="CreateDocument"/></param>
         /// <param name="feedback"> A list of feedback items </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// documentId, consentId, uploadUrl, contentType and feedback.
         /// </returns>
         ///
-        public object CreateDocumentId(string documentId, List<Dictionary<string, string>> feedback)
+        public object UpdateDocument(string documentId, List<Dictionary<string, string>> feedback)
         {
             var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
             
@@ -199,15 +199,15 @@ namespace Lucidtech.Las
         /// Delete documents with this consentId, calls DELETE /consent/{consentId} endpoint.
         /// </summary>
         /// <example><code>
-        /// Client client = new Client(); 
-        /// var response = client.DeleteConsentId('&lt;consentId&gt;'); 
+        /// Client client = new Client();
+        /// var response = client.DeleteConsent('&lt;consentId&gt;');
         /// </code></example>
         /// <param name="consentId"> Delete documents with provided consentId </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// consentId and documentIds 
         /// </returns>
-        public object DeleteConsentId(string consentId)
+        public object DeleteConsent(string consentId)
         {
             RestRequest request = ClientRestRequest(Method.DELETE, $"/consents/{consentId}");
             return ExecuteRequestResilient(RestSharpClient, request);
@@ -221,7 +221,7 @@ namespace Lucidtech.Las
         /// on the document specified by '&lt;batchId&gt;'
         /// <code>
         /// Client client = new Client();
-        /// var response = client.CreateBatches("Data gathered from the Mars Rover Invoice Scan Mission");
+        /// var response = client.CreateBatch("Data gathered from the Mars Rover Invoice Scan Mission");
         /// </code>
         /// </example>
         /// <param name="description"> A brief description of the purpose of the batch </param>
@@ -229,7 +229,7 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields batchId and description.
         /// batchId can be used as an input when posting documents to make them a part of this batch.
         /// </returns>
-        public object CreateBatches(string description)
+        public object CreateBatch(string description)
         {
             var body = new Dictionary<string, string>() { {"description", description} };
             RestRequest request = ClientRestRequest(Method.POST, "/batches", body);

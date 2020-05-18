@@ -49,9 +49,9 @@ namespace Lucidtech.Las
             string contentType = GetContentType(documentPath);
             byte[] body = File.ReadAllBytes(documentPath);
             var createDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(
-                CreateDocuments(body, contentType, consentId));
+                CreateDocument(body, contentType, consentId));
             string documentId = (string)createDocumentsResponse["documentId"];
-            var predictionResponse = CreatePredictions(documentId, modelName);
+            var predictionResponse = CreatePrediction(documentId, modelName);
 
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
             var predictionString = jsonResponse["predictions"].ToString();
@@ -81,7 +81,7 @@ namespace Lucidtech.Las
         /// <returns> Data that can be used to confirm that the feedback uploaded was successful </returns>
         public FeedbackResponse SendFeedback(string documentId, List<Dictionary<string, string>> feedback)
         {
-            return new FeedbackResponse(CreateDocumentId(documentId, feedback));
+            return new FeedbackResponse(UpdateDocument(documentId, feedback));
         }
 
         /// <summary>
@@ -98,9 +98,9 @@ namespace Lucidtech.Las
         /// <returns> The document ids of the deleted documents, and their consent id </returns>
         public RevokeResponse RevokeConsent(string consentId)
         {
-            return new RevokeResponse(DeleteConsentId(consentId));
+            return new RevokeResponse(DeleteConsent(consentId));
         }
-        
+
         private static string GetContentType(string documentPath)
         {
             var supportedFormats = new Dictionary<string, string>()
