@@ -2,8 +2,8 @@
 CID := $(shell cat /tmp/prism.cid)
 
 docs:
-	doxygen Lucidtech/documentation.conf
-	moxygen Lucidtech/xml
+	doxygen documentation.conf
+	moxygen xml
 
 restore:
 	dotnet restore Lucidtech
