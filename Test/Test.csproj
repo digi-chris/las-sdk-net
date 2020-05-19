@@ -51,7 +51,7 @@
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   <!-- Comment out the official lucidtech package when making a new one 
-    <PackageReference Include="Lucidtech.Las" Version="0.2.0" />
+    <PackageReference Include="Lucidtech.Las" Version="0.2.1" />
 -->
   </ItemGroup>
 <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

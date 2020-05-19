@@ -1,6 +1,10 @@
 .PHONY: *
 CID := $(shell cat /tmp/prism.cid)
 
+docs:
+	doxygen Lucidtech/documentation.conf
+	moxygen Lucidtech/xml
+
 restore:
 	dotnet restore Lucidtech
 
