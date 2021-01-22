@@ -44,19 +44,19 @@ namespace Lucidtech.Las
         /// <returns>
         /// Prediction on document
         /// </returns>
-        public Prediction Predict(string documentPath, string modelName, string consentId = "default")
+        public Prediction Predict(string documentPath, string modelId, string consentId = "default")
         {
             string contentType = GetContentType(documentPath);
             byte[] body = File.ReadAllBytes(documentPath);
             var createDocumentsResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(
                 CreateDocument(body, contentType, consentId));
             string documentId = (string)createDocumentsResponse["documentId"];
-            var predictionResponse = CreatePrediction(documentId, modelName);
+            var predictionResponse = CreatePrediction(documentId, modelId);
 
             JObject jsonResponse = JObject.Parse(predictionResponse.ToString());
             var predictionString = jsonResponse["predictions"].ToString();
             var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, object>>>(predictionString);
-            Prediction prediction = new Prediction(documentId, consentId, modelName, predictions);
+            Prediction prediction = new Prediction(documentId, consentId, modelId, predictions);
             return prediction;
         }
 

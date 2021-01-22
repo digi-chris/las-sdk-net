@@ -25,6 +25,7 @@
     <RepositoryUrl>https://github.com/LucidtechAI/las-sdk-net</RepositoryUrl>
     <PackageTags>las Lucidtech invoice receipt intelligentOCR Automation MachineLearing OCR Document DataExtraction</PackageTags>
     <PackageReleaseNotes>Updated to a common SDK naming convention, Added Support for 4.6.1</PackageReleaseNotes>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DocumentationFile>bin/$(Configuration)/$(AssemblyName).xml</DocumentationFile>

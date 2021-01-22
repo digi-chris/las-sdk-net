@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Security.Policy;
-using System.Text;
-using System.Web;
 using Polly;
 
 using RestSharp;
@@ -38,6 +34,47 @@ namespace Lucidtech.Las
         /// Client constructor with credentials read from local file.
         /// </summary>
         public Client() : this(new AmazonCredentials()) {}
+
+        public object CreateAsset(byte[] content) {
+            string base64Content = System.Convert.ToBase64String(content);
+            var body = new Dictionary<string, string>(){
+                {"content", base64Content}
+            };
+            RestRequest request = ClientRestRequest(Method.POST, "/assets", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListAssets(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, object>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/assets", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object GetAsset(string assetId) {
+            RestRequest request = ClientRestRequest(Method.GET, $"/assets/{assetId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object UpdateAsset(string assetId, byte[]? content = null) {
+            string base64Content = System.Convert.ToBase64String(content);
+            var body = new Dictionary<string, string>();
+
+            if (content != null) {
+                body.Add("content", base64Content);
+            }
+
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/assets/{assetId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
 
         /// <summary>
         /// Creates a document handle, calls the POST /documents endpoint
@@ -101,45 +138,6 @@ namespace Lucidtech.Las
             RestRequest request = ClientRestRequest(Method.GET, "/documents", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         } 
-
-        /// <summary>
-        /// Run inference and create a prediction, calls the POST /predictions endpoint.
-        /// </summary>
-        /// <example>
-        /// Run inference and create a prediction using the invoice model
-        /// on the document specified by '&lt;documentId&gt;'
-        /// <code>
-        /// Client client = new Client();
-        /// var response = client.CreatePrediction('&lt;documentId&gt;',"invoice");
-        /// </code>
-        /// </example>
-        /// <param name="documentId"> Path to document to
-        /// upload Same as provided to <see cref="CreateDocument"/></param>
-        /// <param name="modelName"> The name of the model to use for inference </param>
-        /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
-        /// <param name="autoRotate"> Whether or not to let the API try different 
-        /// rotations on the document when running </param>
-        /// <param name="extras"> Extra information to add to json body </param>
-        /// <returns>
-        /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
-        /// the value of predictions is the output from the model.
-        /// </returns>
-        public object CreatePrediction(string documentId, string modelName, int? maxPages = null,
-                                      bool? autoRotate = null, Dictionary<string, object>? extras = null)
-        {
-            var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelName", modelName}};
-            if (maxPages != null) { body.Add("maxPages", maxPages);}
-            if (autoRotate != null) { body.Add("autoRotate", autoRotate);}
-            if (extras != null) 
-            { 
-                foreach (var pair in extras)
-                {
-                    body.Add(pair.Key, pair.Value);
-                }
-            }
-            RestRequest request = ClientRestRequest(Method.POST, "/predictions", body);
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
         
         /// <summary>
         /// Get document from the REST API, calls the GET /documents/{documentId} endpoint.
@@ -177,21 +175,72 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="documentId"> Path to document to upload,
         /// Same as provided to <see cref="CreateDocument"/></param>
-        /// <param name="feedback"> A list of feedback items </param>
+        /// <param name="ground_truth"> A list of ground truth items </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// documentId, consentId, uploadUrl, contentType and feedback.
         /// </returns>
         ///
-        public object UpdateDocument(string documentId, List<Dictionary<string, string>> feedback)
+        public object UpdateDocument(string documentId, List<Dictionary<string, string>> ground_truth)
         {
-            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"feedback", feedback}};
+            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"groundTruth", ground_truth}};
             
             // Doing a manual cast from Dictionary to object to help out the serialization process
             string bodyString = JsonConvert.SerializeObject(bodyDict);
             object body = JsonConvert.DeserializeObject(bodyString);
             
-            RestRequest request = ClientRestRequest(Method.POST, $"/documents/{documentId}", body);
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/documents/{documentId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object DeleteDocuments(string? consentId = null) {
+            var queryParams = new Dictionary<string, object>() {
+                {"consentId", consentId},
+            };
+            RestRequest request = ClientRestRequest(Method.DELETE, "/documents", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+        /// <summary>
+        /// Run inference and create a prediction, calls the POST /predictions endpoint.
+        /// </summary>
+        /// <example>
+        /// Run inference and create a prediction using the invoice model
+        /// on the document specified by '&lt;documentId&gt;'
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.CreatePrediction('&lt;documentId&gt;',"invoice");
+        /// </code>
+        /// </example>
+        /// <param name="documentId"> Path to document to
+        /// upload Same as provided to <see cref="CreateDocument"/></param>
+        /// <param name="modelId"> Id of the model to use for inference </param>
+        /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
+        /// <param name="autoRotate"> Whether or not to let the API try different 
+        /// rotations on the document when running </param>
+        /// <param name="extras"> Extra information to add to json body </param>
+        /// <returns>
+        /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
+        /// the value of predictions is the output from the model.
+        /// </returns>
+        public object CreatePrediction(
+            string documentId,
+            string modelId,
+            int? maxPages = null,
+            bool? autoRotate = null,
+            Dictionary<string, object>? extras = null
+        )
+        {
+            var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelId", modelId}};
+            if (maxPages != null) { body.Add("maxPages", maxPages);}
+            if (autoRotate != null) { body.Add("autoRotate", autoRotate);}
+            if (extras != null) 
+            { 
+                foreach (var pair in extras)
+                {
+                    body.Add(pair.Key, pair.Value);
+                }
+            }
+            RestRequest request = ClientRestRequest(Method.POST, "/predictions", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
         
@@ -235,7 +284,341 @@ namespace Lucidtech.Las
             RestRequest request = ClientRestRequest(Method.POST, "/batches", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
-        
+
+        public object ListModels(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, string>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/models");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+        public object ListPredictions(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, string>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/predictions");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object CreateSecret(Dictionary<string, string> data) {
+            var body = new Dictionary<string, Dictionary<string, string>>() {
+                {"data", data}
+            };
+            RestRequest request = ClientRestRequest(Method.POST, "/secrets", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListSecrets(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, string>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/secrets");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object UpdateSecret(string secretId, Dictionary<string, string>? data, string? name = null, string? description = null) {
+            var body = new Dictionary<string, object?>() {
+                {"name", name},
+                {"description", description}
+            };
+
+            if (data != null) {
+                body.Add("data", data);
+            }
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/secrets/{secretId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object CreateTransition(
+            string transitionType,
+            Dictionary<string, string> inputJsonSchema,
+            Dictionary<string, string> outputJsonSchema,
+            string? name = null,
+            string? description = null
+        ) {
+            var body = new Dictionary<string, object?>() {
+                {"inputJsonSchema", inputJsonSchema},
+                {"outputJsonSchema", outputJsonSchema},
+                {"transitionType", transitionType},
+                {"name", name},
+                {"description", description}
+            };
+            RestRequest request = ClientRestRequest(Method.POST, "/transitions", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListTransitions(string? transitionType = null, int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, object>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/transitions", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+        public object ListTransitions(List<string> transitionType, int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, object>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/transitions", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object GetTransitionExecution(string transitionId, string executionId) {
+            RestRequest request = ClientRestRequest(Method.GET, $"/transitions/{transitionId}/executions/{executionId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object UpdateTransition(
+            string transitionId,
+            Dictionary<string, string> inputJsonSchema,
+            Dictionary<string, string> outputJsonSchema,
+            string? name = null,
+            string? description = null
+        ) {
+            if (name == null) {
+                name = "";
+            }
+
+            if (description == null) {
+                description = "";
+            }
+
+            var body = new Dictionary<string, object?>() {
+                {"inputJsonSchema", inputJsonSchema},
+                {"outputJsonSchema", outputJsonSchema},
+                {"name", name},
+                {"description", description}
+            };
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/transitions/{transitionId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ExecuteTransition(string transitionId) {
+            var request = ClientRestRequest(Method.POST, $"/transitions/{transitionId}/executions");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListTransitionExecutions(
+            string transitionId,
+            List<string>? statuses = null,
+            List<string>? executionIds = null,
+            int? maxResults = null,
+            string? nextToken = null,
+            string? sortBy = null,
+            string? order = null
+        ) {
+            var queryParams = new Dictionary<string, object> {
+                {"status", statuses},
+                {"executionId", executionIds},
+            };
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            if (sortBy != null) {
+                queryParams.Add("sortBy", sortBy);
+            }
+
+            if (order != null) {
+                queryParams.Add("order", order);
+            }
+
+            var request = ClientRestRequest(Method.GET, "/transitions/{transitionId}/executions", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object UpdateTransitionExecution(
+            string transitionId,
+            string executionId,
+            string status,
+            Dictionary<string, string>? output = null,
+            Dictionary<string, string>? error = null
+        ) {
+            var url = $"/transitions/{transitionId}/executions/{executionId}";
+            var body = new Dictionary<string, object>{
+                {"status", status},
+            };
+
+            if (output != null) {
+                body.Add("output", output);
+            }
+
+            if (error != null) {
+                body.Add("error", error);
+            }
+            var request = ClientRestRequest(Method.PATCH, url, body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object CreateUser(string email) {
+            var body = new Dictionary<string, string>{
+                {"email", email}
+            };
+            var request = ClientRestRequest(Method.POST, "/users", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListUsers(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, object>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            var request = ClientRestRequest(Method.GET, "/users", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object GetUser(string userId) {
+            var request = ClientRestRequest(Method.GET, $"/users/{userId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object DeleteUser(string userId) {
+            var request = ClientRestRequest(Method.DELETE, $"/users/{userId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object CreateWorkflow(
+            Dictionary<string, object> spec,
+            string? name = null,
+            string? description = null,
+            Dictionary<string, string>? errorConfig = null
+        ) {
+            var body = new Dictionary<string, object?>{
+                {"specification", spec},
+                {"errorConfig", errorConfig}
+            };
+
+            if (name != null) {
+                body.Add("name", name);
+            }
+
+            if (description != null) {
+                body.Add("description", description);
+            }
+
+            var request = ClientRestRequest(Method.POST, "/workflows", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListWorkflows(int? maxResults, string nextToken) {
+            var queryParams = new Dictionary<string, object>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            var request = ClientRestRequest(Method.GET, "/workflows", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object UpdateWorkflow(string workflowId, string? name = null, string? description = null) {
+            var body = new Dictionary<string, object?> {
+                {"name", name},
+                {"description", description}
+            };
+            var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object DeleteWorkflow(string workflowId) {
+            var request = ClientRestRequest(Method.DELETE, $"/workflows/{workflowId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ExecuteWorkflow(string workflowId, Dictionary<string, object> content) {
+            var body = new Dictionary<string, object> {
+                {"input", content}
+            };
+            var request = ClientRestRequest(Method.POST, $"/workflows/{workflowId}/executions", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object ListWorkflowExecutions(
+            string workflowId,
+            List<string>? statuses = null,
+            int? maxResults = null,
+            string? nextToken = null,
+            string? sortBy = null,
+            string? order = null
+        ) {
+            var queryParams = new Dictionary<string, object?> {
+                {"status", statuses},
+            };
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            if (sortBy != null) {
+                queryParams.Add("sortBy", sortBy);
+            }
+
+            if (order != null) {
+                queryParams.Add("order", order);
+            }
+
+            var request = ClientRestRequest(Method.GET, $"/workflows/{workflowId}/executions", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object DeleteWorkflowExecution(string workflowId, string executionId) {
+            var request = ClientRestRequest(Method.DELETE, $"/workflows/{workflowId}/executions/{executionId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
         /// <summary>
         /// Create a HTTP web request for the REST API. 
         /// </summary>
@@ -243,20 +626,44 @@ namespace Lucidtech.Las
         /// <param name="path"> The path to the domain upon which to apply the request,
         /// the total path will be <see href="Credentials.ApiEndpoint"/>path</param>
         /// <param name="body"> The content of the request </param>
+        /// <param name="queryParams">Query parameters</param>
         /// <returns>
         /// An object of type <see cref="RestRequest"/> defined by the input
         /// </returns>
-        private RestRequest ClientRestRequest(Method method, string path, object? body = null)
+        private RestRequest ClientRestRequest(
+            Method method,
+            string path,
+            object? body = null,
+            Dictionary<string, object?>? queryParams = null)
         {
             Uri endpoint = new Uri(string.Concat(Credentials.ApiEndpoint, path));
 
             var request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
-            if(body == null) { body = new Dictionary<string, string>(); }
+
+            if (body == null) {
+                body = new Dictionary<string, string>();
+            }
+
             request.AddJsonBody(body); 
 
+            if (queryParams == null) {
+                queryParams = new Dictionary<string, object?>();
+            }
+
+            foreach (var entry in queryParams)
+            {
+                if (entry.Value == null) {
+                    continue;
+                }
+                request.AddQueryParameter(entry.Key, entry.Value.ToString());
+            }
+
             var headers = CreateSigningHeaders();
-            foreach (var entry in headers) { request.AddHeader(entry.Key, entry.Value); }
+
+            foreach (var entry in headers) {
+                request.AddHeader(entry.Key, entry.Value);
+            }
 
             return request;
         }
