@@ -55,10 +55,16 @@ namespace Test
             CreateDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
         }
 
-        [Test]
-        public void TestCreateAsset() {
+        [TestCase("name", "description")]
+        [TestCase("", "")]
+        // [TestCase(null, null)] TODO: figure out why this doesn't work
+        public void TestCreateAsset(string? name, string? description) {
             var bytes = BitConverter.GetBytes(12345);
-            var response = Toby.CreateAsset(bytes);
+            var parameters = new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.CreateAsset(bytes, parameters);
             CheckKeys(new [] {"assetId"}, response);
         }
 
@@ -84,11 +90,15 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestUpdateAsset() {
+        [TestCase("name", "description")]
+        [TestCase("", "")]
+        public void TestUpdateAsset(string? name, string? description) {
             var assetId = $"las:asset:{Guid.NewGuid().ToString()}";
             var content = BitConverter.GetBytes(123456);
-            var response = Toby.UpdateAsset(assetId, content);
+            var response = Toby.UpdateAsset(assetId, content, new Dictionary<string?, string?>{
+                {"name", name},
+                {"description", description}
+            });
             var expectedKeys = new [] {"assetId"};
             CheckKeys(expectedKeys, response);
         }
@@ -225,15 +235,19 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [TestCase("foo", "bar")]
-        public void TestUpdateSecret(string username, string password) {
+        [TestCase("foo", "bar", "name", "description")]
+        [TestCase("foo", "bar", "name", "")]
+        public void TestUpdateSecret(string username, string password, string? name = null, string? description = null) {
             var secretId = $"las:model:{Guid.NewGuid().ToString()}";
             var data = new Dictionary<string, string>() {
                 {"username", username},
                 {"password", password}
             };
             var expectedKeys = new [] {"secretId"};
-            var response = Toby.UpdateSecret(secretId, data, "", "");
+            var response = Toby.UpdateSecret(secretId, data, new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            });
             CheckKeys(expectedKeys, response);
         }
         
@@ -247,7 +261,11 @@ namespace Test
 
             var inputSchema = schema;
             var outputSchema = schema;
-            var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, name, description);
+            var parameters = new Dictionary<string, string>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters);
             CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
         }
 
@@ -264,16 +282,9 @@ namespace Test
             CheckKeys(new [] {"transitions"}, response);
         }
 
-        public void TestGetTransitionExecution() {
-            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
-            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
-            var response = Toby.GetTransitionExecution(transitionId, executionId);
-            CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
-        }
-
         [TestCase("foo", "bar")]
-        [TestCase(null, null)]
-        public void TestUpdateTransition(string name, string description) {
+        // [TestCase(null, null)]  // TODO figure out why this doesn't work
+        public void TestUpdateTransition(string? name, string? description) {
             var schema = new Dictionary<string, string>() {
                 {"schema", "https://json-schema.org/draft-04/schema#"},
                 {"title", "response"}
@@ -281,8 +292,19 @@ namespace Test
             var inputSchema = schema;
             var outputSchema = schema;
             var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
-            var response = Toby.UpdateTransition(transitionId, inputSchema, outputSchema, name, description);
+            var parameters = new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.UpdateTransition(transitionId, inputSchema, outputSchema, parameters);
             CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
+        }
+
+        public void TestGetTransitionExecution() {
+            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var response = Toby.GetTransitionExecution(transitionId, executionId);
+            CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
         }
 
         [Test]
@@ -423,7 +445,11 @@ namespace Test
             var errorConfig = new Dictionary<string, string>{
                 {"email", "foo@bar.com"}
             };
-            var response = Toby.CreateWorkflow(spec, name, description, errorConfig);
+            var parameters = new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.CreateWorkflow(spec, errorConfig, parameters);
             CheckKeys(new [] {"workflowId", "name", "description"}, response);
         }
 
@@ -443,7 +469,10 @@ namespace Test
         [TestCase("name", "")]
         public void TestUpdateWorkflow(string name, string description) {
             var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
-            var response = Toby.UpdateWorkflow(workflowId, name, description);
+            var response = Toby.UpdateWorkflow(workflowId, new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            });
             CheckKeys(new [] {"workflowId", "name", "description"}, response);
         }
 

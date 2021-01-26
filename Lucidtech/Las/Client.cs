@@ -11,6 +11,16 @@ using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las
 {
+    class OptionalParameter {
+        private string? Name { get; set; }
+        private string? Value { get; }
+
+        public OptionalParameter(string? name = null, string? value = null) {
+            this.Name = name;
+            this.Value = value;
+        }
+    }
+
     /// <summary>
     /// A low level client to invoke api methods from Lucidtech AI Services.
     /// </summary>
@@ -35,11 +45,19 @@ namespace Lucidtech.Las
         /// </summary>
         public Client() : this(new AmazonCredentials()) {}
 
-        public object CreateAsset(byte[] content) {
+        public object CreateAsset(byte[] content, Dictionary<string, string?>? optionalParams) {
             string base64Content = System.Convert.ToBase64String(content);
-            var body = new Dictionary<string, string>(){
+            var body = new Dictionary<string, string?>(){
                 {"content", base64Content}
             };
+
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
             RestRequest request = ClientRestRequest(Method.POST, "/assets", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
@@ -64,12 +82,19 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object UpdateAsset(string assetId, byte[]? content = null) {
+        public object UpdateAsset(string assetId, byte[]? content = null, Dictionary<string, string?>? optionalParams = null) {
             string base64Content = System.Convert.ToBase64String(content);
-            var body = new Dictionary<string, string>();
+            var body = new Dictionary<string, string?>();
 
             if (content != null) {
                 body.Add("content", base64Content);
+            }
+
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
             }
 
             RestRequest request = ClientRestRequest(Method.PATCH, $"/assets/{assetId}", body);
@@ -97,17 +122,25 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// with batchId, documentId, contentType and consentId
         /// </returns>
-        public object CreateDocument(byte[] content, string contentType, string consentId,
-            string batchId = null, List<Dictionary<string, string>> feedback = null)
+        public object CreateDocument(
+            byte[] content,
+            string contentType,
+            string consentId,
+            string? batchId = null,
+            List<Dictionary<string, string>>? feedback = null)
         {
             string base64Content = System.Convert.ToBase64String(content);
-            var body = new Dictionary<string, string>()
+            var body = new Dictionary<string, string?>()
             {
                 {"content", base64Content},
                 {"contentType", contentType}, 
                 {"consentId", consentId},
             };
-            if (!string.IsNullOrEmpty(batchId)) { body.Add("batchId", batchId); }
+
+            if (!string.IsNullOrEmpty(batchId)) {
+                body.Add("batchId", batchId);
+            }
+
             if (feedback != null) { 
                 string fb = JsonConvert.SerializeObject(feedback);
                 body.Add("feedback", fb);
@@ -130,11 +163,18 @@ namespace Lucidtech.Las
         /// <param name="batchId"> The batch id that contains the documents of interest </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <returns> Documents from REST API contained in batch </returns>
-        public object ListDocuments(string batchId = null, string consentId = null)
+        public object ListDocuments(string? batchId = null, string? consentId = null)
         {
-            var body = new Dictionary<string, string>();
-            if (!string.IsNullOrEmpty(batchId)) { body.Add("batchId", batchId); }
-            if (!string.IsNullOrEmpty(consentId)) { body.Add("consentId", consentId); }
+            var body = new Dictionary<string, string?>();
+
+            if (!string.IsNullOrEmpty(batchId)) {
+                body.Add("batchId", batchId);
+            }
+
+            if (!string.IsNullOrEmpty(consentId)) {
+                body.Add("consentId", consentId);
+            }
+
             RestRequest request = ClientRestRequest(Method.GET, "/documents", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         } 
@@ -175,15 +215,15 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="documentId"> Path to document to upload,
         /// Same as provided to <see cref="CreateDocument"/></param>
-        /// <param name="ground_truth"> A list of ground truth items </param>
+        /// <param name="groundTruth"> A list of ground truth items </param>
         /// <returns>
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// documentId, consentId, uploadUrl, contentType and feedback.
         /// </returns>
         ///
-        public object UpdateDocument(string documentId, List<Dictionary<string, string>> ground_truth)
+        public object UpdateDocument(string documentId, List<Dictionary<string, string>> groundTruth)
         {
-            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"groundTruth", ground_truth}};
+            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"groundTruth", groundTruth}};
             
             // Doing a manual cast from Dictionary to object to help out the serialization process
             string bodyString = JsonConvert.SerializeObject(bodyDict);
@@ -194,12 +234,13 @@ namespace Lucidtech.Las
         }
 
         public object DeleteDocuments(string? consentId = null) {
-            var queryParams = new Dictionary<string, object>() {
+            var queryParams = new Dictionary<string, object?>() {
                 {"consentId", consentId},
             };
             RestRequest request = ClientRestRequest(Method.DELETE, "/documents", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
+
         /// <summary>
         /// Run inference and create a prediction, calls the POST /predictions endpoint.
         /// </summary>
@@ -208,7 +249,7 @@ namespace Lucidtech.Las
         /// on the document specified by '&lt;documentId&gt;'
         /// <code>
         /// Client client = new Client();
-        /// var response = client.CreatePrediction('&lt;documentId&gt;',"invoice");
+        /// var response = client.CreatePrediction('&lt;documentId&gt;',"las:model:99cac468f7cf47ddad12e5e017540389");
         /// </code>
         /// </example>
         /// <param name="documentId"> Path to document to
@@ -285,20 +326,6 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object ListModels(int? maxResults = null, string? nextToken = null) {
-            var queryParams = new Dictionary<string, string>();
-
-            if (maxResults != null) {
-                queryParams.Add("maxResults", maxResults.ToString());
-            }
-
-            if (nextToken != null) {
-                queryParams.Add("nextToken", nextToken);
-            }
-
-            RestRequest request = ClientRestRequest(Method.GET, "/models");
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
         public object ListPredictions(int? maxResults = null, string? nextToken = null) {
             var queryParams = new Dictionary<string, string>();
 
@@ -314,10 +341,32 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object CreateSecret(Dictionary<string, string> data) {
-            var body = new Dictionary<string, Dictionary<string, string>>() {
+        public object ListModels(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, string>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/models");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        public object CreateSecret(Dictionary<string, string> data, Dictionary<string, string?>? optionalParams = null) {
+            var body = new Dictionary<string, object?>() {
                 {"data", data}
             };
+
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
             RestRequest request = ClientRestRequest(Method.POST, "/secrets", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
@@ -337,15 +386,24 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object UpdateSecret(string secretId, Dictionary<string, string>? data, string? name = null, string? description = null) {
-            var body = new Dictionary<string, object?>() {
-                {"name", name},
-                {"description", description}
-            };
+        public object UpdateSecret(
+            string secretId,
+            Dictionary<string, string>? data,
+            Dictionary<string, string?>? optionalParams = null
+        ) {
+            var body = new Dictionary<string, object?>();
+
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
 
             if (data != null) {
                 body.Add("data", data);
             }
+
             RestRequest request = ClientRestRequest(Method.PATCH, $"/secrets/{secretId}", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
@@ -354,16 +412,21 @@ namespace Lucidtech.Las
             string transitionType,
             Dictionary<string, string> inputJsonSchema,
             Dictionary<string, string> outputJsonSchema,
-            string? name = null,
-            string? description = null
+            Dictionary<string, string?>? optionalParams = null
         ) {
             var body = new Dictionary<string, object?>() {
                 {"inputJsonSchema", inputJsonSchema},
                 {"outputJsonSchema", outputJsonSchema},
                 {"transitionType", transitionType},
-                {"name", name},
-                {"description", description}
             };
+
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
             RestRequest request = ClientRestRequest(Method.POST, "/transitions", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
@@ -406,23 +469,20 @@ namespace Lucidtech.Las
             string transitionId,
             Dictionary<string, string> inputJsonSchema,
             Dictionary<string, string> outputJsonSchema,
-            string? name = null,
-            string? description = null
+            Dictionary<string, string?> optionalParams
         ) {
-            if (name == null) {
-                name = "";
-            }
-
-            if (description == null) {
-                description = "";
-            }
-
             var body = new Dictionary<string, object?>() {
                 {"inputJsonSchema", inputJsonSchema},
-                {"outputJsonSchema", outputJsonSchema},
-                {"name", name},
-                {"description", description}
+                {"outputJsonSchema", outputJsonSchema}
             };
+
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
             RestRequest request = ClientRestRequest(Method.PATCH, $"/transitions/{transitionId}", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
@@ -441,7 +501,7 @@ namespace Lucidtech.Las
             string? sortBy = null,
             string? order = null
         ) {
-            var queryParams = new Dictionary<string, object> {
+            var queryParams = new Dictionary<string, object?> {
                 {"status", statuses},
                 {"executionId", executionIds},
             };
@@ -524,21 +584,19 @@ namespace Lucidtech.Las
 
         public object CreateWorkflow(
             Dictionary<string, object> spec,
-            string? name = null,
-            string? description = null,
-            Dictionary<string, string>? errorConfig = null
+            Dictionary<string, string>? errorConfig = null,
+            Dictionary<string, string?>? optionalParams = null
         ) {
             var body = new Dictionary<string, object?>{
                 {"specification", spec},
                 {"errorConfig", errorConfig}
             };
 
-            if (name != null) {
-                body.Add("name", name);
-            }
-
-            if (description != null) {
-                body.Add("description", description);
+            if (optionalParams != null) {
+                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
+                    body.Add(entry.Key, entry.Value);
+                }
             }
 
             var request = ClientRestRequest(Method.POST, "/workflows", body);
@@ -560,12 +618,8 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object UpdateWorkflow(string workflowId, string? name = null, string? description = null) {
-            var body = new Dictionary<string, object?> {
-                {"name", name},
-                {"description", description}
-            };
-            var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}", body);
+        public object UpdateWorkflow(string workflowId, Dictionary<string, string?>? optionalParams = null) {
+            var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}", optionalParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
