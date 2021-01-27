@@ -382,7 +382,7 @@ namespace Test
             Dictionary<string, string>? error = null
         ) {
             var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
-            var executionId = $"las:execution:{Guid.NewGuid().ToString()}";
+            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
             var response = Toby.UpdateTransitionExecution(
                 transitionId,
                 executionId,

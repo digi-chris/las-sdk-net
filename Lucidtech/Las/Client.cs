@@ -221,10 +221,13 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object DeleteDocuments(string consentId) {
-            var queryParams = new Dictionary<string, object?>() {
-                {"consentId", consentId},
-            };
+        public object DeleteDocuments(string? consentId = null) {
+            var queryParams = new Dictionary<string, object?>();
+
+            if (consentId != null) {
+                queryParams.Add("consentId", consentId);
+            }
+
             RestRequest request = ClientRestRequest(Method.DELETE, "/documents", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
