@@ -11,16 +11,6 @@ using Lucidtech.Las.Utils;
 
 namespace Lucidtech.Las
 {
-    class OptionalParameter {
-        private string? Name { get; set; }
-        private string? Value { get; }
-
-        public OptionalParameter(string? name = null, string? value = null) {
-            this.Name = name;
-            this.Value = value;
-        }
-    }
-
     /// <summary>
     /// A low level client to invoke api methods from Lucidtech AI Services.
     /// </summary>
@@ -53,7 +43,6 @@ namespace Lucidtech.Las
 
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -83,16 +72,15 @@ namespace Lucidtech.Las
         }
 
         public object UpdateAsset(string assetId, byte[]? content = null, Dictionary<string, string?>? optionalParams = null) {
-            string base64Content = System.Convert.ToBase64String(content);
             var body = new Dictionary<string, string?>();
 
             if (content != null) {
+                string base64Content = System.Convert.ToBase64String(content);
                 body.Add("content", base64Content);
             }
 
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -233,7 +221,7 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        public object DeleteDocuments(string? consentId = null) {
+        public object DeleteDocuments(string consentId) {
             var queryParams = new Dictionary<string, object?>() {
                 {"consentId", consentId},
             };
@@ -241,50 +229,6 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        /// <summary>
-        /// Run inference and create a prediction, calls the POST /predictions endpoint.
-        /// </summary>
-        /// <example>
-        /// Run inference and create a prediction using the invoice model
-        /// on the document specified by '&lt;documentId&gt;'
-        /// <code>
-        /// Client client = new Client();
-        /// var response = client.CreatePrediction('&lt;documentId&gt;',"las:model:99cac468f7cf47ddad12e5e017540389");
-        /// </code>
-        /// </example>
-        /// <param name="documentId"> Path to document to
-        /// upload Same as provided to <see cref="CreateDocument"/></param>
-        /// <param name="modelId"> Id of the model to use for inference </param>
-        /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
-        /// <param name="autoRotate"> Whether or not to let the API try different 
-        /// rotations on the document when running </param>
-        /// <param name="extras"> Extra information to add to json body </param>
-        /// <returns>
-        /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
-        /// the value of predictions is the output from the model.
-        /// </returns>
-        public object CreatePrediction(
-            string documentId,
-            string modelId,
-            int? maxPages = null,
-            bool? autoRotate = null,
-            Dictionary<string, object>? extras = null
-        )
-        {
-            var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelId", modelId}};
-            if (maxPages != null) { body.Add("maxPages", maxPages);}
-            if (autoRotate != null) { body.Add("autoRotate", autoRotate);}
-            if (extras != null) 
-            { 
-                foreach (var pair in extras)
-                {
-                    body.Add(pair.Key, pair.Value);
-                }
-            }
-            RestRequest request = ClientRestRequest(Method.POST, "/predictions", body);
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
-        
         /// <summary>
         /// Delete documents with this consentId, calls DELETE /consent/{consentId} endpoint.
         /// </summary>
@@ -326,6 +270,43 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
+        /// <summary>
+        /// Run inference and create a prediction, calls the POST /predictions endpoint.
+        /// </summary>
+        /// <example>
+        /// Run inference and create a prediction using the invoice model
+        /// on the document specified by '&lt;documentId&gt;'
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.CreatePrediction('&lt;documentId&gt;',"las:model:99cac468f7cf47ddad12e5e017540389");
+        /// </code>
+        /// </example>
+        /// <param name="documentId"> Path to document to
+        /// upload Same as provided to <see cref="CreateDocument"/></param>
+        /// <param name="modelId"> Id of the model to use for inference </param>
+        /// <param name="maxPages"> Maximum number of pages to run predictions on </param>
+        /// <param name="autoRotate"> Whether or not to let the API try different 
+        /// rotations on the document when running </param>
+        /// <param name="extras"> Extra information to add to json body </param>
+        /// <returns>
+        /// A deserialized object that can be interpreted as a Dictionary with the fields documentId and predictions,
+        /// the value of predictions is the output from the model.
+        /// </returns>
+        public object CreatePrediction(
+            string documentId,
+            string modelId,
+            int? maxPages = null,
+            bool? autoRotate = null
+        )
+        {
+            var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelId", modelId}};
+            if (maxPages != null) { body.Add("maxPages", maxPages);}
+            if (autoRotate != null) { body.Add("autoRotate", autoRotate);}
+
+            RestRequest request = ClientRestRequest(Method.POST, "/predictions", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
         public object ListPredictions(int? maxResults = null, string? nextToken = null) {
             var queryParams = new Dictionary<string, string>();
 
@@ -363,7 +344,6 @@ namespace Lucidtech.Las
 
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -395,7 +375,6 @@ namespace Lucidtech.Las
 
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -412,6 +391,7 @@ namespace Lucidtech.Las
             string transitionType,
             Dictionary<string, string> inputJsonSchema,
             Dictionary<string, string> outputJsonSchema,
+            Dictionary<string, object?>? parameters = null,
             Dictionary<string, string?>? optionalParams = null
         ) {
             var body = new Dictionary<string, object?>() {
@@ -420,9 +400,12 @@ namespace Lucidtech.Las
                 {"transitionType", transitionType},
             };
 
+            if (parameters != null) {
+                body.Add("parameters", parameters);
+            }
+
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -478,7 +461,6 @@ namespace Lucidtech.Las
 
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -588,13 +570,15 @@ namespace Lucidtech.Las
             Dictionary<string, string?>? optionalParams = null
         ) {
             var body = new Dictionary<string, object?>{
-                {"specification", spec},
-                {"errorConfig", errorConfig}
+                {"specification", spec}
             };
+
+            if (errorConfig != null) {
+                body.Add("errorConfig", errorConfig);
+            }
 
             if (optionalParams != null) {
                 foreach (KeyValuePair<string, string?> entry in optionalParams) {
-                    Console.WriteLine($"{entry.Key} is {entry.Value} of type {entry.GetType()}");
                     body.Add(entry.Key, entry.Value);
                 }
             }

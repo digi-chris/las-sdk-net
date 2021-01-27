@@ -57,7 +57,7 @@ namespace Test
 
         [TestCase("name", "description")]
         [TestCase("", "")]
-        // [TestCase(null, null)] TODO: figure out why this doesn't work
+        [TestCase(null, null)]
         public void TestCreateAsset(string? name, string? description) {
             var bytes = BitConverter.GetBytes(12345);
             var parameters = new Dictionary<string, string?>{
@@ -154,19 +154,6 @@ namespace Test
         }
 
         [Test]
-        public void TestCreatePredictionExtras()
-        {
-            var extras = new Dictionary<string, object>() {{"maxPages", 1}};
-            var response = Toby.CreatePrediction(
-                (string)CreateDocResponse["documentId"],
-                Example.ModelId(),
-                extras: extras
-            );
-            var expectedKeys = new [] {"documentId", "predictions"};
-            CheckKeys(expectedKeys, response);
-        }
-
-        [Test]
         public void TestGetDocument()
         {
             var response = Toby.GetDocument((string)CreateDocResponse["documentId"]);
@@ -187,9 +174,9 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestDeleteDocuments() {
-            var response = Toby.DeleteDocuments();
+        [TestCase("consent_id")]
+        public void TestDeleteDocuments(string consentId) {
+            var response = Toby.DeleteDocuments(consentId);
             var expectedKeys = new [] {"documents"};
             CheckKeys(expectedKeys, response);
         }
@@ -253,6 +240,7 @@ namespace Test
         
         [TestCase("docker", "name", "description")]
         [TestCase("manual", "name", "description")]
+        [TestCase("docker", null, null)]
         public void TestCreateTransition(string transitionType, string name, string description) {
             var schema = new Dictionary<string, string>() {
                 {"schema", "https://json-schema.org/draft-04/schema#"},
@@ -261,12 +249,19 @@ namespace Test
 
             var inputSchema = schema;
             var outputSchema = schema;
-            var parameters = new Dictionary<string, string>{
+            var optionalParameters = new Dictionary<string, string>{
                 {"name", name},
                 {"description", description}
             };
-            var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters);
-            CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
+            var parametersVariants = new [] {null, new Dictionary<string, object>{
+                {"cpu", 256},
+                {"imageUrl", "image_url"}
+            }};
+
+            foreach (var parameters in parametersVariants) {
+                var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters, optionalParameters);
+                CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
+            }
         }
 
         [TestCase("docker")]
@@ -283,7 +278,7 @@ namespace Test
         }
 
         [TestCase("foo", "bar")]
-        // [TestCase(null, null)]  // TODO figure out why this doesn't work
+        [TestCase(null, null)]
         public void TestUpdateTransition(string? name, string? description) {
             var schema = new Dictionary<string, string>() {
                 {"schema", "https://json-schema.org/draft-04/schema#"},
@@ -319,8 +314,8 @@ namespace Test
             "las:transition-execution:08b49ae64cd746f384f05880ef5de72f",
             3,
             null,
-            "completedBy",
-            "asc"
+            "startTime",
+            "ascending"
         )]
         public void TestListTransitionExecutions(
             string? status = null,
@@ -347,8 +342,8 @@ namespace Test
         [TestCase(
             3,
             null,
-            "completedBy",
-            "asc"
+            "startTime",
+            "ascending"
         )]
         public void TestListTransitionExecutions(
             int? maxResults = null,
@@ -359,8 +354,8 @@ namespace Test
             var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
             var statuses = new List<string>{ "running", "succeeded" };
             var executionIds = new List<string>{
-                $"las:execution:{Guid.NewGuid().ToString()}",
-                $"las:execution:{Guid.NewGuid().ToString()}"
+                $"las:transition-execution:{Guid.NewGuid().ToString()}",
+                $"las:transition-execution:{Guid.NewGuid().ToString()}"
             };
             var response = Toby.ListTransitionExecutions(
                 transitionId,
@@ -407,9 +402,8 @@ namespace Test
             }, response);
         }
 
-        [Test]
-        public void TestCreateUser() {
-            var email = "foo@bar.com";
+        [TestCase("foo@bar.com")]
+        public void TestCreateUser(string email) {
             var response = Toby.CreateUser(email);
             CheckKeys(new [] {"email", "userId"}, response);
         }
@@ -417,7 +411,7 @@ namespace Test
         [Test]
         public void TestListUsers() {
             int maxResults = new Random().Next(1, 100);
-            var response = Toby.ListUsers();
+            var response = Toby.ListUsers(maxResults: maxResults);
             CheckKeys(new [] {"nextToken", "users"}, response);
         }
 
@@ -438,6 +432,7 @@ namespace Test
         [TestCase("name", "description")]
         [TestCase("", "description")]
         [TestCase("name", "")]
+        [TestCase(null, null)]
         public void TestCreateWorkflow(string name, string description) {
             var spec = new Dictionary<string, object>{
                 {"definition", new Dictionary<string, object>()}
@@ -467,6 +462,7 @@ namespace Test
         [TestCase("name", "description")]
         [TestCase("", "description")]
         [TestCase("name", "")]
+        [TestCase(null, null)]
         public void TestUpdateWorkflow(string name, string description) {
             var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
             var response = Toby.UpdateWorkflow(workflowId, new Dictionary<string, string?>{
@@ -501,8 +497,8 @@ namespace Test
         [TestCase(
             3,
             null,
-            "completedBy",
-            "asc"
+            "endTime",
+            "ascending"
         )]
         public void TestListWorkflowExecutions(
             int? maxResults = null,
