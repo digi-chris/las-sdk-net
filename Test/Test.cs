@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
+
 using NUnit.Framework;
 
 using Newtonsoft.Json;
@@ -15,119 +17,17 @@ using Lucidtech.Las.Utils;
 namespace Test
 {
     [TestFixture]
-    public class TestApi
-    {
-
-        private ApiClient Luke { get; set; }
-
-        [OneTimeSetUp]
-        public void Init()
-        {
-            var mockCreds = new Mock<AmazonCredentials>("test", "test", "test", "test", "http://localhost:4010");
-            mockCreds
-              .Protected()
-              .Setup<(string, DateTime)>("GetClientCredentials")
-              .Returns(("foobar", DateTime.Now));
-            mockCreds
-              .Protected()
-              .Setup("CommonConstructor");
-
-            Luke = new ApiClient(mockCreds.Object);
-        }
-        
-        private static void CheckFields<T>(List<Dictionary<string, T>> fields, Dictionary<string, Type> expected) 
-        {
-            foreach (var field in fields)
-            {
-                foreach (var pair in expected)
-                {
-                    Assert.IsTrue(field.ContainsKey(pair.Key));
-                    Assert.IsTrue(field[pair.Key].GetType() == pair.Value);
-                }
-            }
-        }
-        
-        private Dictionary<string, object>CreateDoc()
-        {
-            byte[] body = File.ReadAllBytes(Example.DocPath());
-            var response = Luke.CreateDocument(body, Example.ContentType(), Example.ConsentId());
-            var postDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
-            return postDocResponse;
-        }
-
-        [Test]
-        public void TestSendFeedback()
-        {
-            var postDocResponse = CreateDoc();
-            var feedback = new List<Dictionary<string, string>>()
-            {
-                new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
-                new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
-            };
-            var response = Luke.SendFeedback((string)postDocResponse["documentId"], feedback);
-            
-            Console.WriteLine($"\n$ FeedbackResponse response = apiClient.SendFeedback(...);");
-            Console.WriteLine(response.ToJsonString(Formatting.Indented));
-            var expected = new Dictionary<string, Type>()
-            {
-                {"label", typeof(string)},
-                {"value", typeof(string)},
-            };
-            CheckFields(response.Feedback, expected);
-        }
-        
-        [Test]
-        public void TestRevokeConsent()
-        {
-            var postDocResponse = CreateDoc();
-            RevokeResponse response = Luke.RevokeConsent((string)postDocResponse["consentId"]);
-            
-            Console.WriteLine($"\n$ RevokeResponse response = apiClient.RevokeConsent(...);");
-            Console.WriteLine(response.ToJsonString(Formatting.Indented));
-            
-            //Assert.IsTrue(response.ConsentId.Equals(Example.ConsentId()));
-            Assert.IsNotEmpty(response.ConsentId);
-            foreach (var documentId in response.DocumentIds)
-            {
-                Assert.IsNotEmpty(documentId);
-            }
-        }
-        
-        [Test]
-        public void TestPrediction()
-        {
-            var response = Luke.Predict(
-                documentPath: Example.DocPath(), modelName: Example.ModelType(), consentId: Example.ConsentId());
-
-            Console.WriteLine($"\n$ Predict response = apiClient.Predict(...);");
-            Console.WriteLine(response.ToJsonString(Formatting.Indented));
-            
-            Assert.IsTrue(response.ConsentId.Equals(Example.ConsentId()));
-            Assert.IsTrue(response.ModelName.Equals(Example.ModelType()));
-            var expected = new Dictionary<string, Type>()
-            {
-                {"label", typeof(string)},
-                {"value", typeof(string)},
-                {"confidence", typeof(double)}
-            };
-            CheckFields(response.Fields, expected);
-        }
-    }
-
-    [TestFixture]
     public class TestClient 
     {
         private Client Toby { get; set; }
         private Dictionary<string, object> CreateDocResponse { get; set; }
 
-        private static void CheckKeys(List<string> expected, object response)
+        private static void CheckKeys(string[] expected, object response)
         {
             var res = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
-            Console.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
             foreach (var key in expected)
             {
-                Assert.IsTrue(res.ContainsKey(key));
-                Console.WriteLine($"{key}: {res[key]}");
+                Assert.IsTrue(res.ContainsKey(key), $"{key}: {res[key]}");
             }
         }
 
@@ -146,164 +46,505 @@ namespace Test
 
           Toby = new Client(mockCreds.Object);
         }
-        
+
         [SetUp]
-        public void CreateDocs()
+        public void Setup()
         {
             byte[] body = File.ReadAllBytes(Example.DocPath());
             var response = Toby.CreateDocument(body, Example.ContentType(), Example.ConsentId());
             CreateDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(response);
         }
 
+        [TestCase("name", "description")]
+        [TestCase("", "")]
+        [TestCase(null, null)]
+        public void TestCreateAsset(string? name, string? description) {
+            var bytes = BitConverter.GetBytes(12345);
+            var parameters = new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.CreateAsset(bytes, parameters);
+            CheckKeys(new [] {"assetId"}, response);
+        }
+
+        [Test]
+        public void TestListAssets() {
+            var response = Toby.ListAssets();
+            CheckKeys(new [] {"assets"}, response);
+        }
+
+        [Test]
+        public void TestListAssetsWithPagination() {
+            int maxResults = new Random().Next(1, 100);
+            var response = Toby.ListAssets(maxResults);
+            var expectedKeys = new [] {"assets", "nextToken"};
+            CheckKeys(expectedKeys, response);
+        }
+
+        [Test]
+        public void TestGetAssetById() {
+            var assetId = $"las:asset:{Guid.NewGuid().ToString()}";
+            var response = Toby.GetAsset(assetId);
+            var expectedKeys = new [] {"assetId", "content"};
+            CheckKeys(expectedKeys, response);
+        }
+
+        [TestCase("name", "description")]
+        [TestCase("", "")]
+        public void TestUpdateAsset(string? name, string? description) {
+            var assetId = $"las:asset:{Guid.NewGuid().ToString()}";
+            var content = BitConverter.GetBytes(123456);
+            var response = Toby.UpdateAsset(assetId, content, new Dictionary<string?, string?>{
+                {"name", name},
+                {"description", description}
+            });
+            var expectedKeys = new [] {"assetId"};
+            CheckKeys(expectedKeys, response);
+        }
+
         [Test]
         public void TestCreateDocument()
         {
-            var expected = new List<string>(){"documentId", "contentType", "consentId", "batchId"};
-            CheckKeys(expected, CreateDocResponse);
+            var expectedKeys = new [] {"documentId", "contentType", "consentId", "batchId"};
+            CheckKeys(expectedKeys, CreateDocResponse);
         }
 
         [Test]
         public void TestListDocuments()
         {
             var response = Toby.ListDocuments();
-            var expected = new List<string>(){"documents"};
-            CheckKeys(expected, response);
+            var expectedKeys = new [] {"documents"};
+            CheckKeys(expectedKeys, response);
         }
 
         [Test]
         public void TestCreatePredictionBareMinimum()
         {
-            var response = Toby.CreatePrediction((string)CreateDocResponse["documentId"], Example.ModelName());
-            Console.WriteLine($"CreatePrediction. {response}");
-            var expected = new List<string>(){"documentId", "predictions"};
-            CheckKeys(expected, response);
+            var response = Toby.CreatePrediction(
+                (string)CreateDocResponse["documentId"],
+                Example.ModelId()
+            );
+            var expectedKeys = new [] {"documentId", "predictions"};
+            CheckKeys(expectedKeys, response);
         }
 
         [Test]
         public void TestCreatePredictionMaxPages()
         {
-            var response = Toby.CreatePrediction((string)CreateDocResponse["documentId"], Example.ModelName(),
-                                                maxPages: 2);
-            Console.WriteLine($"CreatePrediction. {response}");
-            var expected = new List<string>(){"documentId", "predictions"};
-            CheckKeys(expected, response);
+            var response = Toby.CreatePrediction(
+                (string)CreateDocResponse["documentId"],
+                Example.ModelId(),
+                maxPages: 2
+            );
+            var expectedKeys = new [] {"documentId", "predictions"};
+            CheckKeys(expectedKeys, response);
         }
 
         [Test]
         public void TestCreatePredictionAutoRotate()
         {
-            var response = Toby.CreatePrediction((string)CreateDocResponse["documentId"], Example.ModelName(),
-                                                autoRotate: true);
-            Console.WriteLine($"CreatePrediction. {response}");
-            var expected = new List<string>(){"documentId", "predictions"};
-            CheckKeys(expected, response);
-        }
-
-        [Test]
-        public void TestCreatePredictionExtras()
-        {
-            var extras = new Dictionary<string, object>() {{"maxPages", 1}};
-            var response = Toby.CreatePrediction((string)CreateDocResponse["documentId"], Example.ModelName(),
-                                                extras: extras);
-            Console.WriteLine($"CreatePrediction. {response}");
-            var expected = new List<string>(){"documentId", "predictions"};
-            CheckKeys(expected, response);
+            var response = Toby.CreatePrediction(
+                (string)CreateDocResponse["documentId"],
+                Example.ModelId(),
+                autoRotate: true
+            );
+            var expectedKeys = new [] {"documentId", "predictions"};
+            CheckKeys(expectedKeys, response);
         }
 
         [Test]
         public void TestGetDocument()
         {
             var response = Toby.GetDocument((string)CreateDocResponse["documentId"]);
-            var expected = new List<string>(){"documentId", "contentType", "consentId"};
-            CheckKeys(expected, response);
+            var expectedKeys = new [] {"documentId", "contentType", "consentId"};
+            CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestUpdateDocument()
+        [TestCase("54.50", "2007-07-30")]
+        public void TestUpdateDocument(string total_amount, string purchase_date)
         {
-            var feedback = new List<Dictionary<string, string>>()
+            var ground_truth = new List<Dictionary<string, string>>()
             {
-                new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
-                new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+                new Dictionary<string, string>(){{"label", "total_amount"},{"value", total_amount}},
+                new Dictionary<string, string>(){{"label", "purchase_date"},{"value", purchase_date}}
             };
-            var response = Toby.UpdateDocument((string)CreateDocResponse["documentId"], feedback);
-            var expected = new List<string>(){"documentId", "consentId", "contentType", "feedback"};
-            CheckKeys(expected, response);
+            var response = Toby.UpdateDocument((string)CreateDocResponse["documentId"], ground_truth);
+            var expectedKeys = new [] {"documentId", "consentId", "contentType", "groundTruth"};
+            CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestDeleteConsent()
-        {
-            var expected = new List<string>(){"consentId", "documentIds"};
-            var response = Toby.DeleteConsent((string)CreateDocResponse["consentId"]);
-            CheckKeys(expected, response);
+        [TestCase("consent_id")]
+        public void TestDeleteDocuments(string consentId) {
+            var response = Toby.DeleteDocuments(consentId);
+            var expectedKeys = new [] {"documents"};
+            CheckKeys(expectedKeys, response);
         }
 
         [Test]
         public void TestCreateBatch()
         {
             var response = Toby.CreateBatch(Example.Description());
-            var expected = new List<string>(){"batchId", "description"};
-            CheckKeys(expected, response);
+            var expectedKeys = new [] {"batchId", "description"};
+            CheckKeys(expectedKeys, response);
         }
-
-    }
-
-/*
-    [TestFixture]
-    public class TestClientKms
-    {
-        private Dictionary<string, object> CreateDocResponse { get; set; }
 
         [Test]
-        public void TestPrediction()
-        {
-            if (ExampleExtraFlags.Endpoint() == Example.Endpoint())
-            {
-                Console.WriteLine($"The Demo API does currently not support extra flags, use another endpoint"); 
-                return;
+        public void TestListModels() {
+            var response = Toby.ListModels();
+            var expectedKeys = new [] {"models"};
+            CheckKeys(expectedKeys, response);
+        }
+
+
+        [Test]
+        public void TestListPredictions() {
+            var response = Toby.ListPredictions();
+            var expectedKeys = new [] {"predictions"};
+            CheckKeys(expectedKeys, response);
+        }
+
+        [TestCase("foo", "bar")]
+        public void TestCreateSecret(string username, string password) {
+            var data = new Dictionary<string, string>(){
+                {"username", username},
+                {"password", password}
+            };
+            var response = Toby.CreateSecret(data);
+            var expectedKeys = new [] {"secretId"};
+            CheckKeys(expectedKeys, response); 
+        }
+
+        [Test]
+        public void TestListSecrets() {
+            var response = Toby.ListSecrets();
+            var expectedKeys = new [] {"secrets"};
+            CheckKeys(expectedKeys, response);
+        }
+
+        [TestCase("foo", "bar", "name", "description")]
+        [TestCase("foo", "bar", "name", "")]
+        public void TestUpdateSecret(string username, string password, string? name = null, string? description = null) {
+            var secretId = $"las:model:{Guid.NewGuid().ToString()}";
+            var data = new Dictionary<string, string>() {
+                {"username", username},
+                {"password", password}
+            };
+            var expectedKeys = new [] {"secretId"};
+            var response = Toby.UpdateSecret(secretId, data, new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            });
+            CheckKeys(expectedKeys, response);
+        }
+        
+        [TestCase("docker", "name", "description")]
+        [TestCase("manual", "name", "description")]
+        [TestCase("docker", null, null)]
+        public void TestCreateTransition(string transitionType, string name, string description) {
+            var schema = new Dictionary<string, string>() {
+                {"schema", "https://json-schema.org/draft-04/schema#"},
+                {"title", "response"}
+            };
+
+            var inputSchema = schema;
+            var outputSchema = schema;
+            var optionalParameters = new Dictionary<string, string>{
+                {"name", name},
+                {"description", description}
+            };
+            var parametersVariants = new [] {null, new Dictionary<string, object>{
+                {"cpu", 256},
+                {"imageUrl", "image_url"}
+            }};
+
+            foreach (var parameters in parametersVariants) {
+                var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters, optionalParameters);
+                CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
             }
-            
-            var flags = new Dictionary<string, string>() {{"x-amz-server-side-encryption", "aws:kms"}};
-            
-            ApiClient apiClient = new ApiClient(ExampleExtraFlags.Endpoint(), new Credentials(
-                ExampleExtraFlags.accessKey(), 
-                ExampleExtraFlags.secretKey(), 
-                ExampleExtraFlags.apiKey()));
+        }
 
-            var postResponse = apiClient.CreateDocument(ExampleExtraFlags.ContentType(), ExampleExtraFlags.ConsentId());
-            CreateDocResponse = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(postResponse);
+        [TestCase("docker")]
+        [TestCase("manual")]
+        [TestCase(null)]
+        public void TestListTransitions(string? transitionType) {
+            var response = Toby.ListTransitions(transitionType);
+            CheckKeys(new [] {"transitions"}, response);
+        }
 
-            var putResponse = apiClient.PutDocument(ExampleExtraFlags.DocPath(), ExampleExtraFlags.ContentType(),
-                (string) CreateDocResponse["uploadUrl"], flags);
+        public void TestListTransitions() {
+            var response = Toby.ListTransitions(new List<string>{"docker", "manual"});
+            CheckKeys(new [] {"transitions"}, response);
+        }
 
-            var response = apiClient.CreatePrediction((string) CreateDocResponse["documentId"], ExampleExtraFlags.ModelType());
+        [TestCase("foo", "bar")]
+        [TestCase(null, null)]
+        public void TestUpdateTransition(string? name, string? description) {
+            var schema = new Dictionary<string, string>() {
+                {"schema", "https://json-schema.org/draft-04/schema#"},
+                {"title", "response"}
+            };
+            var inputSchema = schema;
+            var outputSchema = schema;
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var parameters = new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.UpdateTransition(transitionId, inputSchema, outputSchema, parameters);
+            CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
+        }
 
-            JObject jsonResponse = JObject.Parse(response.ToString());
-            var predictionString = jsonResponse["predictions"].ToString();
-            var predictions = JsonSerialPublisher.DeserializeObject<List<Dictionary<string, Dictionary<string, object>>>>(predictionString);
-            foreach (var line in predictions)
-            {
-                Console.WriteLine("\n New Line Found");
-                foreach (var field in line)
-                {
-                    Console.WriteLine($"{field.Key}: {field.Value["val"]}, confidence: {field.Value["confidence"]}");
-                }
-            }
+        public void TestGetTransitionExecution() {
+            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var response = Toby.GetTransitionExecution(transitionId, executionId);
+            CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
+        }
+
+        [Test]
+        public void TestExecuteTransition() {
+            var transitionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
+            var response = Toby.ExecuteTransition(transitionId);
+            CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
+        }
+
+        [TestCase(
+            "running",
+            "las:transition-execution:08b49ae64cd746f384f05880ef5de72f",
+            3,
+            null,
+            "startTime",
+            "ascending"
+        )]
+        public void TestListTransitionExecutions(
+            string? status = null,
+            string? executionId = null,
+            int? maxResults = null,
+            string? nextToken = null,
+            string? sortBy = null,
+            string? order = null
+        ) {
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var response = Toby.ListTransitionExecutions(
+                transitionId,
+                new List<string>{ status },
+                new List<string>{ executionId },
+                maxResults,
+                nextToken,
+                sortBy,
+                order
+            );
+            var expectedKeys = new [] {"executions"};
+            CheckKeys(expectedKeys, response);
+        }
+
+        [TestCase(
+            3,
+            null,
+            "startTime",
+            "ascending"
+        )]
+        public void TestListTransitionExecutions(
+            int? maxResults = null,
+            string? nextToken = null,
+            string? sortBy = null,
+            string? order = null
+        ) {
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var statuses = new List<string>{ "running", "succeeded" };
+            var executionIds = new List<string>{
+                $"las:transition-execution:{Guid.NewGuid().ToString()}",
+                $"las:transition-execution:{Guid.NewGuid().ToString()}"
+            };
+            var response = Toby.ListTransitionExecutions(
+                transitionId,
+                statuses,
+                executionIds,
+                maxResults,
+                nextToken,
+                sortBy,
+                order
+            );
+            var expectedKeys = new [] {"executions"};
+            CheckKeys(expectedKeys, response);
+        }
+
+        static object[] UpdateTransitionExecutionSources = {
+            new object[] { "succeeded", new Dictionary<string, string>{{"foo", "bar"}}, null },
+            new object[] { "failed", null, new Dictionary<string, string>{{"message", "foobar"}} }
+        };
+
+        [Test, TestCaseSource("UpdateTransitionExecutionSources")]
+        public void TestUpdateTransitionExecution(
+            string status,
+            Dictionary<string, string>? output = null,
+            Dictionary<string, string>? error = null
+        ) {
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
+            var response = Toby.UpdateTransitionExecution(
+                transitionId,
+                executionId,
+                status,
+                output,
+                error
+            );
+            CheckKeys(new [] {
+                "completedBy",
+                "endTime",
+                "executionId",
+                "input",
+                "logId",
+                "startTime",
+                "status",
+                "transitionId"
+            }, response);
+        }
+
+        [TestCase("foo@bar.com")]
+        public void TestCreateUser(string email) {
+            var response = Toby.CreateUser(email);
+            CheckKeys(new [] {"email", "userId"}, response);
+        }
+
+        [Test]
+        public void TestListUsers() {
+            int maxResults = new Random().Next(1, 100);
+            var response = Toby.ListUsers(maxResults: maxResults);
+            CheckKeys(new [] {"nextToken", "users"}, response);
+        }
+
+        [Test]
+        public void TestGetUser() {
+            var userId = $"las:user:{Guid.NewGuid().ToString()}";
+            var response = Toby.GetUser(userId);
+            CheckKeys(new [] {"userId", "email"}, response);
+        }
+
+        [Test]
+        public void TestDeleteUser() {
+            var userId = $"las:user:{Guid.NewGuid().ToString()}";
+            var response = Toby.DeleteUser(userId);
+            CheckKeys(new [] {"userId", "email"}, response);
+        }
+
+        [TestCase("name", "description")]
+        [TestCase("", "description")]
+        [TestCase("name", "")]
+        [TestCase(null, null)]
+        public void TestCreateWorkflow(string name, string description) {
+            var spec = new Dictionary<string, object>{
+                {"definition", new Dictionary<string, object>()}
+            };
+            var errorConfig = new Dictionary<string, string>{
+                {"email", "foo@bar.com"}
+            };
+            var parameters = new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            };
+            var response = Toby.CreateWorkflow(spec, errorConfig, parameters);
+            CheckKeys(new [] {"workflowId", "name", "description"}, response);
+        }
+
+        [TestCase(100, "foo")]
+        [TestCase(null, "foo")]
+        [TestCase(100, null)]
+        public void TestListWorkflows(
+            int? maxResults = null,
+            string? nextToken = null
+        ) {
+            var response = Toby.ListWorkflows(maxResults, nextToken);
+            CheckKeys(new [] {"workflows"}, response);
+        }
+
+        [TestCase("name", "description")]
+        [TestCase("", "description")]
+        [TestCase("name", "")]
+        [TestCase(null, null)]
+        public void TestUpdateWorkflow(string name, string description) {
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var response = Toby.UpdateWorkflow(workflowId, new Dictionary<string, string?>{
+                {"name", name},
+                {"description", description}
+            });
+            CheckKeys(new [] {"workflowId", "name", "description"}, response);
+        }
+
+        [Test]
+        public void TestDeleteWorkflow() {
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var response = Toby.DeleteWorkflow(workflowId);
+            CheckKeys(new [] {"workflowId", "name", "description"}, response);
+        }
+
+        [Test]
+        public void TestExecuteWorkflow() {
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var content = new Dictionary<string, object>();
+            var response = Toby.ExecuteWorkflow(workflowId, content);
+            var expectedKeys = new [] {
+                "workflowId",
+                "executionId",
+                "startTime",
+                "endTime",
+                "transitionExecutions"
+            };
+            CheckKeys(expectedKeys, response);
+        }
+
+        [TestCase(
+            3,
+            null,
+            "endTime",
+            "ascending"
+        )]
+        public void TestListWorkflowExecutions(
+            int? maxResults = null,
+            string? nextToken = null,
+            string? sortBy = null,
+            string? order = null
+        ) {
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var statuses = new List<string>{ "running", "succeeded" };
+            var response = Toby.ListWorkflowExecutions(
+                workflowId,
+                statuses,
+                maxResults,
+                nextToken,
+                sortBy,
+                order
+            );
+            CheckKeys(new [] {"workflowId", "executions"}, response);
+        }
+
+        [Test]
+        public void TestDeleteWorkflowExecution() {
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var executionId = $"las:workflow-execution:{Guid.NewGuid().ToString()}";
+            var response = Toby.DeleteWorkflowExecution(workflowId, executionId);
+            var expectedKeys = new [] {
+                "workflowId",
+                "executionId",
+                "startTime",
+                "endTime",
+                "transitionExecutions"
+            };
+            CheckKeys(expectedKeys, response);
         }
     }
 
-*/
     public static class Example 
     {
-
         public static byte[] Content() { return  Encoding.ASCII.GetBytes("%PDF-1.4foobarbaz");; }
-        public static string ConsentId() { return "bar"; }
+        public static string ConsentId() { return "las:consent:abc123def456abc123def456abc123de"; }
         public static string ContentType() { return "image/jpeg"; }
         public static string DocumentId() { return "abcdefghijklabcdefghijklabcdefghijkl"; }
         public static string Description() { return "This is my new batch for receipts july 2020"; }
         public static string ModelType() { return "invoice"; }
         public static string ModelName() { return "invoice"; }
+        public static string ModelId() { return "las:model:abc123def456abc123def456abc123de"; }
         public static string Endpoint() { return "http://127.0.0.1:4010"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.jpeg"); }
         public static AmazonCredentials Creds() 
