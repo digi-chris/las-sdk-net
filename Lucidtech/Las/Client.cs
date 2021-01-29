@@ -113,9 +113,9 @@ namespace Lucidtech.Las
         public object CreateDocument(
             byte[] content,
             string contentType,
-            string consentId,
+            string? consentId = null,
             string? batchId = null,
-            List<Dictionary<string, string>>? feedback = null)
+            List<Dictionary<string, string>>? groundTruth = null)
         {
             string base64Content = System.Convert.ToBase64String(content);
             var body = new Dictionary<string, string?>()
@@ -129,9 +129,9 @@ namespace Lucidtech.Las
                 body.Add("batchId", batchId);
             }
 
-            if (feedback != null) { 
-                string fb = JsonConvert.SerializeObject(feedback);
-                body.Add("feedback", fb);
+            if (groundTruth != null) { 
+                string fb = JsonConvert.SerializeObject(groundTruth);
+                body.Add("groundTruth", fb);
             }
             
             RestRequest request = ClientRestRequest(Method.POST, "/documents", body);
