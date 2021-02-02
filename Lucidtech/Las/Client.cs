@@ -17,23 +17,23 @@ namespace Lucidtech.Las
     public class Client 
     {
         private RestClient RestSharpClient { get; }
-        private AmazonCredentials Credentials { get; }
+        private Credentials LasCredentials { get; }
 
         /// <summary>
         /// Client constructor.
         /// </summary>
         /// <param name="credentials"> Keys, endpoints and credentials needed for authorization </param>
-        public Client(AmazonCredentials credentials)
+        public Client(Credentials credentials)
         {
-            Credentials = credentials;
-            var uri = new Uri(Credentials.ApiEndpoint);
+            LasCredentials = credentials;
+            var uri = new Uri(LasCredentials.ApiEndpoint);
             RestSharpClient = new RestClient(uri.GetLeftPart(UriPartial.Authority));
         }
         
         /// <summary>
         /// Client constructor with credentials read from local file.
         /// </summary>
-        public Client() : this(new AmazonCredentials()) {}
+        public Client() : this(new Credentials()) {}
 
         public object CreateAsset(byte[] content, Dictionary<string, string?>? optionalParams) {
             string base64Content = System.Convert.ToBase64String(content);
@@ -122,9 +122,12 @@ namespace Lucidtech.Las
             {
                 {"content", base64Content},
                 {"contentType", contentType}, 
-                {"consentId", consentId},
             };
 
+            if(consentId != null) {
+                body.Add("consentId", consentId);
+            }
+            
             if (!string.IsNullOrEmpty(batchId)) {
                 body.Add("batchId", batchId);
             }
@@ -151,19 +154,32 @@ namespace Lucidtech.Las
         /// <param name="batchId"> The batch id that contains the documents of interest </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <returns> Documents from REST API contained in batch </returns>
-        public object ListDocuments(string? batchId = null, string? consentId = null)
+        public object ListDocuments(
+            string? batchId = null, 
+            string? consentId = null, 
+            int? maxResults = null, 
+            string? nextToken = null
+        )
         {
-            var body = new Dictionary<string, string?>();
+            var queryParams = new Dictionary<string, object?>();
 
             if (!string.IsNullOrEmpty(batchId)) {
-                body.Add("batchId", batchId);
+                queryParams.Add("batchId", batchId);
             }
 
             if (!string.IsNullOrEmpty(consentId)) {
-                body.Add("consentId", consentId);
+                queryParams.Add("consentId", consentId);
             }
 
-            RestRequest request = ClientRestRequest(Method.GET, "/documents", body);
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/documents", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         } 
         
@@ -311,7 +327,7 @@ namespace Lucidtech.Las
         }
 
         public object ListPredictions(int? maxResults = null, string? nextToken = null) {
-            var queryParams = new Dictionary<string, string>();
+            var queryParams = new Dictionary<string, object>();
 
             if (maxResults != null) {
                 queryParams.Add("maxResults", maxResults.ToString());
@@ -321,12 +337,12 @@ namespace Lucidtech.Las
                 queryParams.Add("nextToken", nextToken);
             }
 
-            RestRequest request = ClientRestRequest(Method.GET, "/predictions");
+            RestRequest request = ClientRestRequest(Method.GET, "/predictions", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
         public object ListModels(int? maxResults = null, string? nextToken = null) {
-            var queryParams = new Dictionary<string, string>();
+            var queryParams = new Dictionary<string, object>();
 
             if (maxResults != null) {
                 queryParams.Add("maxResults", maxResults.ToString());
@@ -336,7 +352,7 @@ namespace Lucidtech.Las
                 queryParams.Add("nextToken", nextToken);
             }
 
-            RestRequest request = ClientRestRequest(Method.GET, "/models");
+            RestRequest request = ClientRestRequest(Method.GET, "/models", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -355,7 +371,7 @@ namespace Lucidtech.Las
         }
 
         public object ListSecrets(int? maxResults = null, string? nextToken = null) {
-            var queryParams = new Dictionary<string, string>();
+            var queryParams = new Dictionary<string, object>();
 
             if (maxResults != null) {
                 queryParams.Add("maxResults", maxResults.ToString());
@@ -365,7 +381,7 @@ namespace Lucidtech.Las
                 queryParams.Add("nextToken", nextToken);
             }
 
-            RestRequest request = ClientRestRequest(Method.GET, "/secrets");
+            RestRequest request = ClientRestRequest(Method.GET, "/secrets", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -677,7 +693,7 @@ namespace Lucidtech.Las
             object? body = null,
             Dictionary<string, object?>? queryParams = null)
         {
-            Uri endpoint = new Uri(string.Concat(Credentials.ApiEndpoint, path));
+            Uri endpoint = new Uri(string.Concat(LasCredentials.ApiEndpoint, path));
 
             var request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
@@ -685,8 +701,10 @@ namespace Lucidtech.Las
             if (body == null) {
                 body = new Dictionary<string, string>();
             }
-
-            request.AddJsonBody(body); 
+            
+            if (method == Method.POST || method == Method.PATCH) {
+                request.AddJsonBody(body); 
+            }
 
             if (queryParams == null) {
                 queryParams = new Dictionary<string, object?>();
@@ -714,8 +732,8 @@ namespace Lucidtech.Las
         {
             var headers = new Dictionary<string, string>()
             {
-                {"Authorization", $"Bearer {Credentials.GetAccessToken()}"},
-                {"X-Api-Key", Credentials.ApiKey}
+                {"Authorization", $"Bearer {LasCredentials.GetAccessToken()}"},
+                {"X-Api-Key", LasCredentials.ApiKey}
             };
             headers.Add("Content-Type", "application/json");
             
