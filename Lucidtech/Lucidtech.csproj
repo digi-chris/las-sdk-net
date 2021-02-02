@@ -12,7 +12,7 @@
     <AssemblyName>Lucidtech</AssemblyName>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworks>net461;net47;net472</TargetFrameworks>
+    <TargetFrameworks>netstandard20</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Lucidtech.Las</PackageId>
     <PackageVersion>1.1.0</PackageVersion>
