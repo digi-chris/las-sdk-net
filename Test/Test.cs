@@ -184,8 +184,9 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestCreateBatch()
+        [TestCase(null, null)]
+        [TestCase("name", "description")]
+        public void TestCreateBatch(string? name, string? description)
         {
             var response = Toby.CreateBatch(Example.Description());
             var expectedKeys = new [] {"batchId", "description"};
@@ -278,11 +279,6 @@ namespace Test
             CheckKeys(new [] {"transitions"}, response);
         }
 
-        public void TestListTransitions() {
-            var response = Toby.ListTransitions(new List<string>{"docker", "manual"});
-            CheckKeys(new [] {"transitions"}, response);
-        }
-
         [TestCase("foo", "bar")]
         [TestCase(null, null)]
         public void TestUpdateTransition(string? name, string? description) {
@@ -334,7 +330,7 @@ namespace Test
             var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
             var response = Toby.ListTransitionExecutions(
                 transitionId,
-                new List<string>{ status },
+                status,
                 new List<string>{ executionId },
                 maxResults,
                 nextToken,
@@ -426,6 +422,17 @@ namespace Test
             var userId = $"las:user:{Guid.NewGuid().ToString()}";
             var response = Toby.GetUser(userId);
             CheckKeys(new [] {"userId", "email"}, response);
+        }
+
+        [TestCase(null, null)]
+        [TestCase("name", "avatar")]
+        public void TestUpdateUser(string? name, string? avatar) {
+            var userId = $"las:user:{Guid.NewGuid().ToString()}";
+            var parameters = new Dictionary<string, object?>{
+                {"name", name},
+                {"avatar", avatar},
+            };
+            var response = Toby.UpdateUser(userId, parameters);
         }
 
         [Test]
