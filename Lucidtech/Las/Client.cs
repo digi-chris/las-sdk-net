@@ -703,10 +703,15 @@ namespace Lucidtech.Las
             string? sortBy = null,
             string? order = null
         ) {
-            var queryParams = new Dictionary<string, object> {
-                {"status", status},
-                {"executionId", executionIds},
-            };
+            var queryParams = new Dictionary<string, object>();
+
+            if (status != null) {
+                queryParams.Add("status", status);
+            }
+
+            if (executionIds != null) {
+                queryParams.Add("executionId", executionIds);
+            }
 
             if (maxResults != null) {
                 queryParams.Add("maxResults", maxResults.ToString());
@@ -724,7 +729,7 @@ namespace Lucidtech.Las
                 queryParams.Add("order", order);
             }
 
-            var request = ClientRestRequest(Method.GET, "/transitions/{transitionId}/executions", null, queryParams);
+            var request = ClientRestRequest(Method.GET, $"/transitions/{transitionId}/executions", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -752,10 +757,15 @@ namespace Lucidtech.Las
             string? sortBy = null,
             string? order = null
         ) {
-            var queryParams = new Dictionary<string, object> {
-                {"status", statuses},
-                {"executionId", executionIds},
-            };
+            var queryParams = new Dictionary<string, object>();
+
+            if (statuses != null) {
+                queryParams.Add("status", statuses);
+            }
+
+            if (executionIds != null) {
+                queryParams.Add("executionId", executionIds);
+            }
 
             if (maxResults != null) {
                 queryParams.Add("maxResults", maxResults.ToString());
@@ -773,7 +783,7 @@ namespace Lucidtech.Las
                 queryParams.Add("order", order);
             }
 
-            var request = ClientRestRequest(Method.GET, "/transitions/{transitionId}/executions", null, queryParams);
+            var request = ClientRestRequest(Method.GET, $"/transitions/{transitionId}/executions", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -1177,7 +1187,6 @@ namespace Lucidtech.Las
             Dictionary<string, object?>? queryParams = null)
         {
             Uri endpoint = new Uri(string.Concat(LasCredentials.ApiEndpoint, path));
-
             RestRequest request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
 
@@ -1193,13 +1202,21 @@ namespace Lucidtech.Las
                 queryParams = new Dictionary<string, object?>();
             }
 
-            foreach (var entry in queryParams)
-            {
+            foreach (var entry in queryParams) {
                 if (entry.Value == null) {
                     continue;
                 }
 
-                request.AddQueryParameter(entry.Key, entry.Value.ToString());
+                if (entry.Value is List<string?>) {
+                    foreach (var item in entry.Value as List<string>) {
+                        Console.WriteLine($"adding {entry.Key} = {item}");
+                        request.AddQueryParameter(entry.Key, item);
+                    }
+                }
+            }
+
+            foreach (var p in request.Parameters) {
+                Console.WriteLine($"{p.Name} of type {p.Type} is {p.Value}");
             }
 
             var headers = CreateSigningHeaders();
