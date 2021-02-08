@@ -256,7 +256,7 @@ namespace Test
 
             var inputSchema = schema;
             var outputSchema = schema;
-            var optionalParameters = new Dictionary<string, string>{
+            var attributes = new Dictionary<string, string>{
                 {"name", name},
                 {"description", description}
             };
@@ -266,7 +266,7 @@ namespace Test
             }};
 
             foreach (var parameters in parametersVariants) {
-                var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters, optionalParameters);
+                var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters, attributes);
                 CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
             }
         }
@@ -341,6 +341,7 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
+        [Ignore("multivalue query parameters don't work")]
         [TestCase(
             3,
             null,
@@ -509,6 +510,7 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
+        [Ignore("multivalue query parameters don't work")]
         [TestCase(
             3,
             null,

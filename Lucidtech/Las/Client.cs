@@ -45,16 +45,16 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// <param name="content">Asset content</param>
-        /// <param name="optionalParams">Additional attributes</param>
+        /// <param name="attributes">Additional attributes</param>
         /// <returns>Asset response from REST API</returns>
-        public object CreateAsset(byte[] content, Dictionary<string, string?>? optionalParams) {
+        public object CreateAsset(byte[] content, Dictionary<string, string?>? attributes) {
             string base64Content = System.Convert.ToBase64String(content);
             var body = new Dictionary<string, string?>(){
                 {"content", base64Content}
             };
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -116,9 +116,9 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="assetId">Asset ID</param>
         /// <param name="content">New content</param>
-        /// <param name="optionalParams">Additional attributes</param>
+        /// <param name="attributes">Additional attributes</param>
         /// <returns>Asset object</returns>
-        public object UpdateAsset(string assetId, byte[]? content = null, Dictionary<string, string?>? optionalParams = null) {
+        public object UpdateAsset(string assetId, byte[]? content = null, Dictionary<string, string?>? attributes = null) {
             var body = new Dictionary<string, string?>();
 
             if (content != null) {
@@ -126,8 +126,8 @@ namespace Lucidtech.Las
                 body.Add("content", base64Content);
             }
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -445,15 +445,15 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// <param name="data">A dictionary containing values to be hidden</param>
-        /// <param name="optionalParams">Additional attributes</param>
+        /// <param name="attributes">Additional attributes</param>
         /// <returns>A Secret object</returns>
-        public object CreateSecret(Dictionary<string, string> data, Dictionary<string, string?>? optionalParams = null) {
+        public object CreateSecret(Dictionary<string, string> data, Dictionary<string, string?>? attributes = null) {
             var body = new Dictionary<string, object?>() {
                 {"data", data}
             };
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -503,16 +503,16 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="secretId">Secret ID</param>
         /// <param name="data">New data</param>
-        /// <param name="optionalParams">Additional attributes</param>
+        /// <param name="attributes">Additional attributes</param>
         public object UpdateSecret(
             string secretId,
             Dictionary<string, string>? data,
-            Dictionary<string, string?>? optionalParams = null
+            Dictionary<string, string?>? attributes = null
         ) {
             var body = new Dictionary<string, object?>();
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -551,14 +551,14 @@ namespace Lucidtech.Las
         /// <param name="inputJsonSchema">Json-schema that defines the input to the transition</param>
         /// <param name="outputJsonSchema">Json-schema that defines the output of the transition</param>
         /// <param name="parameters">Parameters to the corresponding transition type</param>
-        /// <param name="optionalParams">Additional attributes</param>
+        /// <param name="attributes">Additional attributes</param>
         /// <returns>Transition response from REST API</returns>
         public object CreateTransition(
             string transitionType,
             Dictionary<string, string>? inputJsonSchema = null,
             Dictionary<string, string>? outputJsonSchema = null,
             Dictionary<string, object?>? parameters = null,
-            Dictionary<string, string?>? optionalParams = null
+            Dictionary<string, string?>? attributes = null
         ) {
             var body = new Dictionary<string, object?>() {
                 {"transitionType", transitionType},
@@ -576,8 +576,8 @@ namespace Lucidtech.Las
                 body.Add("parameters", parameters);
             }
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -637,13 +637,13 @@ namespace Lucidtech.Las
         /// <param name="transitionId">Id of the transition</param>
         /// <param name="inputJsonSchema">Json-schema that defines the input to the transition</param>
         /// <param name="outputJsonSchema">Json-schema that defines the output of the transition</param>
-        /// <param name="optionalParams">Additional attributes</param>
+        /// <param name="attributes">Additional attributes</param>
         /// <returns>Transition response from REST API</returns>
         public object UpdateTransition(
             string transitionId,
             Dictionary<string, string>? inputJsonSchema,
             Dictionary<string, string>? outputJsonSchema,
-            Dictionary<string, string?> optionalParams
+            Dictionary<string, string?> attributes
         ) {
             var body = new Dictionary<string, object?>();
 
@@ -655,8 +655,8 @@ namespace Lucidtech.Las
                 body.Add("outputJsonSchema", outputJsonSchema);
             }
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -832,15 +832,15 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// <param name="email">New user's email</param>
-        /// <param name="optionalParams">Additional attributes. Currently supported are: name, avatar</param>
+        /// <param name="attributes">Additional attributes. Currently supported are: name, avatar</param>
         /// <returns>User response from REST API</returns>
-        public object CreateUser(string email, Dictionary<string, string?>? optionalParams = null) {
+        public object CreateUser(string email, Dictionary<string, string?>? attributes = null) {
             var body = new Dictionary<string, string>{
                 {"email", email}
             };
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
@@ -955,12 +955,12 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="spec">Workflow specification. Currently only ASL is supported: https://states-language.net/spec.html</param>
         /// <param name="errorConfig">Error handler configuration</param>
-        /// <param name="optionalParams">Additional attributes. Currently supported are: name, description.</param>
+        /// <param name="attributes">Additional attributes. Currently supported are: name, description.</param>
         /// <returns>Workflow response from REST API</returns>
         public object CreateWorkflow(
             Dictionary<string, object> spec,
             Dictionary<string, string>? errorConfig = null,
-            Dictionary<string, string?>? optionalParams = null
+            Dictionary<string, string?>? attributes = null
         ) {
             var body = new Dictionary<string, object?>{
                 {"specification", spec}
@@ -970,8 +970,8 @@ namespace Lucidtech.Las
                 body.Add("errorConfig", errorConfig);
             }
 
-            if (optionalParams != null) {
-                foreach (KeyValuePair<string, string?> entry in optionalParams) {
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
                 }
             }
