@@ -1209,14 +1209,9 @@ namespace Lucidtech.Las
 
                 if (entry.Value is List<string?>) {
                     foreach (var item in entry.Value as List<string>) {
-                        Console.WriteLine($"adding {entry.Key} = {item}");
                         request.AddQueryParameter(entry.Key, item);
                     }
                 }
-            }
-
-            foreach (var p in request.Parameters) {
-                Console.WriteLine($"{p.Name} of type {p.Type} is {p.Value}");
             }
 
             var headers = CreateSigningHeaders();
