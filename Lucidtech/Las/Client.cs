@@ -1066,7 +1066,7 @@ namespace Lucidtech.Las
         /// </code>
         /// </example>
         /// <param name="workflowId">Id of the workflow</param>
-        /// <param name="statuses">Workflow execution status to filter by</param>
+        /// <param name="status">Workflow execution status to filter by</param>
         /// <param name="maxResults">Maximum number of results to be returned</param>
         /// <param name="nextToken">A unique token used to retrieve the next page</param>
         /// <param name="sortBy">The sorting variable of the execution: "endTime" | "startTime"</param>
