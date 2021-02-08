@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Net;
 using Polly;
@@ -35,7 +36,7 @@ namespace Lucidtech.Las
         /// </summary>
         public Client() : this(new Credentials()) {}
 
-        /// <summary>Creates an asset handle, calls the POST /assets endpoint.</summary>
+        /// <summary>Creates an asset, calls the POST /assets endpoint.</summary>
         /// <example>
         /// <code>
         /// Client client = new Client();
@@ -64,7 +65,6 @@ namespace Lucidtech.Las
 
         /// <summary> List available assets, calls the GET /assets endpoint. </summary>
         /// <example>
-        /// Create a document handle for a jpeg image
         /// <code>
         /// Client client = new Client();
         /// var response = client.ListAssets();
@@ -249,8 +249,7 @@ namespace Lucidtech.Las
         }
 
         /// <summary>
-        /// Post ground truth to the REST API, calls the POST /documents/{documentId} endpoint.
-        /// Posting ground truth means posting the ground truth data for the particular document.
+        /// Update ground truth of the document, calls the POST /documents/{documentId} endpoint.
         /// This enables the API to learn from past mistakes. 
         /// </summary> 
         /// <example>
@@ -435,7 +434,7 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        /// <summary>Creates an secret handle, calls the POST /secrets endpoint.</summary>
+        /// <summary>Creates an secret, calls the POST /secrets endpoint.</summary>
         /// <example>
         /// <code>
         /// Client client = new Client();
@@ -492,7 +491,7 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        /// <summary>Updates an secret, calls the PATCH /secrets/secretId endpoint.</summary>
+        /// <summary>Updates a secret, calls the PATCH /secrets/secretId endpoint.</summary>
         /// <example>
         /// <code>
         /// Client client = new Client();
@@ -526,7 +525,7 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
-        /// <summary>Creates a transition handle, calls the POST /transitions endpoint.</summary>
+        /// <summary>Creates a transition, calls the POST /transitions endpoint.</summary>
         /// <example>
         /// <code>
         /// Client client = new Client();
@@ -545,7 +544,7 @@ namespace Lucidtech.Las
         ///         {"password", "&lt;password&gt;"}
         ///     }
         /// };
-        /// var response = client.CreateTransition(inputSchema, outputSchema, parameters: params);
+        /// var response = client.CreateTransition("&lt;transition_type&gt;", inputSchema, outputSchema, parameters: params);
         /// </code>
         /// </example>
         /// <param name="transitionType">Type of transition: "docker"|"manual"</param>
@@ -746,7 +745,7 @@ namespace Lucidtech.Las
         /// <returns>Transition executions response from the REST API</returns>
         public object ListTransitionExecutions(
             string transitionId,
-            List<string>? status = null,
+            List<string>? statuses = null,
             List<string>? executionIds = null,
             int? maxResults = null,
             string? nextToken = null,
@@ -754,7 +753,7 @@ namespace Lucidtech.Las
             string? order = null
         ) {
             var queryParams = new Dictionary<string, object> {
-                {"status", status},
+                {"status", statuses},
                 {"executionId", executionIds},
             };
 
@@ -1179,7 +1178,7 @@ namespace Lucidtech.Las
         {
             Uri endpoint = new Uri(string.Concat(LasCredentials.ApiEndpoint, path));
 
-            var request = new RestRequest(endpoint, method, DataFormat.Json);
+            RestRequest request = new RestRequest(endpoint, method, DataFormat.Json);
             request.JsonSerializer = JsonSerialPublisher.Default;
 
             if (body == null) {
@@ -1199,6 +1198,7 @@ namespace Lucidtech.Las
                 if (entry.Value == null) {
                     continue;
                 }
+
                 request.AddQueryParameter(entry.Key, entry.Value.ToString());
             }
 
