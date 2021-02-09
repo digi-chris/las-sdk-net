@@ -702,36 +702,7 @@ namespace Lucidtech.Las
             string? nextToken = null,
             string? sortBy = null,
             string? order = null
-        ) {
-            var queryParams = new Dictionary<string, object>();
-
-            if (status != null) {
-                queryParams.Add("status", status);
-            }
-
-            if (executionIds != null) {
-                queryParams.Add("executionId", executionIds);
-            }
-
-            if (maxResults != null) {
-                queryParams.Add("maxResults", maxResults.ToString());
-            }
-
-            if (nextToken != null) {
-                queryParams.Add("nextToken", nextToken);
-            }
-
-            if (sortBy != null) {
-                queryParams.Add("sortBy", sortBy);
-            }
-
-            if (order != null) {
-                queryParams.Add("order", order);
-            }
-
-            var request = ClientRestRequest(Method.GET, $"/transitions/{transitionId}/executions", null, queryParams);
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
+        ) => ListTransitionExecutions(transitionId, new List<string>{status}, executionIds, maxResults, nextToken, sortBy, order);
 
         /// <summary>List executions in a transition, calls the GET /transitions/{transitionId}/executions endpoint.</summary>
         /// <example>
@@ -1079,30 +1050,7 @@ namespace Lucidtech.Las
             string? nextToken = null,
             string? sortBy = null,
             string? order = null
-        ) {
-            var queryParams = new Dictionary<string, object?> {
-                {"status", status},
-            };
-
-            if (maxResults != null) {
-                queryParams.Add("maxResults", maxResults.ToString());
-            }
-
-            if (nextToken != null) {
-                queryParams.Add("nextToken", nextToken);
-            }
-
-            if (sortBy != null) {
-                queryParams.Add("sortBy", sortBy);
-            }
-
-            if (order != null) {
-                queryParams.Add("order", order);
-            }
-
-            var request = ClientRestRequest(Method.GET, $"/workflows/{workflowId}/executions", null, queryParams);
-            return ExecuteRequestResilient(RestSharpClient, request);
-        }
+        ) => ListWorkflowExecutions(workflowId, new List<string>{status}, maxResults, nextToken, sortBy, order);
 
         /// <summary>List executions in a workflow, calls the GET /workflows/{workflowId}/executions endpoint.</summary>
         /// <example>
