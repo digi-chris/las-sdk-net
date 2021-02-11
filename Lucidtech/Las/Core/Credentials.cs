@@ -122,9 +122,13 @@ namespace Lucidtech.Las.Core
         /// <param name="authEndpoint"> Authorization endpoint </param>
         /// <param name="apiEndpoint"> API endpoint </param>
         /// <exception cref="ArgumentException"></exception>
-        public Credentials(string clientId, string clientSecret, string apiKey, 
-            string authEndpoint, string apiEndpoint)
-        {
+        public Credentials(
+            string clientId,
+            string clientSecret,
+            string apiKey, 
+            string authEndpoint,
+            string apiEndpoint
+        ) {
             ClientId = clientId;
             ClientSecret = clientSecret;
             ApiKey = apiKey;
