@@ -34,17 +34,16 @@ namespace Test
         [OneTimeSetUp]
         public void InitClient()
         {
-          var mockCreds = new Mock<Credentials>("test", "test", "test", "test", "http://localhost:4010");
+            var mockCreds = new Mock<Credentials>("test", "test", "test", "test", "http://localhost:4010");
+            mockCreds
+                .Protected()
+                .Setup<(string, DateTime)>("GetClientCredentials")
+                .Returns(("foobar", DateTime.Now));
+            mockCreds
+                .Protected()
+                .Setup("CommonConstructor");
 
-          mockCreds
-            .Protected()
-            .Setup<(string, DateTime)>("GetClientCredentials")
-            .Returns(("foobar", DateTime.Now));
-          mockCreds
-            .Protected()
-            .Setup("CommonConstructor");
-
-          Toby = new Client(mockCreds.Object);
+            Toby = new Client(mockCreds.Object);
         }
 
         [SetUp]
@@ -78,7 +77,7 @@ namespace Test
 
         [Test]
         public void TestGetAssetById() {
-            var assetId = $"las:asset:{Guid.NewGuid().ToString()}";
+            var assetId = $"las:asset:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.GetAsset(assetId);
             var expectedKeys = new [] {"assetId", "content"};
             CheckKeys(expectedKeys, response);
@@ -87,7 +86,7 @@ namespace Test
         [TestCase("name", "description")]
         [TestCase("", "")]
         public void TestUpdateAsset(string? name, string? description) {
-            var assetId = $"las:asset:{Guid.NewGuid().ToString()}";
+            var assetId = $"las:asset:{Guid.NewGuid().ToString().Replace("-", "")}";
             var content = BitConverter.GetBytes(123456);
             var response = Toby.UpdateAsset(assetId, content, new Dictionary<string?, string?>{
                 {"name", name},
@@ -100,7 +99,7 @@ namespace Test
         [Test]
         public void TestCreateDocument()
         {
-            var expectedKeys = new [] {"documentId", "contentType", "consentId", "batchId"};
+            var expectedKeys = new [] {"documentId", "contentType", "consentId"};
             CheckKeys(expectedKeys, CreateDocResponse);
         }
 
@@ -184,11 +183,12 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestCreateBatch()
+        [TestCase(null, null)]
+        [TestCase("name", "description")]
+        public void TestCreateBatch(string? name, string? description)
         {
             var response = Toby.CreateBatch(Example.Description());
-            var expectedKeys = new [] {"batchId", "description"};
+            var expectedKeys = new [] {"name", "description", "batchId"};
             CheckKeys(expectedKeys, response);
         }
 
@@ -231,7 +231,7 @@ namespace Test
         [TestCase("foo", "bar", "name", "description")]
         [TestCase("foo", "bar", "name", "")]
         public void TestUpdateSecret(string username, string password, string? name = null, string? description = null) {
-            var secretId = $"las:model:{Guid.NewGuid().ToString()}";
+            var secretId = $"las:model:{Guid.NewGuid().ToString().Replace("-", "")}";
             var data = new Dictionary<string, string>() {
                 {"username", username},
                 {"password", password}
@@ -255,19 +255,22 @@ namespace Test
 
             var inputSchema = schema;
             var outputSchema = schema;
-            var optionalParameters = new Dictionary<string, string>{
+            var attributes = new Dictionary<string, string>{
                 {"name", name},
                 {"description", description}
             };
-            var parametersVariants = new [] {null, new Dictionary<string, object>{
-                {"cpu", 256},
-                {"imageUrl", "image_url"}
-            }};
 
-            foreach (var parameters in parametersVariants) {
-                var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters, optionalParameters);
-                CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
+            Dictionary<string, object>? parameters = null;
+
+            if (transitionType == "docker") {
+                parameters = new Dictionary<string, object>{
+                    {"cpu", 256},
+                    {"imageUrl", "image_url"}
+                };
             }
+
+            var response = Toby.CreateTransition(transitionType, inputSchema, outputSchema, parameters, attributes);
+            CheckKeys(new [] {"name", "transitionId", "transitionType"}, response);
         }
 
         [TestCase("docker")]
@@ -275,11 +278,6 @@ namespace Test
         [TestCase(null)]
         public void TestListTransitions(string? transitionType) {
             var response = Toby.ListTransitions(transitionType);
-            CheckKeys(new [] {"transitions"}, response);
-        }
-
-        public void TestListTransitions() {
-            var response = Toby.ListTransitions(new List<string>{"docker", "manual"});
             CheckKeys(new [] {"transitions"}, response);
         }
 
@@ -292,7 +290,7 @@ namespace Test
             };
             var inputSchema = schema;
             var outputSchema = schema;
-            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
             var parameters = new Dictionary<string, string?>{
                 {"name", name},
                 {"description", description}
@@ -302,15 +300,15 @@ namespace Test
         }
 
         public void TestGetTransitionExecution() {
-            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
-            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.GetTransitionExecution(transitionId, executionId);
             CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
         }
 
         [Test]
         public void TestExecuteTransition() {
-            var transitionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.ExecuteTransition(transitionId);
             CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
         }
@@ -331,10 +329,10 @@ namespace Test
             string? sortBy = null,
             string? order = null
         ) {
-            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.ListTransitionExecutions(
                 transitionId,
-                new List<string>{ status },
+                status,
                 new List<string>{ executionId },
                 maxResults,
                 nextToken,
@@ -345,6 +343,7 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
+        [Ignore("multivalue query parameters don't work with prism")]
         [TestCase(
             3,
             null,
@@ -357,11 +356,11 @@ namespace Test
             string? sortBy = null,
             string? order = null
         ) {
-            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
             var statuses = new List<string>{ "running", "succeeded" };
             var executionIds = new List<string>{
-                $"las:transition-execution:{Guid.NewGuid().ToString()}",
-                $"las:transition-execution:{Guid.NewGuid().ToString()}"
+                $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}",
+                $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}"
             };
             var response = Toby.ListTransitionExecutions(
                 transitionId,
@@ -387,8 +386,8 @@ namespace Test
             Dictionary<string, string>? output = null,
             Dictionary<string, string>? error = null
         ) {
-            var transitionId = $"las:transition:{Guid.NewGuid().ToString()}";
-            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString()}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var executionId = $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.UpdateTransitionExecution(
                 transitionId,
                 executionId,
@@ -408,6 +407,7 @@ namespace Test
             }, response);
         }
 
+        [Ignore("")]
         [TestCase("foo@bar.com")]
         public void TestCreateUser(string email) {
             var response = Toby.CreateUser(email);
@@ -423,15 +423,26 @@ namespace Test
 
         [Test]
         public void TestGetUser() {
-            var userId = $"las:user:{Guid.NewGuid().ToString()}";
+            var userId = $"las:user:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.GetUser(userId);
             CheckKeys(new [] {"userId", "email"}, response);
+        }
+
+        [TestCase(null, null)]
+        [TestCase("name", "avatar")]
+        public void TestUpdateUser(string? name, string? avatar) {
+            var userId = $"las:user:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var parameters = new Dictionary<string, object?>{
+                {"name", name},
+                {"avatar", avatar},
+            };
+            var response = Toby.UpdateUser(userId, parameters);
         }
 
         [Test]
         [Ignore("delete endpoints doesn't work")]
         public void TestDeleteUser() {
-            var userId = $"las:user:{Guid.NewGuid().ToString()}";
+            var userId = $"las:user:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.DeleteUser(userId);
             CheckKeys(new [] {"userId", "email"}, response);
         }
@@ -442,10 +453,12 @@ namespace Test
         [TestCase(null, null)]
         public void TestCreateWorkflow(string name, string description) {
             var spec = new Dictionary<string, object>{
-                {"definition", new Dictionary<string, object>()}
+                {"definition", new Dictionary<string, object>{
+                    {"States", new Dictionary<string, string>()}
+                }}
             };
             var errorConfig = new Dictionary<string, string>{
-                {"email", "foo@bar.com"}
+                {"email", "foo@lucid.com"}
             };
             var parameters = new Dictionary<string, string?>{
                 {"name", name},
@@ -471,7 +484,7 @@ namespace Test
         [TestCase("name", "")]
         [TestCase(null, null)]
         public void TestUpdateWorkflow(string name, string description) {
-            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.UpdateWorkflow(workflowId, new Dictionary<string, string?>{
                 {"name", name},
                 {"description", description}
@@ -482,14 +495,14 @@ namespace Test
         [Test]
         [Ignore("delete endpoints doesn't work")]
         public void TestDeleteWorkflow() {
-            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.DeleteWorkflow(workflowId);
             CheckKeys(new [] {"workflowId", "name", "description"}, response);
         }
 
         [Test]
         public void TestExecuteWorkflow() {
-            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString().Replace("-", "")}";
             var content = new Dictionary<string, object>();
             var response = Toby.ExecuteWorkflow(workflowId, content);
             var expectedKeys = new [] {
@@ -502,6 +515,7 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
+        [Ignore("multivalue query parameters don't work with prism")]
         [TestCase(
             3,
             null,
@@ -514,7 +528,7 @@ namespace Test
             string? sortBy = null,
             string? order = null
         ) {
-            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString().Replace("-", "")}";
             var statuses = new List<string>{ "running", "succeeded" };
             var response = Toby.ListWorkflowExecutions(
                 workflowId,
@@ -530,8 +544,8 @@ namespace Test
         [Test]
         [Ignore("delete endpoints doesn't work")]
         public void TestDeleteWorkflowExecution() {
-            var workflowId = $"las:workflow:{Guid.NewGuid().ToString()}";
-            var executionId = $"las:workflow-execution:{Guid.NewGuid().ToString()}";
+            var workflowId = $"las:workflow:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var executionId = $"las:workflow-execution:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.DeleteWorkflowExecution(workflowId, executionId);
             var expectedKeys = new [] {
                 "workflowId",
@@ -546,45 +560,14 @@ namespace Test
 
     public static class Example 
     {
-        public static byte[] Content() { return  Encoding.ASCII.GetBytes("%PDF-1.4foobarbaz");; }
         public static string ConsentId() { return "las:consent:abc123def456abc123def456abc123de"; }
         public static string ContentType() { return "image/jpeg"; }
-        public static string DocumentId() { return "abcdefghijklabcdefghijklabcdefghijkl"; }
         public static string Description() { return "This is my new batch for receipts july 2020"; }
-        public static string ModelType() { return "invoice"; }
-        public static string ModelName() { return "invoice"; }
         public static string ModelId() { return "las:model:abc123def456abc123def456abc123de"; }
-        public static string Endpoint() { return "http://127.0.0.1:4010"; }
         public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.jpeg"); }
         public static Credentials Creds() 
         {
             return new Credentials("foo", "bar", "baz", "baaz", "http://127.0.0.1:4010"); 
         }
     }
-
-    public static class ExampleDocSplit
-    {
-        public static string ConsentId() { return "bar"; }
-        public static string ContentType() { return "application/pdf"; }
-        public static string ModelType() { return "documentSplit"; }
-        public static string Endpoint() { return "https://demo.api.lucidtech.ai/v1"; }
-        public static string DocPath() { return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); }
-    }
-
-    public static class ExampleExtraFlags
-    {
-        public static string ConsentId() { return "bar"; }
-        public static string ContentType() { return "application/pdf"; }
-        public static string ModelType() { return "invoice"; }
-        public static string Endpoint() { return "http://127.0.0.1:4010"; }
-        public static string DocPath() 
-        { 
-            return Environment.ExpandEnvironmentVariables("Test/Files/example.pdf"); 
-        }
-        public static string apiKey() { return ""; }
-        public static string secretKey() { return ""; }
-        public static string accessKey() { return ""; }
-            
-    }
-
 }
