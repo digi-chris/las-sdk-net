@@ -142,7 +142,6 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [Ignore("")]
         [Test]
         public void TestCreatePredictionAutoRotate()
         {
