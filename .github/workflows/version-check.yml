@@ -1,0 +1,34 @@
+name: Check that version is updated
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  CheckVersionAndReleaseNote:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Fetch repo
+        run: git fetch
+
+      - name: Version check
+        run: |
+          if [ -z $(git diff origin/master HEAD -- Lucidtech/Lucidtech.csproj | grep PackageVersion)]
+          then
+            echo "You should probably update version number"
+            exit 1
+          fi
+
+      - name: Release note check
+        run: |
+          if [ -z $(git diff origin/master HEAD -- Lucidtech/Lucidtech.csproj | grep PackageReleaseNotes)]
+          then
+            echo "You should probably update the release note"
+            exit 1
+          fi
