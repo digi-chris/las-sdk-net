@@ -119,12 +119,15 @@ namespace Test
             CheckKeys(expectedKeys, response);
         }
 
-        [Test]
-        public void TestCreatePredictionBareMinimum()
+        [TestCase("HIGH")]
+        [TestCase("LOW")]
+        [TestCase(null)]
+        public void TestCreatePredictionBareMinimum(string? imageQuality)
         {
             var response = Toby.CreatePrediction(
                 (string)CreateDocResponse["documentId"],
-                Example.ModelId()
+                Example.ModelId(),
+                imageQuality: imageQuality
             );
             var expectedKeys = new [] {"documentId", "predictions"};
             CheckKeys(expectedKeys, response);
@@ -217,7 +220,7 @@ namespace Test
             };
             var response = Toby.CreateSecret(data);
             var expectedKeys = new [] {"secretId"};
-            CheckKeys(expectedKeys, response); 
+            CheckKeys(expectedKeys, response);
         }
 
         [TestCase("foo", 3)]
@@ -323,7 +326,7 @@ namespace Test
 
         [Test]
         public void TestExecuteTransition() {
-            var transitionId = $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
             var response = Toby.ExecuteTransition(transitionId);
             CheckKeys(new [] {"transitionId", "executionId", "status"}, response);
         }
@@ -408,7 +411,8 @@ namespace Test
                 executionId,
                 status,
                 output,
-                error
+                error,
+                startTime: "2021-02-25 10:00:34.263905"
             );
             CheckKeys(new [] {
                 "completedBy",
@@ -420,6 +424,14 @@ namespace Test
                 "status",
                 "transitionId"
             }, response);
+        }
+
+        [Test]
+        public void TestSendHeartbeat() {
+            var executionId= $"las:transition-execution:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var transitionId = $"las:transition:{Guid.NewGuid().ToString().Replace("-", "")}";
+            var response = Toby.SendHeartbeat(transitionId, executionId);
+            CheckKeys(new [] {"Your request executed successfully"}, response);
         }
 
         [Ignore("")]
