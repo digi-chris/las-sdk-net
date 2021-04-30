@@ -34,6 +34,95 @@ namespace Lucidtech.Las
         /// Client constructor with credentials read from local file.
         /// </summary>
         public Client() : this(new Credentials()) {}
+        
+        /// <summary>Creates an appClient, calls the POST /appClients endpoint.</summary>
+        /// <example>
+        /// <code>
+        /// var parameters = new Dictionary&lt;string, string?&gt;{
+        ///     {"name", name},
+        ///     {"description", description},
+        /// };
+        /// var response = Toby.CreateAppClient(
+        ///     attributes: parameters, 
+        ///     generateSecret: false,
+        ///     logoutUrls: new List&lt;string&gt;{"https://localhost:3030/logout"},
+        ///     callbackUrls: new List&lt;string&gt;{"https://localhost:3030/callback"}
+        /// );
+        /// </code>
+        /// </example>
+        /// <param name="attributes">Additional attributes</param>
+        /// <returns>AppClient response from REST API</returns>
+        public object CreateAppClient(
+            bool generateSecret = true, 
+            List<string>? logoutUrls = null, 
+            List<string>? callbackUrls = null,
+            Dictionary<string, string?>? attributes = null
+        ) {
+            var body = new Dictionary<string, object>() {
+                {"generateSecret", generateSecret}
+            };
+            
+            if (logoutUrls != null) {
+                body.Add("logoutUrls", logoutUrls);
+            }
+
+            if (callbackUrls != null) {
+                body.Add("callbackUrls", callbackUrls);
+            }
+            
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            RestRequest request = ClientRestRequest(Method.POST, "/appClients", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary> List available appClients, calls the GET /appClients endpoint. </summary>
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.ListAppClients();
+        /// </code>
+        /// </example>
+        /// <param name="maxResults">Number of items to show on a single page</param>
+        /// <param name="nextToken">Token to retrieve the next page</param>
+        /// <returns>
+        /// JSON object with two keys:
+        /// - "appClients" AppClients response from REST API without the content of each appClient
+        /// - "nextToken" allowing for retrieving the next portion of data
+        /// </returns>
+        public object ListAppClients(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, object?>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/appClients", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Delete an appClient, calls the DELETE /appClients/{appClientId} endpoint.
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.DeleteAppClient("&lt;appClientId&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="appClientId">Id of the appClient</param>
+        /// <returns>AppClient response from REST API</returns>
+        public object DeleteAppClient(string appClientId) {
+            var request = ClientRestRequest(Method.DELETE, $"/appClients/{appClientId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
 
         /// <summary>Creates an asset, calls the POST /assets endpoint.</summary>
         /// <example>
@@ -132,6 +221,20 @@ namespace Lucidtech.Las
             }
 
             RestRequest request = ClientRestRequest(Method.PATCH, $"/assets/{assetId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Delete an asset, calls the DELETE /assets/{assetId} endpoint.
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.DeleteAsset("&lt;assetId&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="assetId">Id of the asset</param>
+        /// <returns>Asset response from REST API</returns>
+        public object DeleteAsset(string assetId) {
+            var request = ClientRestRequest(Method.DELETE, $"/assets/{assetId}");
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -291,6 +394,7 @@ namespace Lucidtech.Las
         /// Client client = new Client();
         /// var response = client.DeleteConsent('&lt;consentId&gt;');
         /// </code></example>
+        /// <param name="batchId"> Delete documents with provided batchId </param>
         /// <param name="consentId"> Delete documents with provided consentId </param>
         /// <param name="maxResults">Maximum number of items to delete</param>
         /// <param name="nextToken">Token to retrieve the next page</param>
@@ -298,8 +402,17 @@ namespace Lucidtech.Las
         /// A deserialized object that can be interpreted as a Dictionary with the fields
         /// consentId, nextToken and documents
         /// </returns>
-        public object DeleteDocuments(string? consentId = null, int? maxResults = null, string? nextToken = null) {
+        public object DeleteDocuments(
+            string? batchId = null, 
+            string? consentId = null, 
+            int? maxResults = null, 
+            string? nextToken = null
+        ) {
             var queryParams = new Dictionary<string, object?>();
+
+            if (batchId != null) {
+                queryParams.Add("batchId", batchId);
+            }
 
             if (consentId != null) {
                 queryParams.Add("consentId", consentId);
@@ -347,6 +460,33 @@ namespace Lucidtech.Las
             }
 
             RestRequest request = ClientRestRequest(Method.POST, "/batches", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Delete a batch, calls the DELETE /batches/{batchId} endpoint.
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.DeleteBatch("&lt;batchId&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="batchId">Id of the batch</param>
+        /// <param name="deleteDocuments">Set to true to delete documents in batch before deleting batch</param>
+        /// <returns>Batch response from REST API</returns>
+        public object DeleteBatch(string batchId, bool deleteDocuments = false) {
+            if (deleteDocuments == true) {
+                var objectResponse = this.DeleteDocuments(batchId: batchId);
+                var response = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(objectResponse);
+                while (response["nextToken"] != null)
+                {
+                    objectResponse = this.DeleteDocuments(
+                        batchId: batchId, 
+                        nextToken: response["nextToken"].ToString()
+                    );
+                    response = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(objectResponse);
+                }
+            }
+            var request = ClientRestRequest(Method.DELETE, $"/batches/{batchId}");
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -415,6 +555,58 @@ namespace Lucidtech.Las
             }
 
             RestRequest request = ClientRestRequest(Method.GET, "/predictions", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>List logs, calls the GET /logs endpoint.</summary>
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.ListLogs();
+        /// </code>
+        /// </example>
+        /// <param name="transitionId">Only show logs from this transition</param>
+        /// <param name="transitionExecutionId">Only show logs from this transition execution</param>
+        /// <param name="workflowId">Only show logs from this workflow</param>
+        /// <param name="workflowExecutionId">Only show logs from this workflow execution</param>
+        /// <param name="maxResults">Number of items to show on a single page</param>
+        /// <param name="nextToken">Token to retrieve the next page</param>
+        /// <returns>Logs response from REST API</returns>
+        public object ListLogs(
+            string? transitionId = null, 
+            string? transitionExecutionId = null, 
+            string? workflowId = null, 
+            string? workflowExecutionId = null, 
+            int? maxResults = null, 
+            string? nextToken = null
+        ) {
+            var queryParams = new Dictionary<string, object?>();
+
+            if (transitionId != null) {
+                queryParams.Add("transitionId", transitionId);
+            }
+
+            if (transitionExecutionId != null) {
+                queryParams.Add("transitionExecutionId", transitionExecutionId);
+            }
+
+            if (workflowId != null) {
+                queryParams.Add("workflowId", workflowId);
+            }
+
+            if (workflowExecutionId != null) {
+                queryParams.Add("workflowExecutionId", workflowExecutionId);
+            }
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/logs", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -535,6 +727,20 @@ namespace Lucidtech.Las
             }
 
             RestRequest request = ClientRestRequest(Method.PATCH, $"/secrets/{secretId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Delete a secret, calls the DELETE /secrets/{secretId} endpoint.
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.DeleteSecret("&lt;secretId&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="secretId">Id of the secret</param>
+        /// <returns>Secret response from REST API</returns>
+        public object DeleteSecret(string secretId) {
+            var request = ClientRestRequest(Method.DELETE, $"/secrets/{secretId}");
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -686,6 +892,9 @@ namespace Lucidtech.Las
             string transitionId,
             Dictionary<string, string>? inputJsonSchema,
             Dictionary<string, string>? outputJsonSchema,
+            Dictionary<string, string>? assets,
+            Dictionary<string, string>? environment,
+            List<string>? environmentSecrets,
             Dictionary<string, string?> attributes
         ) {
             var body = new Dictionary<string, object?>();
@@ -698,6 +907,18 @@ namespace Lucidtech.Las
                 body.Add("outputJsonSchema", outputJsonSchema);
             }
 
+            if (assets != null) {
+                body.Add("assets", assets);
+            }
+
+            if (environment != null) {
+                body.Add("environment", environment);
+            }
+
+            if (environmentSecrets != null) {
+                body.Add("environmentSecrets", environmentSecrets);
+            }
+            
             if (attributes != null) {
                 foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
@@ -748,7 +969,7 @@ namespace Lucidtech.Las
         ) {
             List<string>? statuses = null;
             if (status != null) {
-                statuses = new List<string>{status};
+                statuses = new List<string> {status};
             }
             return ListTransitionExecutions(transitionId, statuses, executionIds, maxResults, nextToken, sortBy, order);
          }
@@ -829,10 +1050,10 @@ namespace Lucidtech.Las
             string status,
             Dictionary<string, string>? output = null,
             Dictionary<string, string>? error = null,
-            string? startTime = null
+            DateTime? startTime = null
         ) {
             var url = $"/transitions/{transitionId}/executions/{executionId}";
-            var body = new Dictionary<string, object>{
+            var body = new Dictionary<string, object> {
                 {"status", status},
             };
 
@@ -845,7 +1066,7 @@ namespace Lucidtech.Las
             }
 
             if (startTime != null) {
-                body.Add("startTime", startTime);
+                body.Add("startTime", startTime.Value.ToString("yyyy-MM-ddTHH:mm:ss.ffffzzz"));
             }
 
             var request = ClientRestRequest(Method.PATCH, url, body);
@@ -880,7 +1101,7 @@ namespace Lucidtech.Las
         /// <param name="attributes">Additional attributes. Currently supported are: name, avatar</param>
         /// <returns>User response from REST API</returns>
         public object CreateUser(string email, Dictionary<string, string?>? attributes = null) {
-            var body = new Dictionary<string, string>{
+            var body = new Dictionary<string, string> {
                 {"email", email}
             };
 
@@ -983,36 +1204,51 @@ namespace Lucidtech.Las
         /// <example>
         /// <code>
         /// Client client = new Client();
-        /// var spec = new Dictionary&lt;string, object&gt;{
+        /// var specification = new Dictionary&lt;string, object&gt;{
         ///     {"language", "ASL"},
         ///     {"version", "1.0.0"},
         ///     {"definition", {...}}
         /// };
-        /// var errorConfig = new Dictionary&lt;string, string&gt;{
-        ///     {"email", "foo@bar.com}
+        /// var environmentSecrets = new List&lt;string&gt;{ "las:secret:&lt;hex-uuid&gt;" };
+        /// var env = new Dictionary&lt;string, string&gt;{{"FOO", "BAR"}};
+        /// var completedConfig = new Dictionary&lt;string, object&gt;{
+        ///     {"imageUrl", "my/docker:image"},
+        ///     {"secretId", secretId},
+        ///     {"environment", env},
+        ///     {"environmentSecrets", environmentSecrets}
         /// };
-        /// var parameters = new Dictionary&lt;string, string&gt;{
-        ///     {"name", "Name"},
-        ///     {"description", "My awesome workflow"}
+        /// var errorConfig = new Dictionary&lt;string, object&gt;{
+        ///     {"email", "foo@example.com"},
+        ///     {"manualRetry", true}
         /// };
-        /// var response = Client.CreateWorkflow(spec, errorConfig, parameters);
+        /// var parameters = new Dictionary&lt;string, string?&gt;{
+        ///     {"name", name},
+        ///     {"description", description}
+        /// };
+        /// var response = Toby.CreateWorkflow(spec, errorConfig, completedConfig, parameters);
         /// </code>
         /// </example>
-        /// <param name="spec">Workflow specification. Currently only ASL is supported: https://states-language.net/spec.html</param>
+        /// <param name="specification">Workflow specification. Currently only ASL is supported: https://states-language.net/spec.html</param>
         /// <param name="errorConfig">Error handler configuration</param>
+        /// <param name="completedConfig">Configuration of a job to run whenever a workflow execution ends</param>
         /// <param name="attributes">Additional attributes. Currently supported are: name, description.</param>
         /// <returns>Workflow response from REST API</returns>
         public object CreateWorkflow(
-            Dictionary<string, object> spec,
-            Dictionary<string, string>? errorConfig = null,
+            Dictionary<string, object> specification,
+            Dictionary<string, object>? errorConfig = null,
+            Dictionary<string, object>? completedConfig = null,
             Dictionary<string, string?>? attributes = null
         ) {
-            var body = new Dictionary<string, object?>{
-                {"specification", spec}
+            var body = new Dictionary<string, object?> { 
+                {"specification", specification}
             };
 
             if (errorConfig != null) {
                 body.Add("errorConfig", errorConfig);
+            }
+
+            if (completedConfig != null) {
+                body.Add("completedConfig", completedConfig);
             }
 
             if (attributes != null) {
@@ -1064,8 +1300,29 @@ namespace Lucidtech.Las
         /// <param name="workflowId">Id of the workflow</param>
         /// <param name="attributes">Attributes to update. Currently supported are: name, description</param>
         /// <returns>Workflow response from REST API</returns>
-        public object UpdateWorkflow(string workflowId, Dictionary<string, string?> attributes) {
-            var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}", attributes);
+        public object UpdateWorkflow(
+            string workflowId, 
+            Dictionary<string, object>? errorConfig,
+            Dictionary<string, object>? completedConfig,
+            Dictionary<string, string?> attributes
+        ){
+            var body = new Dictionary<string, object?> {};
+            
+            if (errorConfig != null) {
+                body.Add("errorConfig", errorConfig);
+            }
+
+            if (completedConfig != null) {
+                body.Add("completedConfig", completedConfig);
+            }
+
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
@@ -1140,7 +1397,7 @@ namespace Lucidtech.Las
             string? nextToken = null,
             string? sortBy = null,
             string? order = null
-        ) => ListWorkflowExecutions(workflowId, new List<string>{status}, maxResults, nextToken, sortBy, order);
+        ) => ListWorkflowExecutions(workflowId, new List<string> {status}, maxResults, nextToken, sortBy, order);
 
         /// <summary>List executions in a workflow, calls the GET /workflows/{workflowId}/executions endpoint.</summary>
         /// <example>
@@ -1186,6 +1443,44 @@ namespace Lucidtech.Las
             }
 
             var request = ClientRestRequest(Method.GET, $"/workflows/{workflowId}/executions", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Get an execution of a workflow, calls the GET /workflows/{workflowId}/executions/{executionId} endpoint</summary>
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.GetWorkflowExecution("&lt;workflow_id&gt;", "&lt;execution_id&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="workflowId">Id of the workflow</param>
+        /// <param name="executionId">Id of the execution</param>
+        /// <returns>Workflow execution response from REST API</returns>
+        public object GetWorkflowExecution(string workflowId, string executionId) {
+            RestRequest request = ClientRestRequest(Method.GET, $"/workflows/{workflowId}/executions/{executionId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>
+        /// Retry or end the processing of a workflow execution,
+        /// calls the PATCH /workflows/{workflowId}/executions/{executionId} endpoint.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.UpdateWorkflowExecution("&lt;workflow_id&gt;", "&lt;execution_id&gt;", "&lt;next_transition_id&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="workflowId">Id of the workflow</param>
+        /// <param name="executionId">Id of the execution</param>
+        /// <param name="nextTransitionId">The next transition to transition into, to end the workflow-execution,
+        /// use: las:transition:commons-failed</param>
+        /// <returns>WorkflowExecution response from REST API</returns>
+        public object UpdateWorkflowExecution(string workflowId, string executionId, string nextTransitionId) {
+            var body = new Dictionary<string, string>() {
+                {"nextTransitionId", nextTransitionId}
+            };
+            var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}/executions/{executionId}", body);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 

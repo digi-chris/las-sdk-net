@@ -2,7 +2,8 @@
 
 ## Documentation
 
-[Link to docs](https://docs.lucidtech.ai/dotnet/v1/index.html)
+[Link to docs](https://docs.lucidtech.ai/reference/dotnet/latest)
+
 
 Create documents by using doxygen.
 Download the latest and greatest version of [doxygen](https://github.com/doxygen/doxygen.git).
@@ -32,37 +33,7 @@ $ nuget install Lucidtech.Las
 - Necessary keys and credentials to an endpoint on the form: "https://<your prefix>.api.lucidtech.ai/<version>".
 
 ### Quick start
-
-Run inference and create prediction on document 
-```C#
-using Lucidtech.Las;
-
-ApiClient apiClient = new ApiClient("<endpoint>");
-Prediction response = apiClient.Predict(documentPath: "document.pdf", modelName: "invoice|receipt|documentSplit");
-Console.WriteLine(response.ToJsonString(Formatting.Indented));
-```
-
-Send feedback to the model.
-```C#
-using Lucidtech.Las;
-
-var feedback = new List<Dictionary<string, string>>()
-{ 
-    new Dictionary<string, string>(){{"label", "total_amount"},{"value", "54.50"}},
-    new Dictionary<string, string>(){{"label", "purchase_date"},{"value", "2007-07-30"}}
-};
-FeedbackResponse response = apiClient.SendFeedback(documentId: "<documentId>", feedback: feedback);
-Console.WriteLine(response.ToJsonString(Formatting.Indented));
-```
-
-Revoke consent and deleting all documents associated with consentId.
-```C#
-using Lucidtech.Las;
-
-ApiClient apiClient = new ApiClient("<endpoint>");
-RevokeResponse response = apiClient.RevokeConsent(consentId: "<consentId>");
-Console.WriteLine(response.ToJsonString(Formatting.Indented));
-```
+See [docs](https://docs.lucidtech.ai/getting-started/dev/net).
 
 ## Contributing
 
@@ -75,9 +46,9 @@ Download the following packages:
 
 ### Prerequisites for Arch Users
 Download the following packages: 
-* The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/pkgbase/msbuild/)
+* The latest and greatest stable version of [MSBuild](https://aur.archlinux.org/packages/msbuild-git/)
 * The latest and greatest version of [NuGet](https://aur.archlinux.org/packages/nuget3/)
-* [nunit](https://aur.archlinux.org/nunit3-console.git) version 3.9.0 or higher to run tests from command line
+* [nunit](https://aur.archlinux.org/packages/nunit3-console/) version 3.9.0 or higher to run tests from command line
 * [.NET-SDK](https://www.archlinux.org/packages/community/x86_64/dotnet-sdk/) version 2.2.105
 
 ### Build and run tests
@@ -91,3 +62,4 @@ $ # Build for release and make nuget package
 $ msbuild Lucidtech/Lucidtech.csproj /t:Rebuild /p:Configuration=Release
 ```
 
+Hint: Set environment variable CREDENTIALS=FROM_FILE to run a test against the real API with your default credentials.
