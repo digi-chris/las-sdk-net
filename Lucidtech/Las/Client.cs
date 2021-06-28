@@ -34,34 +34,31 @@ namespace Lucidtech.Las
         /// Client constructor with credentials read from local file.
         /// </summary>
         public Client() : this(new Credentials()) {}
-        
+
         /// <summary>Creates an appClient, calls the POST /appClients endpoint.</summary>
-        /// <example>
-        /// <code>
-        /// var parameters = new Dictionary&lt;string, string?&gt;{
-        ///     {"name", name},
-        ///     {"description", description},
-        /// };
-        /// var response = Toby.CreateAppClient(
-        ///     attributes: parameters, 
-        ///     generateSecret: false,
-        ///     logoutUrls: new List&lt;string&gt;{"https://localhost:3030/logout"},
-        ///     callbackUrls: new List&lt;string&gt;{"https://localhost:3030/callback"}
-        /// );
-        /// </code>
-        /// </example>
+        /// <param name="generateSecret">Set to false to ceate a Public app client, default: true</param>
+        /// <param name="logoutUrls">List of logout urls</param>
+        /// <param name="callbackUrls">List of callback urls</param>
+        /// <param name="loginUrls">List of login urls</param>
+        /// <param name="defaultLoginUrl">default login url</param>
         /// <param name="attributes">Additional attributes</param>
         /// <returns>AppClient response from REST API</returns>
         public object CreateAppClient(
-            bool generateSecret = true, 
-            List<string>? logoutUrls = null, 
+            bool generateSecret = true,
+            List<string>? logoutUrls = null,
+            List<string>? loginUrls = null,
             List<string>? callbackUrls = null,
+            string? defaultLoginUrl = null,
             Dictionary<string, string?>? attributes = null
         ) {
-            var body = new Dictionary<string, object>() {
+            var body = new Dictionary<string, object> {
                 {"generateSecret", generateSecret}
             };
-            
+
+            if (loginUrls != null) {
+                body.Add("loginUrls", loginUrls);
+            }
+
             if (logoutUrls != null) {
                 body.Add("logoutUrls", logoutUrls);
             }
@@ -69,7 +66,11 @@ namespace Lucidtech.Las
             if (callbackUrls != null) {
                 body.Add("callbackUrls", callbackUrls);
             }
-            
+
+            if (defaultLoginUrl != null) {
+                body.Add("defaultLoginUrl", defaultLoginUrl);
+            }
+
             if (attributes != null) {
                 foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
@@ -109,6 +110,26 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
+        /// <summary>Updates an existing appClient, calls the PATCH /appClients/{appClientId} endpoint.</summary>
+        /// <param name="appClientId">Id of the appClient</param>
+        /// <param name="attributes">Additional attributes</param>
+        /// <returns>AppClient response from REST API</returns>
+        public object UpdateAppClient(
+            string appClientId,
+            Dictionary<string, string?>? attributes
+        ) {
+            var body = new Dictionary<string, object?>();
+
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/appClients/{appClientId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
         /// <summary>Delete an appClient, calls the DELETE /appClients/{appClientId} endpoint.
         /// <example>
         /// <code>
@@ -137,7 +158,7 @@ namespace Lucidtech.Las
         /// <returns>Asset response from REST API</returns>
         public object CreateAsset(byte[] content, Dictionary<string, string?>? attributes) {
             string base64Content = System.Convert.ToBase64String(content);
-            var body = new Dictionary<string, string?>(){
+            var body = new Dictionary<string, string?>{
                 {"content", base64Content}
             };
 
@@ -267,7 +288,7 @@ namespace Lucidtech.Las
             List<Dictionary<string, string>>? groundTruth = null)
         {
             string base64Content = System.Convert.ToBase64String(content);
-            var body = new Dictionary<string, object>()
+            var body = new Dictionary<string, object>
             {
                 {"content", base64Content},
                 {"contentType", contentType},
@@ -361,8 +382,8 @@ namespace Lucidtech.Las
         /// Client client = new Client();
         /// var groundTruth = new List&lt;Dictionary&lt;string, string&gt;&gt;()
         /// {
-        ///     new Dictionary&lt;string, string&gt;(){{"label", "total_amount"},{"value", "54.50"}},
-        ///     new Dictionary&lt;string, string&gt;(){{"label", "purchase_date"},{"value", "2007-07-30"}}
+        ///     new Dictionary&lt;string, string&gt;() {{"label", "total_amount"},{"value", "54.50"}},
+        ///     new Dictionary&lt;string, string&gt;() {{"label", "purchase_date"},{"value", "2007-07-30"}}
         /// };
         /// var response = client.UpdateDocument('&lt;documentId&gt;', groundTruth);
         /// </code>
@@ -377,7 +398,7 @@ namespace Lucidtech.Las
         ///
         public object UpdateDocument(string documentId, List<Dictionary<string, string>> groundTruth)
         {
-            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>>() {{"groundTruth", groundTruth}};
+            var bodyDict = new Dictionary<string, List<Dictionary<string,string>>> {{"groundTruth", groundTruth}};
 
             // Doing a manual cast from Dictionary to object to help out the serialization process
             string bodyString = JsonConvert.SerializeObject(bodyDict);
@@ -403,9 +424,9 @@ namespace Lucidtech.Las
         /// consentId, nextToken and documents
         /// </returns>
         public object DeleteDocuments(
-            string? batchId = null, 
-            string? consentId = null, 
-            int? maxResults = null, 
+            string? batchId = null,
+            string? consentId = null,
+            int? maxResults = null,
             string? nextToken = null
         ) {
             var queryParams = new Dictionary<string, object?>();
@@ -463,6 +484,26 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
+        /// <summary>Updates an existing batch, calls the PATCH /batches/{batchId} endpoint.</summary>
+        /// <param name="batchId">Id of the batch</param>
+        /// <param name="attributes">Additional attributes</param>
+        /// <returns>Batch response from REST API</returns>
+        public object UpdateBatch(
+            string batchId,
+            Dictionary<string, string?>? attributes
+        ) {
+            var body = new Dictionary<string, object?>();
+
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/batches/{batchId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
         /// <summary>Delete a batch, calls the DELETE /batches/{batchId} endpoint.
         /// <example>
         /// <code>
@@ -480,7 +521,7 @@ namespace Lucidtech.Las
                 while (response["nextToken"] != null)
                 {
                     objectResponse = this.DeleteDocuments(
-                        batchId: batchId, 
+                        batchId: batchId,
                         nextToken: response["nextToken"].ToString()
                     );
                     response = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(objectResponse);
@@ -520,7 +561,7 @@ namespace Lucidtech.Las
             string? imageQuality = null
         )
         {
-            var body = new Dictionary<string, object>() { {"documentId", documentId}, {"modelId", modelId}};
+            var body = new Dictionary<string, object> { {"documentId", documentId}, {"modelId", modelId}};
             if (maxPages != null) { body.Add("maxPages", maxPages);}
             if (autoRotate != null) { body.Add("autoRotate", autoRotate);}
             if (imageQuality != null) { body.Add("imageQuality", imageQuality);}
@@ -573,11 +614,11 @@ namespace Lucidtech.Las
         /// <param name="nextToken">Token to retrieve the next page</param>
         /// <returns>Logs response from REST API</returns>
         public object ListLogs(
-            string? transitionId = null, 
-            string? transitionExecutionId = null, 
-            string? workflowId = null, 
-            string? workflowExecutionId = null, 
-            int? maxResults = null, 
+            string? transitionId = null,
+            string? transitionExecutionId = null,
+            string? workflowId = null,
+            string? workflowExecutionId = null,
+            int? maxResults = null,
             string? nextToken = null
         ) {
             var queryParams = new Dictionary<string, object?>();
@@ -610,6 +651,52 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
+        /// <summary>Creates a model, calls the POST /models endpoint.</summary>
+        /// <param name="width">The number of pixels to be used for the input image width of your model</param>
+        /// <param name="height">The number of pixels to be used for the input image height of your model</param>
+        /// <param name="fieldConfig">Specification of the fields that the model is going to predict</param>
+        /// <param name="preprocessConfig">Specification of the processing steps prior to the prediction of an image</param>
+        /// <param name="name">Name of the model</param>
+        /// <param name="description">Description of the model</param>
+        /// <param name="attributes">Additional attributes</param>
+        /// <returns>Model response from REST API</returns>
+        public object CreateModel(
+            int width,
+            int height,
+            Dictionary<string, object> fieldConfig,
+            Dictionary<string, object>? preprocessConfig = null,
+            string? name = null,
+            string? description = null,
+            Dictionary<string, string?>? attributes = null
+        ) {
+            var body = new Dictionary<string, object?> {
+                {"width", width},
+                {"height", height},
+                {"fieldConfig", fieldConfig}
+            };
+
+            if (preprocessConfig != null) {
+                body.Add("preprocessConfig", preprocessConfig);
+            }
+
+            if (name != null) {
+                body.Add("name", name);
+            }
+
+            if (description != null) {
+                body.Add("description", description);
+            }
+
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            RestRequest request = ClientRestRequest(Method.POST, "/models", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
         /// <summary>List models available, calls the GET /models endpoint.</summary>
         /// <example>
         /// <code>
@@ -638,6 +725,77 @@ namespace Lucidtech.Las
             RestRequest request = ClientRestRequest(Method.GET, "/models", null, queryParams);
             return ExecuteRequestResilient(RestSharpClient, request);
         }
+        
+        /// <summary>Get information about a specific model, calls the GET /models/{modelId} endpoint.</summary>
+        /// <param name="modelId">Id of the model</param>
+        /// <returns>Model response from REST API</returns>
+        public object GetModel(string modelId) {
+            var request = ClientRestRequest(Method.GET, $"/models/{modelId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Updates a model, calls the PATCH /models/{modelId} endpoint.</summary>
+        /// <param name="modelId">Id of the model</param>
+        /// <param name="width">The number of pixels to be used for the input image width of your model</param>
+        /// <param name="height">The number of pixels to be used for the input image height of your model</param>
+        /// <param name="fieldConfig">Specification of the fields that the model is going to predict</param>
+        /// <param name="preprocessConfig">Specification of the processing steps prior to the prediction of an image</param>
+        /// <param name="name">Name of the model</param>
+        /// <param name="description">Description of the model</param>
+        /// <param name="status">New status for the model</param>
+        /// <param name="attributes">Additional attributes</param>
+        /// <returns>Model response from REST API</returns>
+        public object UpdateModel(
+            string modelId,
+            int? width = null,
+            int? height = null,
+            Dictionary<string, object>? fieldConfig = null,
+            Dictionary<string, object>? preprocessConfig = null,
+            string? name = null,
+            string? description = null,
+            string? status = null,
+            Dictionary<string, string?>? attributes = null
+        ) {
+            var body = new Dictionary<string, object?>();
+
+            if (width != null) {
+                body.Add("width", width);
+            }
+
+            if (height != null) {
+                body.Add("height", height);
+            }
+
+            if (fieldConfig != null) {
+                body.Add("fieldConfig", fieldConfig);
+            }
+
+            if (preprocessConfig != null) {
+                body.Add("preprocessConfig", preprocessConfig);
+            }
+
+            if (name != null) {
+                body.Add("name", name);
+            }
+
+            if (description != null) {
+                body.Add("description", description);
+            }
+
+            if (status != null) {
+                body.Add("status", status);
+            }
+
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/models/{modelId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
 
         /// <summary>Creates an secret, calls the POST /secrets endpoint.</summary>
         /// <example>
@@ -779,7 +937,7 @@ namespace Lucidtech.Las
             Dictionary<string, object?>? parameters = null,
             Dictionary<string, string?>? attributes = null
         ) {
-            var body = new Dictionary<string, object?>() {
+            var body = new Dictionary<string, object?> {
                 {"transitionType", transitionType},
             };
 
@@ -918,7 +1076,7 @@ namespace Lucidtech.Las
             if (environmentSecrets != null) {
                 body.Add("environmentSecrets", environmentSecrets);
             }
-            
+
             if (attributes != null) {
                 foreach (KeyValuePair<string, string?> entry in attributes) {
                     body.Add(entry.Key, entry.Value);
@@ -1239,7 +1397,7 @@ namespace Lucidtech.Las
             Dictionary<string, object>? completedConfig = null,
             Dictionary<string, string?>? attributes = null
         ) {
-            var body = new Dictionary<string, object?> { 
+            var body = new Dictionary<string, object?> {
                 {"specification", specification}
             };
 
@@ -1301,13 +1459,13 @@ namespace Lucidtech.Las
         /// <param name="attributes">Attributes to update. Currently supported are: name, description</param>
         /// <returns>Workflow response from REST API</returns>
         public object UpdateWorkflow(
-            string workflowId, 
+            string workflowId,
             Dictionary<string, object>? errorConfig,
             Dictionary<string, object>? completedConfig,
             Dictionary<string, string?> attributes
-        ){
+        ) {
             var body = new Dictionary<string, object?> {};
-            
+
             if (errorConfig != null) {
                 body.Add("errorConfig", errorConfig);
             }
@@ -1477,7 +1635,7 @@ namespace Lucidtech.Las
         /// use: las:transition:commons-failed</param>
         /// <returns>WorkflowExecution response from REST API</returns>
         public object UpdateWorkflowExecution(string workflowId, string executionId, string nextTransitionId) {
-            var body = new Dictionary<string, string>() {
+            var body = new Dictionary<string, string> {
                 {"nextTransitionId", nextTransitionId}
             };
             var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}/executions/{executionId}", body);
@@ -1562,8 +1720,7 @@ namespace Lucidtech.Las
 
         private Dictionary<string, string> CreateSigningHeaders()
         {
-            var headers = new Dictionary<string, string>()
-            {
+            var headers = new Dictionary<string, string> {
                 {"Authorization", $"Bearer {LasCredentials.GetAccessToken()}"},
                 {"X-Api-Key", LasCredentials.ApiKey}
             };
@@ -1607,7 +1764,7 @@ namespace Lucidtech.Las
         {
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
-                return new Dictionary<string, string>(){  {"Your request executed successfully", "204"} };
+                return new Dictionary<string, string>{  {"Your request executed successfully", "204"} };
             }
             else if (response.StatusCode == HttpStatusCode.Forbidden)
             {

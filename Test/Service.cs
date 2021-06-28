@@ -8,20 +8,20 @@ namespace Test.Service
 {
 
     public static class Util {
-    
-        public static string ResourceId(string resourceName){
+
+        public static string ResourceId(string resourceName) {
             return $"las:{resourceName}:{Guid.NewGuid().ToString().Replace("-", "")}";
         }
-        
-        public static string[] ExpectedKeys(string resourceName){
+
+        public static string[] ExpectedKeys(string resourceName) {
             switch (resourceName) {
                 case "appClient":
                     return new [] {"appClientId", "name", "description"};
-                case "appClients": 
+                case "appClients":
                     return new [] {"nextToken", "appClients"};
                 case "asset":
                     return new [] {"assetId", "name", "description"};
-                case "assets": 
+                case "assets":
                     return new [] {"nextToken", "assets"};
                 case "batch":
                     return new[] {"name", "description", "batchId"};
@@ -33,6 +33,8 @@ namespace Test.Service
                     return new [] {"nextToken", "documents"};
                 case "logs":
                     return new[] {"logs", "nextToken"};
+                case "model":
+                    return new[] {"modelId", "name", "description", "height", "width", "preprocessConfig", "fieldConfig", "status", "createdTime", "updatedTime"};
                 case "models":
                     return new[] {"models", "nextToken"};
                 case "prediction":
@@ -70,12 +72,12 @@ namespace Test.Service
             }
         }
         
-        public static Dictionary<string, object> CompletedConfig(){
-            var environment = new Dictionary<string, string?>{
+        public static Dictionary<string, object> CompletedConfig() {
+            var environment = new Dictionary<string, string?>() {
                 {"FOO", "FOO"},
                 {"BAR", "BAR"}
             };
-            return new Dictionary<string, object>{
+            return new Dictionary<string, object> {
                 {"imageUrl", "my/docker:image"},
                 {"secretId", Util.ResourceId("secret")},
                 {"environment", environment},
@@ -83,19 +85,46 @@ namespace Test.Service
             };
         }
             
-        public static Dictionary<string, object> ErrorConfig(){
-            return new Dictionary<string, object>{
+        public static Dictionary<string, object> ErrorConfig() {
+            return new Dictionary<string, object> {
                 {"email", "foo@lucidtech.io"},
                 {"manualRetry", true}
             };
         }
             
-        public static Dictionary<string, string?> NameAndDescription(string? name, string? description){
-            return new Dictionary<string, string?>{
+        public static Dictionary<string, string?> NameAndDescription(string? name, string? description) {
+            return new Dictionary<string, string?> {
                 {"name", name},
                 {"description", description}
             };
         }
+        
+        public static Dictionary<string, object> PreprocessConfig() {
+            return new Dictionary<string, object> {
+                {"autoRotate", true},
+                {"maxPages", 3},
+                {"imageQuality", "HIGH"}
+            };
+        }
+            
+        public static Dictionary<string, object> FieldConfig() {
+            return new Dictionary<string, object>()
+            {
+                {"DueDate", new Dictionary<string, object> {
+                        {"type", "date"},
+                        {"description", "due date of the invoice"},
+                        {"maxLength", 11}
+                    }
+                },
+                {"TotalAmount", new Dictionary<string, object> {
+                        {"type", "amount"},
+                        {"description", "total amount of the invoice"},
+                        {"maxLength", 15}
+                    }
+                },
+            };
+        }
+            
     }
     
 }
