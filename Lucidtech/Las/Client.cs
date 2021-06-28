@@ -262,18 +262,11 @@ namespace Lucidtech.Las
         /// <summary>
         /// Creates a document handle, calls the POST /documents endpoint
         /// </summary>
-        /// <example>
-        /// Create a document handle for a jpeg image
-        /// <code>
-        /// Client client = new Client();
-        /// byte[] content = File.ReadAllBytes("MyReceipt.jpeg");
-        /// var response = client.CreateDocument(content, "image/jpeg", "bar");
-        /// </code>
-        /// </example>
         /// <param name="content"> Content to POST </param>
         /// <param name="contentType"> A mime type for the document handle </param>
-        /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <param name="batchId"> Specifies the batch to which the document will be associated with </param>
+        /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
+        /// <param name="datasetId"> Specifies the dataset to which the document will be associated with </param>
         /// <param name="groundTruth"> A list of items {label: value},
         /// representing the ground truth values for the document </param>
         /// <returns>
@@ -283,8 +276,9 @@ namespace Lucidtech.Las
         public object CreateDocument(
             byte[] content,
             string contentType,
-            string? consentId = null,
             string? batchId = null,
+            string? consentId = null,
+            string? datasetId = null,
             List<Dictionary<string, string>>? groundTruth = null)
         {
             string base64Content = System.Convert.ToBase64String(content);
@@ -294,12 +288,16 @@ namespace Lucidtech.Las
                 {"contentType", contentType},
             };
 
+            if (!string.IsNullOrEmpty(batchId)) {
+                body.Add("batchId", batchId);
+            }
+
             if(consentId != null) {
                 body.Add("consentId", consentId);
             }
 
-            if (!string.IsNullOrEmpty(batchId)) {
-                body.Add("batchId", batchId);
+            if (!string.IsNullOrEmpty(datasetId)) {
+                body.Add("datasetId", datasetId);
             }
 
             if (groundTruth != null) {
@@ -325,12 +323,14 @@ namespace Lucidtech.Las
         /// </example>
         /// <param name="batchId"> The batch id that contains the documents of interest </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
+        /// <param name="datasetId"> The dataset id that contains the documents of interest </param>
         /// <param name="maxResults">Number of items to show on a single page</param>
         /// <param name="nextToken">Token to retrieve the next page</param>
         /// <returns> Documents from REST API contained in batch </returns>
         public object ListDocuments(
             string? batchId = null,
             string? consentId = null,
+            string? datasetId = null,
             int? maxResults = null,
             string? nextToken = null
         ) {
@@ -342,6 +342,10 @@ namespace Lucidtech.Las
 
             if (!string.IsNullOrEmpty(consentId)) {
                 queryParams.Add("consentId", consentId);
+            }
+
+            if (!string.IsNullOrEmpty(datasetId)) {
+                queryParams.Add("datasetId", datasetId);
             }
 
             if (maxResults != null) {
@@ -417,6 +421,7 @@ namespace Lucidtech.Las
         /// </code></example>
         /// <param name="batchId"> Delete documents with provided batchId </param>
         /// <param name="consentId"> Delete documents with provided consentId </param>
+        /// <param name="datasetId"> Delete documents with provided datasetId </param>
         /// <param name="maxResults">Maximum number of items to delete</param>
         /// <param name="nextToken">Token to retrieve the next page</param>
         /// <returns>
@@ -426,6 +431,7 @@ namespace Lucidtech.Las
         public object DeleteDocuments(
             string? batchId = null,
             string? consentId = null,
+            string? datasetId = null,
             int? maxResults = null,
             string? nextToken = null
         ) {
@@ -437,6 +443,10 @@ namespace Lucidtech.Las
 
             if (consentId != null) {
                 queryParams.Add("consentId", consentId);
+            }
+
+            if (datasetId != null) {
+                queryParams.Add("datasetId", datasetId);
             }
 
             if (maxResults != null) {
@@ -528,6 +538,116 @@ namespace Lucidtech.Las
                 }
             }
             var request = ClientRestRequest(Method.DELETE, $"/batches/{batchId}");
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+
+        /// <summary>
+        /// Create a dataset handle, calls the POST /datasets endpoint.
+        /// </summary>
+        /// <example>
+        /// Create a new dataset with the provided description.
+        /// on the document specified by '&lt;datasetId&gt;'
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.CreateDataset("Data gathered from the Mars Rover Invoice Scan Mission");
+        /// </code>
+        /// </example>
+        /// <param name="name">Name of the dataset</param>
+        /// <param name="description"> A brief description of the dataset </param>
+        /// <returns>
+        /// A deserialized object that can be interpreted as a Dictionary with the fields datasetId and description.
+        /// datasetId can be used as an input when posting documents to make them a part of this dataset.
+        /// </returns>
+        public object CreateDataset(string? name = null, string? description = null)
+        {
+            var body = new Dictionary<string, string?>();
+
+            if (name != null) {
+                body.Add("name", name);
+            }
+
+            if (description != null) {
+                body.Add("description", description);
+            }
+
+            RestRequest request = ClientRestRequest(Method.POST, "/datasets", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>List datasets available, calls the GET /datasets endpoint.</summary>
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.ListDatasets();
+        /// </code>
+        /// </example>
+        /// <param name="maxResults">Number of items to show on a single page</param>
+        /// <param name="nextToken">Token to retrieve the next page</param>
+        /// <returns>
+        /// JSON object with two keys:
+        /// - "datasets" which contains a list of Dataset objects
+        /// - "nextToken" allowing for retrieving the next portion of data
+        /// </returns>
+        public object ListDatasets(int? maxResults = null, string? nextToken = null) {
+            var queryParams = new Dictionary<string, object?>();
+
+            if (maxResults != null) {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null) {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/datasets", null, queryParams);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Updates an existing dataset, calls the PATCH /datasets/{datasetId} endpoint.</summary>
+        /// <param name="datasetId">Id of the dataset</param>
+        /// <param name="attributes">Additional attributes</param>
+        /// <returns>Dataset response from REST API</returns>
+        public object UpdateDataset(
+            string datasetId,
+            Dictionary<string, string?>? attributes
+        ) {
+            var body = new Dictionary<string, object?>();
+
+            if (attributes != null) {
+                foreach (KeyValuePair<string, string?> entry in attributes) {
+                    body.Add(entry.Key, entry.Value);
+                }
+            }
+
+            RestRequest request = ClientRestRequest(Method.PATCH, $"/datasets/{datasetId}", body);
+            return ExecuteRequestResilient(RestSharpClient, request);
+        }
+
+        /// <summary>Delete a dataset, calls the DELETE /datasets/{datasetId} endpoint.
+        /// <example>
+        /// <code>
+        /// Client client = new Client();
+        /// var response = client.DeleteDataset("&lt;datasetId&gt;");
+        /// </code>
+        /// </example>
+        /// <param name="datasetId">Id of the dataset</param>
+        /// <param name="deleteDocuments">Set to true to delete documents in dataset before deleting dataset</param>
+        /// <returns>Dataset response from REST API</returns>
+        public object DeleteDataset(string datasetId, bool deleteDocuments = false) {
+            if (deleteDocuments == true) {
+                var objectResponse = this.DeleteDocuments(datasetId: datasetId);
+                var response = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(objectResponse);
+                while (response["nextToken"] != null)
+                {
+                    objectResponse = this.DeleteDocuments(
+                        datasetId: datasetId,
+                        nextToken: response["nextToken"].ToString()
+                    );
+                    response = JsonSerialPublisher.ObjectToDict<Dictionary<string, object>>(objectResponse);
+                }
+            }
+            var request = ClientRestRequest(Method.DELETE, $"/datasets/{datasetId}");
             return ExecuteRequestResilient(RestSharpClient, request);
         }
 
