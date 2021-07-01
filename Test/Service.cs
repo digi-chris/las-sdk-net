@@ -41,6 +41,10 @@ namespace Test.Service
                     return new[] {"modelId", "name", "description", "height", "width", "preprocessConfig", "fieldConfig", "status", "createdTime", "updatedTime"};
                 case "models":
                     return new[] {"models", "nextToken"};
+                case "dataBundle":
+                    return new[] {"modelId", "dataBundleId", "description", "status", "createdTime", "updatedTime"};
+                case "dataBundles":
+                    return new[] {"dataBundles", "nextToken"};
                 case "prediction":
                     return new [] {"documentId", "predictions"};
                 case "predictions":
