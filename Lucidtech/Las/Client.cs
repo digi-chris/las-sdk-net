@@ -1849,8 +1849,7 @@ namespace Lucidtech.Las
         private Dictionary<string, string> CreateSigningHeaders()
         {
             var headers = new Dictionary<string, string> {
-                {"Authorization", $"Bearer {LasCredentials.GetAccessToken()}"},
-                {"X-Api-Key", LasCredentials.ApiKey}
+                {"Authorization", $"Bearer {LasCredentials.GetAccessToken()}"}
             };
             headers.Add("Content-Type", "application/json");
 
