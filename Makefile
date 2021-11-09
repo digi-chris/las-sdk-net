@@ -2,9 +2,7 @@
 CID := $(shell cat /tmp/prism.cid)
 
 docs:
-	doxygen documentation.conf
-	sed -i 's/inline="yes"/inline="no"/g' xml/*
-	npx moxygen xml
+	doxygen
 
 restore:
 	dotnet restore Lucidtech
