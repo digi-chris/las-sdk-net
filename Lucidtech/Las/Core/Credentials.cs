@@ -38,7 +38,7 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// AWS Authorization endpoint. Provided by Lucidtech.
         /// </summary>
-        public string AuthEndpoint{ get; }
+        public string AuthEndpoint { get; }
 
         /// <summary>
         /// AWS API Gateway API endpoint. Provided by Lucidtech.
@@ -48,7 +48,7 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// Access token and timestamp to API endpoint. Provided and updated by calling AccessToken.
         /// </summary>
-        private string AccessToken;
+        private string? AccessToken;
 
         /// <summary>
         /// Timestamp for access token to API endpoint. Provided and updated by calling AccessToken.
@@ -58,7 +58,7 @@ namespace Lucidtech.Las.Core
         /// <summary>
         /// RestClient for making request to the authorization endpoint.
         /// </summary>
-        private RestClient RestSharpClient { get; set; }
+        private RestClient? RestSharpClient { get; set; }
 
         protected virtual (string, DateTime) GetClientCredentials()
         {
@@ -121,29 +121,34 @@ namespace Lucidtech.Las.Core
             string clientSecret,
             string authEndpoint,
             string apiEndpoint
-        ) {
+        )
+        {
             ClientId = clientId;
             ClientSecret = clientSecret;
             AuthEndpoint = authEndpoint;
             ApiEndpoint = apiEndpoint;
-            CommonConstructor();
+            
+            RestSharpClient = new RestClient($"https://{AuthEndpoint}");
+            RestSharpClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
+            ExpirationTime = DateTime.UtcNow;
+            AccessToken = null;
         }
+
 
         /// <summary>
         /// Credentials constructor where the path to the credentials config is provided.
         /// </summary>
-        /// <param name="credentialsPath"> Path to the file where the credentials are stored </param>
-        public Credentials(string credentialsPath)
+        /// <param name="credentialsPath">Path to the file where the credentials are stored </param>
+        public Credentials(string? credentialsPath)
         {
             var envCred = GetCredentialsFromEnv();
-            if (!File.Exists(credentialsPath))
-            {
-                ClientId = envCred["ClientId"];
-                ClientSecret = envCred["ClientSecret"];
-                AuthEndpoint = envCred["AuthEndpoint"];
-                ApiEndpoint = envCred["ApiEndpoint"];
-            }
-            else
+            
+            ClientId = envCred["ClientId"];
+            ClientSecret = envCred["ClientSecret"];
+            AuthEndpoint = envCred["AuthEndpoint"];
+            ApiEndpoint = envCred["ApiEndpoint"];
+            
+            if (credentialsPath != null && File.Exists(credentialsPath))
             {
                 var pathCred = ReadCredentials(credentialsPath);
                 ClientId = envCred["ClientId"] != null ? envCred["ClientId"] : pathCred["ClientId"];
@@ -151,7 +156,11 @@ namespace Lucidtech.Las.Core
                 AuthEndpoint = envCred["AuthEndpoint"] != null ? envCred["AuthEndpoint"] : pathCred["AuthEndpoint"];
                 ApiEndpoint = envCred["ApiEndpoint"] != null ? envCred["ApiEndpoint"] : pathCred["ApiEndpoint"];
             }
-            CommonConstructor();
+           
+            RestSharpClient = new RestClient($"https://{AuthEndpoint}");
+            RestSharpClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
+            ExpirationTime = DateTime.UtcNow;
+            AccessToken = null;
         }
 
         /// <summary>
@@ -159,14 +168,6 @@ namespace Lucidtech.Las.Core
         /// ~/.lucidtech/credentials.cfg for linux and %USERPROFILE%\.lucidtech\credentials.cfg for Windows.
         /// </summary>
         public Credentials() : this(GetCredentialsPath()) {}
-
-        protected virtual void CommonConstructor()
-        {
-            AccessToken = null;
-            ExpirationTime = DateTime.UtcNow;
-            RestSharpClient = new RestClient($"https://{AuthEndpoint}");
-            RestSharpClient.Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret);
-        }
 
         private Dictionary<string, string> GetCredentialsFromEnv()
         {
