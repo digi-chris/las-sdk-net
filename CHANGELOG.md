@@ -1,5 +1,17 @@
 # Changelog 
 
+## Version 5.0.0 - 2023-12-19
+
+- Added status UpdateWorkflowExecution
+- Remove width and height from CreateModel
+- Remove width and height from UpdateModel
+- Remove status from UpdateModel
+- Remove contentType from CreateDocument
+
+## Version 4.1.0 - 2023-06-27
+
+- Added support for uploading document to file server
+
 ## Version 3.1.0 - 2022-03-28
 
 - Added postprocessConfig to CreatePrediction

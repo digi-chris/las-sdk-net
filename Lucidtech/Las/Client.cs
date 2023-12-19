@@ -254,7 +254,6 @@ namespace Lucidtech.Las
         /// Creates a document handle, calls the POST /documents endpoint
         /// </summary>
         /// <param name="content"> Content to POST </param>
-        /// <param name="contentType"> A mime type for the document handle </param>
         /// <param name="consentId"> An identifier to mark the owner of the document handle </param>
         /// <param name="datasetId"> Specifies the dataset to which the document will be associated with </param>
         /// <param name="groundTruth"> A list of items {label: value},
@@ -265,7 +264,6 @@ namespace Lucidtech.Las
         /// </returns>
         public object CreateDocument(
             byte[] content,
-            string contentType,
             string? consentId = null,
             List<Dictionary<string, string>>? groundTruth = null,
             string? datasetId = null
@@ -299,7 +297,7 @@ namespace Lucidtech.Las
             
             return response;
         }
-
+        
         /// <summary>
         /// Get documents from the REST API, calls the GET /documents endpoint.
         /// </summary>
@@ -686,8 +684,6 @@ namespace Lucidtech.Las
         }
 
         /// <summary>Creates a model, calls the POST /models endpoint.</summary>
-        /// <param name="width">The number of pixels to be used for the input image width of your model</param>
-        /// <param name="height">The number of pixels to be used for the input image height of your model</param>
         /// <param name="fieldConfig">Specification of the fields that the model is going to predict</param>
         /// <param name="preprocessConfig">Specification of the processing steps prior to the prediction of an image</param>
         /// <param name="name">Name of the model</param>
@@ -695,8 +691,6 @@ namespace Lucidtech.Las
         /// <param name="attributes">Additional attributes</param>
         /// <returns>Model response from REST API</returns>
         public object CreateModel(
-            int width,
-            int height,
             Dictionary<string, object> fieldConfig,
             Dictionary<string, object>? preprocessConfig = null,
             string? name = null,
@@ -704,8 +698,6 @@ namespace Lucidtech.Las
             Dictionary<string, string?>? attributes = null
         ) {
             var body = new Dictionary<string, object?> {
-                {"width", width},
-                {"height", height},
                 {"fieldConfig", fieldConfig}
             };
 
@@ -769,35 +761,21 @@ namespace Lucidtech.Las
 
         /// <summary>Updates a model, calls the PATCH /models/{modelId} endpoint.</summary>
         /// <param name="modelId">Id of the model</param>
-        /// <param name="width">The number of pixels to be used for the input image width of your model</param>
-        /// <param name="height">The number of pixels to be used for the input image height of your model</param>
         /// <param name="fieldConfig">Specification of the fields that the model is going to predict</param>
         /// <param name="preprocessConfig">Specification of the processing steps prior to the prediction of an image</param>
         /// <param name="name">Name of the model</param>
         /// <param name="description">Description of the model</param>
-        /// <param name="status">New status for the model</param>
         /// <param name="attributes">Additional attributes</param>
         /// <returns>Model response from REST API</returns>
         public object UpdateModel(
             string modelId,
-            int? width = null,
-            int? height = null,
             Dictionary<string, object>? fieldConfig = null,
             Dictionary<string, object>? preprocessConfig = null,
             string? name = null,
             string? description = null,
-            string? status = null,
             Dictionary<string, string?>? attributes = null
         ) {
             var body = new Dictionary<string, object?>();
-
-            if (width != null) {
-                body.Add("width", width);
-            }
-
-            if (height != null) {
-                body.Add("height", height);
-            }
 
             if (fieldConfig != null) {
                 body.Add("fieldConfig", fieldConfig);
@@ -813,10 +791,6 @@ namespace Lucidtech.Las
 
             if (description != null) {
                 body.Add("description", description);
-            }
-
-            if (status != null) {
-                body.Add("status", status);
             }
 
             if (attributes != null) {
@@ -1710,23 +1684,31 @@ namespace Lucidtech.Las
         }
 
         /// <summary>
-        /// Retry or end the processing of a workflow execution,
+        /// Change the processing of a workflow execution. Retry, end or mark as completed. 
         /// calls the PATCH /workflows/{workflowId}/executions/{executionId} endpoint.
         /// </summary>
         /// <example>
         /// <code>
-        /// var response = client.UpdateWorkflowExecution("&lt;workflow_id&gt;", "&lt;execution_id&gt;", "&lt;next_transition_id&gt;");
+        /// var response = client.UpdateWorkflowExecution("&lt;workflow_id&gt;", "&lt;execution_id&gt;", nextTransitionId: "&lt;next_transition_id&gt;");
         /// </code>
         /// </example>
         /// <param name="workflowId">Id of the workflow</param>
         /// <param name="executionId">Id of the execution</param>
         /// <param name="nextTransitionId">The next transition to transition into, to end the workflow-execution,
         /// use: las:transition:commons-failed</param>
+        /// <param name="status">Update the execution with this status, can only update from succeeded to completed and vice versa.
         /// <returns>WorkflowExecution response from REST API</returns>
-        public object UpdateWorkflowExecution(string workflowId, string executionId, string nextTransitionId) {
-            var body = new Dictionary<string, string> {
-                {"nextTransitionId", nextTransitionId}
-            };
+        public object UpdateWorkflowExecution(string workflowId, string executionId, string? nextTransitionId = null, string? status = null) {
+            var body = new Dictionary<string, string> {};
+
+            if (nextTransitionId != null) {
+                body.Add("nextTransitionId", nextTransitionId);
+            }
+
+            if (status != null) {
+                body.Add("status", status);
+            }
+
             var request = ClientRestRequest(Method.PATCH, $"/workflows/{workflowId}/executions/{executionId}", body);
             return ExecuteRequestResilient(this, request);
         }

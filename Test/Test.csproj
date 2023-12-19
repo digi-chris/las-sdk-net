@@ -12,7 +12,7 @@
     <RootNamespace>Test</RootNamespace>
     <AssemblyName>Test</AssemblyName>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <TargetFramework>netcoreapp7.0</TargetFramework>
+    <TargetFrameworks>net461;net47;net472</TargetFrameworks>
     <FileAlignment>512</FileAlignment>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -47,6 +47,7 @@
     <PackageReference Include="Polly" Version="7.1.0" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />

@@ -28,13 +28,13 @@ namespace Test.Service
                 case "datasets":
                     return new[] {"datasets", "nextToken"};
                 case "document":
-                    return new [] {"documentId", "contentType", "consentId", "groundTruth"};
+                    return new [] {"documentId", "groundTruth"};
                 case "documents":
                     return new [] {"nextToken", "documents"};
                 case "logs":
                     return new[] {"logs", "nextToken"};
                 case "model":
-                    return new[] {"modelId", "name", "description", "height", "width", "preprocessConfig", "fieldConfig", "status", "createdTime", "updatedTime"};
+                    return new[] {"modelId", "name", "description", "preprocessConfig", "fieldConfig", "status", "createdTime", "updatedTime"};
                 case "models":
                     return new[] {"models", "nextToken"};
                 case "dataBundle":
@@ -60,7 +60,7 @@ namespace Test.Service
                 case "heartbeats":
                     return new [] {"Your request executed successfully"};
                 case "user":
-                    return new [] {"userId", "name", "avatar", "email"};
+                    return new [] {"userId"};
                 case "users":
                     return new [] {"nextToken", "users"};
                 case "workflow":
