@@ -1730,6 +1730,42 @@ namespace Lucidtech.Las
             return ExecuteRequestResilient(this, request);
         }
 
+        /// <summary>List trainings available, calls the GET /trainings endpoint.</summary>
+        /// <example>
+        /// <code>
+        /// var response = client.ListTrainings();
+        /// </code>
+        /// </example>
+        /// <param name="modelId">The model Id</param>
+        /// <param name="maxResults">Number of items to show on a single page</param>
+        /// <param name="nextToken">Token to retrieve the next page</param>
+        /// <returns>
+        /// JSON object with three keys:
+        /// - "trainings" which contains a list of Training objects
+        /// - "nextToken" allowing for retrieving the next portion of data
+        /// - "status" which contains a list of statuses related to the trainings
+        /// </returns>
+        public object ListTrainings(string modelId, int? maxResults = null, string? nextToken = null)
+        {
+            var queryParams = new Dictionary<string, object?>
+            {
+                { "modelId", modelId }
+            };
+
+            if (maxResults != null)
+            {
+                queryParams.Add("maxResults", maxResults.ToString());
+            }
+
+            if (nextToken != null)
+            {
+                queryParams.Add("nextToken", nextToken);
+            }
+
+            RestRequest request = ClientRestRequest(Method.GET, "/trainings", null, queryParams);
+            return ExecuteRequestResilient(this, request);
+        }
+
         /// <summary>
         /// Create a HTTP web request for the REST API.
         /// </summary>
