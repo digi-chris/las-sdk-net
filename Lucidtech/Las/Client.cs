@@ -1747,10 +1747,7 @@ namespace Lucidtech.Las
         /// </returns>
         public object ListTrainings(string modelId, int? maxResults = null, string? nextToken = null)
         {
-            var queryParams = new Dictionary<string, object?>
-            {
-                { "modelId", modelId }
-            };
+            var queryParams = new Dictionary<string, object?>();
 
             if (maxResults != null)
             {
@@ -1762,7 +1759,7 @@ namespace Lucidtech.Las
                 queryParams.Add("nextToken", nextToken);
             }
 
-            RestRequest request = ClientRestRequest(Method.GET, "/trainings", null, queryParams);
+            RestRequest request = ClientRestRequest(Method.GET, $"/models/{modelId}/trainings", null, queryParams);
             return ExecuteRequestResilient(this, request);
         }
 
